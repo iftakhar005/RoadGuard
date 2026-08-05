@@ -41,7 +41,7 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
-		<!-- JWT (§13) -->
+		<!-- JWT for auth -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
