@@ -1,19 +1,19 @@
-# Copy to application-local.properties (git-ignored) and fill in real values.
+# Copy this to application-local.properties and fill in the real values.
+# That file is git-ignored so nothing secret ends up on GitHub.
 #
 #   cp src/main/resources/application-local.properties.example \
 #      src/main/resources/application-local.properties
 
-# --- JWT (spec 13) ---
-# Any long random string; generate one and keep it out of version control.
+# --- JWT ---
+# Any long random string.
 app.jwt.secret=CHANGE_ME_TO_A_LONG_RANDOM_SECRET
 app.jwt.expiry-hours=24
 
-# --- Gemini Vision (spec 8) ---
-# Leave app.ai.provider=stub in application.properties until a key exists.
-# With a key: set app.ai.provider=gemini here.
+# --- Gemini ---
+# Once there is a key here, switch app.ai.provider to 'gemini'.
 app.gemini.api-key=
 
-# --- MySQL for the demo (spec 18); omit to keep the H2 dev default ---
+# --- MySQL for the demo. Leave commented out to keep using H2. ---
 #spring.datasource.url=jdbc:mysql://localhost:3306/roadguard
 #spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 #spring.datasource.username=root
