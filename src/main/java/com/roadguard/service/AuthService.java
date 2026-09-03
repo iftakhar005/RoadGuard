@@ -30,6 +30,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest req) {
+        // Nobody signs themselves up as an admin. Taking the option off the form
+        // is not enough on its own - anyone can post straight to this endpoint -
+        // so the refusal has to live here. Admin accounts are seeded at startup
+        // from config instead (see AdminSeeder).
+        if (req.role() == Role.ADMIN) {
+            throw new IllegalArgumentException("Admin accounts cannot be created here");
+        }
         if (users.existsByUsername(req.username())) {
             throw new IllegalArgumentException("That username is taken");
         }

@@ -9,6 +9,13 @@
 app.jwt.secret=CHANGE_ME_TO_A_LONG_RANDOM_SECRET
 app.jwt.expiry-hours=24
 
+# --- The admin account ---
+# Nobody can register as an admin, so the first one is created here at
+# startup. Skipped if that username already exists.
+app.admin.username=admin
+app.admin.email=admin@roadguard.local
+app.admin.password=CHANGE_ME
+
 # --- Gemini ---
 # Once there is a key here, switch app.ai.provider to 'gemini'.
 app.gemini.api-key=
