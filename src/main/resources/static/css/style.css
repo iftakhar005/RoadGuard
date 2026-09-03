@@ -1,0 +1,168 @@
+/* One place for the colours and spacing, so changing the look later means
+   editing here rather than hunting through every page. */
+:root {
+    --rg-brand: #1f6feb;
+    --rg-brand-dark: #1a5fd0;
+    --rg-danger: #d1242f;
+    --rg-ink: #1c2128;
+    --rg-muted: #656d76;
+    --rg-line: #d8dee4;
+    --rg-bg: #f4f6f8;
+    --rg-radius: 12px;
+}
+
+body {
+    background: var(--rg-bg);
+    color: var(--rg-ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- login / register ---------- */
+
+.auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border: 1px solid var(--rg-line);
+    border-radius: var(--rg-radius);
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+}
+
+.brand {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.brand-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--rg-brand);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 12px;
+}
+
+.brand h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.brand p {
+    color: var(--rg-muted);
+    font-size: 14px;
+    margin: 4px 0 0;
+}
+
+.btn-brand {
+    background: var(--rg-brand);
+    border-color: var(--rg-brand);
+    color: #fff;
+}
+
+.btn-brand:hover,
+.btn-brand:focus {
+    background: var(--rg-brand-dark);
+    border-color: var(--rg-brand-dark);
+    color: #fff;
+}
+
+/* Role picker on the register form - three cards instead of a dropdown,
+   because it is the one choice that changes what the account can do. */
+.role-picker {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.role-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.role-option span {
+    display: block;
+    text-align: center;
+    padding: 10px 4px;
+    border: 1px solid var(--rg-line);
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .12s ease;
+}
+
+.role-option input:checked + span {
+    border-color: var(--rg-brand);
+    background: rgba(31, 111, 235, .07);
+    color: var(--rg-brand);
+    font-weight: 600;
+}
+
+.skills-box {
+    border: 1px solid var(--rg-line);
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafbfc;
+}
+
+/* ---------- signed-in pages ---------- */
+
+.topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--rg-line);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topbar .who {
+    font-size: 14px;
+    color: var(--rg-muted);
+}
+
+.page {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 20px;
+}
+
+.panel {
+    background: #fff;
+    border: 1px solid var(--rg-line);
+    border-radius: var(--rg-radius);
+    padding: 24px;
+}
+
+.kv {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rg-line);
+    font-size: 14px;
+}
+
+.kv:last-child {
+    border-bottom: none;
+}
+
+.kv span:first-child {
+    color: var(--rg-muted);
+}
+
+.kv span:last-child {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
