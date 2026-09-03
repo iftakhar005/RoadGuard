@@ -11,7 +11,7 @@
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 </head>
-<body data-role="DRIVER">
+<body data-role="DRIVER" class="map-mode">
 
 <header class="topbar">
     <div class="wordmark">
@@ -31,20 +31,29 @@
     </div>
 </header>
 
-<div class="page">
-    <div class="page-head">
+<!-- Full-bleed map fills everything under the top bar; the controls float on top. -->
+<main class="map-stage">
+    <div id="map"></div>
+
+    <!-- floating panel, bottom-left -->
+    <div class="map-panel">
         <h1>Where are you?</h1>
-        <p>Drag the pin to exactly where your vehicle has broken down.</p>
-    </div>
+        <p class="map-panel-sub">Drag the pin to exactly where your vehicle has broken down.</p>
 
-    <div class="card map-card">
-        <div id="map"></div>
+        <div class="coords">
+            <span class="coords-label">Your location</span>
+            <span class="coords-val" id="coords">getting your position…</span>
+        </div>
 
-        <div class="map-bar">
-            <div class="coords">
-                <span class="coords-label">Your location</span>
-                <span class="coords-val" id="coords">getting your position…</span>
-            </div>
+        <div class="map-panel-actions">
+            <button class="btn btn-sos" disabled title="Coming in the next update">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v4M12 17h.01"/>
+                    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+                </svg>
+                Send SOS
+            </button>
             <button class="btn btn-locate" id="locate-btn" type="button" title="Recentre on me">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -54,30 +63,10 @@
                 Recentre
             </button>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="soon-row">
-            <div>
-                <h2 style="margin-bottom:4px">Send for help</h2>
-                <p class="soon-note">The SOS button is next - it will broadcast this location to nearby mechanics.</p>
-            </div>
-            <button class="btn btn-sos" disabled title="Coming in the next update">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 9v4M12 17h.01"/>
-                    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
-                </svg>
-                SOS
-            </button>
-        </div>
+        <p class="map-panel-note">The SOS button is next - it will broadcast this location to nearby mechanics.</p>
     </div>
-
-    <div class="card">
-        <h2>Your session</h2>
-        <div class="rows" id="session-rows"></div>
-    </div>
-</div>
+</main>
 
 <!-- Leaflet script must load before our map code runs. -->
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>

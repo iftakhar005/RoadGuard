@@ -727,28 +727,70 @@ input:focus {
     word-break: break-all;
 }
 
-/* ---------- driver map ---------- */
+/* ---------- driver map: full-bleed ---------- */
 
-.map-card {
-    padding: 0;
+/* On the map page the body itself must not scroll - the map owns the screen. */
+body.map-mode {
+    height: 100vh;
     overflow: hidden;
 }
 
-#map {
-    height: 380px;
+/* Fills everything under the 60px top bar. */
+.map-stage {
+    position: relative;
+    height: calc(100vh - 60px);
     width: 100%;
-    /* sits behind the sticky top bar */
+}
+
+#map {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1;
     background: #dfe4ea;
 }
 
-.map-bar {
+/* Controls float over the map, bottom-left, like a real dispatch app. */
+.map-panel {
+    position: absolute;
+    z-index: 2;
+    left: 24px;
+    bottom: 24px;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    background: rgba(255, 255, 255, .96);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: 0 8px 30px -8px rgba(16, 24, 40, .28);
+    padding: 20px;
+}
+
+.map-panel h1 {
+    font-size: 20px;
+    letter-spacing: -.02em;
+    font-weight: 640;
+    margin: 0 0 4px;
+}
+
+.map-panel-sub {
+    color: var(--ink-3);
+    font-size: 13.5px;
+    margin: 0 0 16px;
+}
+
+.map-panel-actions {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 18px;
-    border-top: 1px solid var(--line);
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.map-panel-note {
+    color: var(--ink-3);
+    font-size: 12px;
+    margin: 12px 0 0;
+    line-height: 1.45;
 }
 
 .coords {
@@ -771,11 +813,12 @@ input:focus {
 }
 
 .btn-locate {
+    flex: none;
     width: auto;
     background: var(--surface);
     border: 1.5px solid #DCE2EC;
     color: var(--ink-2);
-    padding: 9px 14px;
+    padding: 10px 14px;
     font-size: 13.5px;
 }
 
@@ -830,15 +873,18 @@ input:focus {
 }
 
 .btn-sos {
-    width: auto;
-    flex: none;
+    flex: 1;
     background: var(--red);
     color: #fff;
-    padding: 14px 26px;
-    font-size: 16px;
+    padding: 12px 18px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: .02em;
-    border-radius: 12px;
+    border-radius: 10px;
+}
+
+.btn-sos:disabled {
+    opacity: .55;
 }
 
 .btn-sos svg {
