@@ -249,7 +249,10 @@ body {
 
 /* ---------- right: the form ---------- */
 
+/* White panel, so the filled fields below have something to sit against.
+   Fields on a grey page with a hairline border read as barely there. */
 .auth-main {
+    background: var(--surface);
     display: grid;
     justify-items: center;
     /* "safe" matters here. Plain centring clips a tall form at BOTH ends once
@@ -345,15 +348,15 @@ body {
 
 /* fields */
 .field {
-    margin-bottom: 15px;
+    margin-bottom: 17px;
 }
 
 .field label {
     display: block;
     font-size: 13px;
-    font-weight: 550;
-    color: var(--ink-2);
-    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 7px;
 }
 
 .field .hint {
@@ -367,38 +370,45 @@ body {
     font-weight: 400;
 }
 
+/* Filled by default, white when focused. The fill is what makes an empty
+   field obviously a field. */
 input[type="text"],
 input[type="email"],
 input[type="password"] {
     width: 100%;
-    padding: 11px 13px;
-    border: 1px solid var(--line);
-    border-radius: var(--r-sm);
-    background: var(--surface);
+    padding: 12px 14px;
+    border: 1.5px solid #DCE2EC;
+    border-radius: 10px;
+    background: #F1F4F9;
     font: inherit;
-    font-size: 14.5px;
+    font-size: 15px;
     color: var(--ink);
-    transition: border-color .15s, box-shadow .15s;
+    transition: border-color .15s, box-shadow .15s, background .15s;
 }
 
 input::placeholder {
-    color: #A9B2C3;
+    color: #97A1B2;
+}
+
+input:hover:not(:focus) {
+    border-color: #D3DAE5;
 }
 
 input:focus {
     outline: none;
+    background: var(--surface);
     border-color: var(--blue);
-    box-shadow: 0 0 0 3.5px var(--blue-soft);
+    box-shadow: 0 0 0 4px var(--blue-soft);
 }
 
 /* buttons */
 .btn {
     width: 100%;
     border: 0;
-    border-radius: var(--r-sm);
-    padding: 12px 16px;
+    border-radius: 10px;
+    padding: 13px 16px;
     font: inherit;
-    font-size: 14.5px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
@@ -472,14 +482,14 @@ input:focus {
     display: grid;
     justify-items: center;
     gap: 6px;
-    padding: 13px 6px;
-    border: 1.5px solid var(--line);
+    padding: 14px 6px;
+    border: 1.5px solid #DCE2EC;
     border-radius: var(--r-md);
     cursor: pointer;
     font-size: 13px;
-    font-weight: 550;
+    font-weight: 600;
     color: var(--ink-2);
-    background: var(--surface);
+    background: #F1F4F9;
     transition: all .15s;
 }
 
@@ -491,12 +501,14 @@ input:focus {
 
 .role-opt > span:hover {
     border-color: #C6CEDC;
+    background: #EFF2F7;
 }
 
 .role-opt input:checked + span {
     border-color: var(--blue);
-    background: var(--blue-soft);
+    background: rgba(47, 107, 255, .07);
     color: var(--blue);
+    box-shadow: 0 0 0 1px var(--blue) inset;
 }
 
 .role-opt input:focus-visible + span {
@@ -511,13 +523,13 @@ input:focus {
 }
 
 .chip {
-    border: 1.5px solid var(--line);
-    background: var(--surface);
+    border: 1.5px solid #DCE2EC;
+    background: #F1F4F9;
     border-radius: 999px;
-    padding: 6px 13px;
+    padding: 7px 14px;
     font: inherit;
     font-size: 13px;
-    font-weight: 550;
+    font-weight: 600;
     color: var(--ink-2);
     cursor: pointer;
     transition: all .14s;
@@ -525,6 +537,7 @@ input:focus {
 
 .chip:hover {
     border-color: #C6CEDC;
+    background: #EAEEF4;
 }
 
 .chip.is-on {
