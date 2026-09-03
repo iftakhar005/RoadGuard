@@ -1,22 +1,23 @@
-// Shared by the three signed-in pages. Each page tells us which role it is for
-// via a data-role attribute on <body>, so one script covers all of them.
+// Shared by the driver, mechanic and admin pages. Each page says which role it
+// is for with a data-role attribute on <body>.
 
 (async function () {
     const expectedRole = document.body.dataset.role;
     const me = await requireLogin(expectedRole);
-    if (!me) return;   // requireLogin already redirected
+    if (!me) return;   // requireLogin already sent us back to the login screen
 
-    document.getElementById('who').textContent = `${me.username} (${me.role})`;
+    document.getElementById('avatar').textContent = me.username.charAt(0).toUpperCase();
+    document.getElementById('who-name').textContent = me.username;
 
-    // Proof the protected call actually worked - these values came back from
-    // the server, not from anything stored in the browser.
-    const details = document.getElementById('session-details');
-    if (details) {
-        details.innerHTML = `
-            <div class="kv"><span>User ID</span><span>${me.userId}</span></div>
-            <div class="kv"><span>Username</span><span>${me.username}</span></div>
-            <div class="kv"><span>Role</span><span>${me.role}</span></div>
-            <div class="kv"><span>Token</span><span>${Auth.token().slice(0, 24)}...</span></div>`;
+    // These came back from a protected endpoint, not from anything the browser
+    // had lying around - which is the point worth showing.
+    const rows = document.getElementById('session-rows');
+    if (rows) {
+        rows.innerHTML = `
+            <div class="row"><span class="k">User ID</span><span class="v">${me.userId}</span></div>
+            <div class="row"><span class="k">Username</span><span class="v">${me.username}</span></div>
+            <div class="row"><span class="k">Role</span><span class="v">${me.role}</span></div>
+            <div class="row"><span class="k">Token</span><span class="v">${Auth.token().slice(0, 28)}…</span></div>`;
     }
 
     document.getElementById('logout-btn').addEventListener('click', logout);

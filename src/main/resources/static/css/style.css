@@ -1,168 +1,799 @@
-/* One place for the colours and spacing, so changing the look later means
-   editing here rather than hunting through every page. */
+/* ==========================================================================
+   RoadGuard styles
+   No framework - everything here is ours, so nothing to download at runtime
+   and nothing that looks like a default template.
+   ========================================================================== */
+
 :root {
-    --rg-brand: #1f6feb;
-    --rg-brand-dark: #1a5fd0;
-    --rg-danger: #d1242f;
-    --rg-ink: #1c2128;
-    --rg-muted: #656d76;
-    --rg-line: #d8dee4;
-    --rg-bg: #f4f6f8;
-    --rg-radius: 12px;
+    /* Deep navy base, amber for the emergency-beacon accent, blue for actions. */
+    --navy-900: #070C18;
+    --navy-800: #0D1526;
+    --navy-700: #16203a;
+
+    --amber: #FFB020;
+    --amber-soft: rgba(255, 176, 32, .16);
+
+    --blue: #2F6BFF;
+    --blue-dark: #1F52D6;
+    --blue-soft: rgba(47, 107, 255, .09);
+
+    --red: #E5484D;
+    --red-soft: rgba(229, 72, 77, .1);
+    --green: #2E9E5B;
+    --green-soft: rgba(46, 158, 91, .1);
+
+    --ink: #0E1420;
+    --ink-2: #47536B;
+    --ink-3: #7C889E;
+    --line: #E3E7EE;
+    --surface: #FFFFFF;
+    --bg: #F2F4F8;
+
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 18px;
+
+    --shadow-card: 0 1px 2px rgba(16, 24, 40, .04), 0 12px 32px -12px rgba(16, 24, 40, .16);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    background: var(--rg-bg);
-    color: var(--rg-ink);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- login / register ---------- */
+/* ==========================================================================
+   Login / register - two panels side by side
+   ========================================================================== */
 
-.auth-wrap {
+.auth-layout {
     min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+}
+
+/* ---------- left: the dark brand panel ---------- */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(900px 520px at 22% 12%, #1b2b52 0%, transparent 62%),
+        radial-gradient(700px 500px at 88% 92%, #2a1c3f 0%, transparent 58%),
+        var(--navy-900);
+    color: #fff;
+    padding: 44px 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Faint grid, like a map underneath everything. */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 45% 45%, #000 15%, transparent 72%);
+    pointer-events: none;
+}
+
+.hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+.wordmark {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 24px;
+    gap: 11px;
+    font-weight: 650;
+    font-size: 17px;
+    letter-spacing: -.01em;
+}
+
+.wordmark-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(145deg, var(--amber), #FF8A3D);
+    box-shadow: 0 6px 18px rgba(255, 138, 61, .34);
+}
+
+.wordmark-badge svg {
+    width: 19px;
+    height: 19px;
+    display: block;
+}
+
+/* ---------- the beacon ---------- */
+/* Rings spreading out from one point, with mechanics sitting around it.
+   It is the dispatch idea in one picture: one call goes out to everybody
+   nearby at the same moment. */
+
+.beacon {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin: 8px auto 34px;
+}
+
+.beacon-ring {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: 1.5px solid var(--amber);
+    opacity: 0;
+    animation: pulse-out 3.6s cubic-bezier(.22, .61, .36, 1) infinite;
+}
+
+.beacon-ring:nth-child(2) { animation-delay: 1.2s; }
+.beacon-ring:nth-child(3) { animation-delay: 2.4s; }
+
+@keyframes pulse-out {
+    0%   { transform: scale(1);   opacity: .85; }
+    70%  { opacity: .12; }
+    100% { transform: scale(4.1); opacity: 0; }
+}
+
+.beacon-core {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(150deg, var(--amber), #FF7A2F);
+    box-shadow: 0 0 0 8px var(--amber-soft), 0 14px 36px rgba(255, 140, 40, .38);
+}
+
+.beacon-core svg {
+    width: 27px;
+    height: 27px;
+}
+
+/* the mechanics waiting around the driver */
+.beacon-dot {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #7FE0A6;
+    box-shadow: 0 0 0 4px rgba(127, 224, 166, .16);
+    animation: blip 3.6s ease-in-out infinite;
+}
+
+.beacon-dot:nth-child(4) { top: 16%;  left: 20%; animation-delay: .5s; }
+.beacon-dot:nth-child(5) { top: 30%;  right: 12%; animation-delay: 1.4s; }
+.beacon-dot:nth-child(6) { bottom: 18%; left: 30%; animation-delay: 2.2s; }
+.beacon-dot:nth-child(7) { bottom: 26%; right: 22%; animation-delay: 3s; }
+
+@keyframes blip {
+    0%, 100% { transform: scale(1);    opacity: .55; }
+    50%      { transform: scale(1.35); opacity: 1; }
+}
+
+.hero-copy h2 {
+    font-size: 27px;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+    font-weight: 640;
+    margin: 0 0 10px;
+    max-width: 15ch;
+}
+
+.hero-copy p {
+    color: rgba(255, 255, 255, .62);
+    margin: 0;
+    max-width: 34ch;
+    font-size: 14.5px;
+}
+
+.hero-points {
+    list-style: none;
+    margin: 30px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 13px;
+}
+
+.hero-points li {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    color: rgba(255, 255, 255, .78);
+    font-size: 14px;
+}
+
+.tick {
+    flex: none;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: rgba(127, 224, 166, .15);
+    display: grid;
+    place-items: center;
+    margin-top: 1px;
+}
+
+.tick svg {
+    width: 11px;
+    height: 11px;
+    stroke: #7FE0A6;
+}
+
+/* ---------- right: the form ---------- */
+
+.auth-main {
+    display: grid;
+    justify-items: center;
+    /* "safe" matters here. Plain centring clips a tall form at BOTH ends once
+       it outgrows the screen - the top is cut off and the submit button
+       becomes unreachable. safe centring falls back to top-aligned instead,
+       which the register form needs once the skills list opens. */
+    align-items: safe center;
+    padding: 40px 28px;
 }
 
 .auth-card {
     width: 100%;
-    max-width: 420px;
-    background: #fff;
-    border: 1px solid var(--rg-line);
-    border-radius: var(--rg-radius);
-    padding: 32px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+    max-width: 396px;
 }
 
-.brand {
-    text-align: center;
-    margin-bottom: 28px;
+.auth-head {
+    margin-bottom: 26px;
 }
 
-.brand-mark {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: var(--rg-brand);
-    color: #fff;
+.auth-head h1 {
+    font-size: 25px;
+    letter-spacing: -.02em;
+    font-weight: 640;
+    margin: 0 0 5px;
+}
+
+.auth-head p {
+    color: var(--ink-3);
+    margin: 0;
+    font-size: 14.5px;
+}
+
+/* segmented switch with a sliding highlight */
+.seg {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: #E9ECF3;
+    border-radius: 11px;
+    padding: 4px;
+    margin-bottom: 22px;
+}
+
+.seg-thumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, .13);
+    transition: transform .22s cubic-bezier(.4, 0, .2, 1);
+}
+
+.seg[data-active="register"] .seg-thumb {
+    transform: translateX(100%);
+}
+
+.seg-btn {
+    position: relative;
+    z-index: 1;
+    border: 0;
+    background: none;
+    padding: 9px 0;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 550;
+    color: var(--ink-2);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: color .18s;
+}
+
+.seg-btn.is-active {
+    color: var(--ink);
+}
+
+/* panes */
+.pane {
+    display: none;
+}
+
+.pane.is-active {
+    display: block;
+    animation: fade-up .26s ease;
+}
+
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* fields */
+.field {
+    margin-bottom: 15px;
+}
+
+.field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--ink-2);
+    margin-bottom: 6px;
+}
+
+.field .hint {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin-top: 6px;
+}
+
+.field .optional {
+    color: var(--ink-3);
+    font-weight: 400;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+}
+
+input::placeholder {
+    color: #A9B2C3;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3.5px var(--blue-soft);
+}
+
+/* buttons */
+.btn {
+    width: 100%;
+    border: 0;
+    border-radius: var(--r-sm);
+    padding: 12px 16px;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
-    margin-bottom: 12px;
+    gap: 8px;
+    transition: background .15s, transform .06s, box-shadow .15s;
 }
 
-.brand h1 {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 0;
-}
-
-.brand p {
-    color: var(--rg-muted);
-    font-size: 14px;
-    margin: 4px 0 0;
-}
-
-.btn-brand {
-    background: var(--rg-brand);
-    border-color: var(--rg-brand);
+.btn-primary {
+    background: var(--blue);
     color: #fff;
+    box-shadow: 0 6px 16px -6px rgba(47, 107, 255, .6);
 }
 
-.btn-brand:hover,
-.btn-brand:focus {
-    background: var(--rg-brand-dark);
-    border-color: var(--rg-brand-dark);
-    color: #fff;
+.btn-primary:hover:not(:disabled) {
+    background: var(--blue-dark);
 }
 
-/* Role picker on the register form - three cards instead of a dropdown,
-   because it is the one choice that changes what the account can do. */
-.role-picker {
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: .62;
+    cursor: default;
+}
+
+.btn-ghost {
+    width: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    padding: 8px 14px;
+    font-size: 13.5px;
+}
+
+.btn-ghost:hover {
+    background: #F7F8FB;
+    color: var(--ink);
+}
+
+.spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, .4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* role picker */
+.role-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
 }
 
-.role-option input {
+.role-opt input {
     position: absolute;
     opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.role-option span {
-    display: block;
-    text-align: center;
-    padding: 10px 4px;
-    border: 1px solid var(--rg-line);
-    border-radius: 8px;
-    font-size: 13px;
+.role-opt > span {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 13px 6px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--r-md);
     cursor: pointer;
-    transition: all .12s ease;
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--ink-2);
+    background: var(--surface);
+    transition: all .15s;
 }
 
-.role-option input:checked + span {
-    border-color: var(--rg-brand);
-    background: rgba(31, 111, 235, .07);
-    color: var(--rg-brand);
-    font-weight: 600;
+.role-opt svg {
+    width: 21px;
+    height: 21px;
+    stroke: currentColor;
 }
 
-.skills-box {
-    border: 1px solid var(--rg-line);
-    border-radius: 8px;
-    padding: 12px;
-    background: #fafbfc;
+.role-opt > span:hover {
+    border-color: #C6CEDC;
 }
 
-/* ---------- signed-in pages ---------- */
+.role-opt input:checked + span {
+    border-color: var(--blue);
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.role-opt input:focus-visible + span {
+    box-shadow: 0 0 0 3.5px var(--blue-soft);
+}
+
+/* skill chips - nicer to tap than checkboxes and reads faster */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.chip {
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all .14s;
+}
+
+.chip:hover {
+    border-color: #C6CEDC;
+}
+
+.chip.is-on {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+.collapse {
+    display: none;
+}
+
+.collapse.is-open {
+    display: block;
+    animation: fade-up .24s ease;
+}
+
+/* messages */
+.notice {
+    display: none;
+    padding: 11px 13px;
+    border-radius: var(--r-sm);
+    font-size: 13.5px;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+}
+
+.notice.is-shown {
+    display: block;
+    animation: fade-up .2s ease;
+}
+
+.notice.is-error {
+    background: var(--red-soft);
+    border-color: rgba(229, 72, 77, .22);
+    color: #A32A2E;
+}
+
+.notice.is-ok {
+    background: var(--green-soft);
+    border-color: rgba(46, 158, 91, .22);
+    color: #1E6B3D;
+}
+
+/* ==========================================================================
+   Signed-in pages
+   ========================================================================== */
 
 .topbar {
-    background: #fff;
-    border-bottom: 1px solid var(--rg-line);
-    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.topbar .who {
-    font-size: 14px;
-    color: var(--rg-muted);
+.topbar .wordmark {
+    color: var(--ink);
+    font-size: 15.5px;
+}
+
+.topbar .wordmark-badge {
+    width: 29px;
+    height: 29px;
+    border-radius: 8px;
+}
+
+.topbar .wordmark-badge svg {
+    width: 16px;
+    height: 16px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 12.5px;
+    font-weight: 650;
+}
+
+.who-name {
+    font-size: 13.5px;
+    font-weight: 550;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: .04em;
+    background: var(--blue-soft);
+    color: var(--blue);
 }
 
 .page {
-    max-width: 960px;
-    margin: 32px auto;
-    padding: 0 20px;
+    max-width: 880px;
+    margin: 34px auto 60px;
+    padding: 0 24px;
 }
 
-.panel {
-    background: #fff;
-    border: 1px solid var(--rg-line);
-    border-radius: var(--rg-radius);
+.page-head {
+    margin-bottom: 22px;
+}
+
+.page-head h1 {
+    font-size: 24px;
+    letter-spacing: -.02em;
+    font-weight: 640;
+    margin: 0 0 5px;
+}
+
+.page-head p {
+    color: var(--ink-3);
+    margin: 0;
+    font-size: 14.5px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
     padding: 24px;
+    box-shadow: var(--shadow-card);
 }
 
-.kv {
+.card + .card {
+    margin-top: 18px;
+}
+
+.card h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--ink-3);
+    font-weight: 650;
+    margin: 0 0 16px;
+}
+
+.rows {
+    display: grid;
+}
+
+.row {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--rg-line);
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
     font-size: 14px;
 }
 
-.kv:last-child {
-    border-bottom: none;
+.row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
 }
 
-.kv span:first-child {
-    color: var(--rg-muted);
+.row:first-child {
+    padding-top: 0;
 }
 
-.kv span:last-child {
+.row .k {
+    color: var(--ink-3);
+}
+
+.row .v {
     font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    text-align: right;
+    word-break: break-all;
+}
+
+.next-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.next-list li {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    color: var(--ink-2);
+    font-size: 14px;
+}
+
+.dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    margin-top: 7px;
+}
+
+/* ==========================================================================
+   Smaller screens
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .auth-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* The brand panel becomes a compact strip rather than disappearing. */
+    .hero {
+        padding: 26px 24px 30px;
+    }
+
+    .beacon,
+    .hero-points {
+        display: none;
+    }
+
+    .hero-copy {
+        margin-top: 18px;
+    }
+
+    .hero-copy h2 {
+        font-size: 21px;
+    }
+
+    .auth-main {
+        padding: 30px 22px 50px;
+        /* On a phone the panel is stacked above, so centring the form in what
+           is left just pushes it down behind a gap. */
+        align-items: start;
+    }
+}
+
+@media (max-width: 420px) {
+    .role-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .role-opt > span {
+        grid-auto-flow: column;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 11px 14px;
+    }
+}
+
+/* Some people get motion sick from movement they did not ask for. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+    }
 }
