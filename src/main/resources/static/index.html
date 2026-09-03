@@ -4,115 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RoadGuard - Sign in</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
 
-<div class="auth-wrap">
-    <div class="auth-card">
+<div class="auth-layout">
 
-        <div class="brand">
-            <div class="brand-mark">&#128736;</div>
-            <h1>RoadGuard</h1>
-            <p>Roadside help, dispatched in seconds</p>
+    <!-- ================= brand panel ================= -->
+    <aside class="hero">
+
+        <div class="wordmark">
+            <span class="wordmark-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1A1206" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z"/>
+                </svg>
+            </span>
+            RoadGuard
         </div>
 
-        <ul class="nav nav-pills nav-fill mb-4" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#login-pane" type="button">
-                    Sign in
-                </button>
+        <div>
+            <!-- one SOS going out to every mechanic nearby at the same time -->
+            <div class="beacon" aria-hidden="true">
+                <span class="beacon-ring"></span>
+                <span class="beacon-ring"></span>
+                <span class="beacon-ring"></span>
+                <span class="beacon-dot"></span>
+                <span class="beacon-dot"></span>
+                <span class="beacon-dot"></span>
+                <span class="beacon-dot"></span>
+                <span class="beacon-core">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#1A1206" stroke-width="2.3"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 9v4M12 17h.01"/>
+                        <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+                    </svg>
+                </span>
+            </div>
+
+            <div class="hero-copy">
+                <h2>Broken down? Help is already moving.</h2>
+                <p>One tap reaches every qualified mechanic near you at once.</p>
+            </div>
+        </div>
+
+        <ul class="hero-points">
+            <li>
+                <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.4"
+                    stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></span>
+                Sent to the nearest mechanics all at once
             </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#register-pane" type="button">
-                    Create account
-                </button>
+            <li>
+                <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.4"
+                    stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></span>
+                First to accept wins, and only ever one
+            </li>
+            <li>
+                <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.4"
+                    stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></span>
+                Drops off mid-job? Someone else is sent straight away
             </li>
         </ul>
+    </aside>
 
-        <!-- shown for both forms -->
-        <div id="alert" class="alert d-none" role="alert"></div>
+    <!-- ================= forms ================= -->
+    <main class="auth-main">
+        <div class="auth-card">
 
-        <div class="tab-content">
+            <div class="auth-head">
+                <h1 id="head-title">Welcome back</h1>
+                <p id="head-sub">Sign in to pick up where you left off.</p>
+            </div>
+
+            <div class="seg" data-active="login">
+                <span class="seg-thumb"></span>
+                <button type="button" class="seg-btn is-active" data-pane="login">Sign in</button>
+                <button type="button" class="seg-btn" data-pane="register">Create account</button>
+            </div>
+
+            <div id="notice" class="notice" role="alert"></div>
 
             <!-- ---------- sign in ---------- -->
-            <div class="tab-pane fade show active" id="login-pane">
-                <form id="login-form" novalidate>
-                    <div class="mb-3">
-                        <label class="form-label" for="login-username">Username</label>
-                        <input class="form-control" id="login-username" autocomplete="username" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label" for="login-password">Password</label>
-                        <input class="form-control" id="login-password" type="password"
-                               autocomplete="current-password" required>
-                    </div>
-                    <button class="btn btn-brand w-100" type="submit" id="login-btn">Sign in</button>
-                </form>
-            </div>
+            <form id="login-form" class="pane is-active" novalidate>
+                <div class="field">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" autocomplete="username"
+                           placeholder="your username" required>
+                </div>
+                <div class="field">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" autocomplete="current-password"
+                           placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="login-btn"
+                        style="margin-top:9px">Sign in</button>
+            </form>
 
             <!-- ---------- register ---------- -->
-            <div class="tab-pane fade" id="register-pane">
-                <form id="register-form" novalidate>
+            <form id="register-form" class="pane" novalidate>
 
-                    <div class="mb-3">
-                        <label class="form-label">I am a</label>
-                        <div class="role-picker">
-                            <label class="role-option">
-                                <input type="radio" name="role" value="DRIVER" checked>
-                                <span>Driver</span>
-                            </label>
-                            <label class="role-option">
-                                <input type="radio" name="role" value="MECHANIC">
-                                <span>Mechanic</span>
-                            </label>
-                            <label class="role-option">
-                                <input type="radio" name="role" value="ADMIN">
-                                <span>Admin</span>
-                            </label>
-                        </div>
+                <div class="field">
+                    <label>I am a</label>
+                    <div class="role-grid">
+                        <label class="role-opt">
+                            <input type="radio" name="role" value="DRIVER" checked>
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 17h14M6.5 17V9.6L8 6h8l1.5 3.6V17"/>
+                                    <circle cx="7.5" cy="17" r="1.6"/><circle cx="16.5" cy="17" r="1.6"/>
+                                </svg>
+                                Driver
+                            </span>
+                        </label>
+                        <label class="role-opt">
+                            <input type="radio" name="role" value="MECHANIC">
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 5.5a4 4 0 0 0 5 5L21 9v6a2 2 0 0 1-2 2h-6l-4.6 4.6a2 2 0 0 1-2.8-2.8L10 14"/>
+                                    <path d="M3 3l6 6"/>
+                                </svg>
+                                Mechanic
+                            </span>
+                        </label>
+                        <label class="role-opt">
+                            <input type="radio" name="role" value="ADMIN">
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z"/>
+                                </svg>
+                                Admin
+                            </span>
+                        </label>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="reg-username">Username</label>
-                        <input class="form-control" id="reg-username" minlength="3" required>
-                    </div>
+                <div class="field">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" minlength="3" placeholder="at least 3 characters" required>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="reg-email">Email</label>
-                        <input class="form-control" id="reg-email" type="email" required>
-                    </div>
+                <div class="field">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" placeholder="you@example.com" required>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="reg-password">Password</label>
-                        <input class="form-control" id="reg-password" type="password" minlength="6" required>
-                        <div class="form-text">At least 6 characters.</div>
-                    </div>
+                <div class="field">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" minlength="6" placeholder="••••••••" required>
+                    <div class="hint">At least 6 characters.</div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="reg-phone">Phone <span class="text-muted">(optional)</span></label>
-                        <input class="form-control" id="reg-phone">
-                    </div>
+                <div class="field">
+                    <label for="reg-phone">Phone <span class="optional">(optional)</span></label>
+                    <input type="text" id="reg-phone" placeholder="01700 000000">
+                </div>
 
-                    <!-- only makes sense for a mechanic, so it appears when that
-                         role is picked -->
-                    <div class="mb-4 d-none" id="skills-group">
-                        <label class="form-label">What can you fix?</label>
-                        <div class="skills-box">
-                            <div class="row g-2" id="skills-list"></div>
-                            <div class="form-text mt-2">Leave empty to be listed as a general mechanic.</div>
-                        </div>
-                    </div>
+                <!-- only relevant for mechanics -->
+                <div class="field collapse" id="skills-block">
+                    <label>What can you fix?</label>
+                    <div class="chips" id="chips"></div>
+                    <div class="hint">Pick none and you will be listed as a general mechanic.</div>
+                </div>
 
-                    <button class="btn btn-brand w-100" type="submit" id="register-btn">Create account</button>
-                </form>
-            </div>
+                <button type="submit" class="btn btn-primary" id="register-btn"
+                        style="margin-top:9px">Create account</button>
+            </form>
         </div>
-    </div>
+    </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/api.js"></script>
 <script src="js/auth-page.js"></script>
 </body>
