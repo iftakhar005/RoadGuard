@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
+    <!-- Leaflet: the map library. Both files come from a CDN, no key needed. -->
+    <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body data-role="DRIVER">
@@ -31,26 +33,56 @@
 
 <div class="page">
     <div class="page-head">
-        <h1>Driver</h1>
-        <p>You are signed in. Everything below was fetched from a protected endpoint.</p>
+        <h1>Where are you?</h1>
+        <p>Drag the pin to exactly where your vehicle has broken down.</p>
+    </div>
+
+    <div class="card map-card">
+        <div id="map"></div>
+
+        <div class="map-bar">
+            <div class="coords">
+                <span class="coords-label">Your location</span>
+                <span class="coords-val" id="coords">getting your position…</span>
+            </div>
+            <button class="btn btn-locate" id="locate-btn" type="button" title="Recentre on me">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+                </svg>
+                Recentre
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="soon-row">
+            <div>
+                <h2 style="margin-bottom:4px">Send for help</h2>
+                <p class="soon-note">The SOS button is next - it will broadcast this location to nearby mechanics.</p>
+            </div>
+            <button class="btn btn-sos" disabled title="Coming in the next update">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v4M12 17h.01"/>
+                    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+                </svg>
+                SOS
+            </button>
+        </div>
     </div>
 
     <div class="card">
         <h2>Your session</h2>
         <div class="rows" id="session-rows"></div>
     </div>
-
-    <div class="card">
-        <h2>Coming next</h2>
-        <ul class="next-list">
-            <li><span class="dot"></span>Map with a pin for where you have broken down</li>
-            <li><span class="dot"></span>SOS button - issue type, note, optional photo</li>
-            <li><span class="dot"></span>Live status as a mechanic is found and heads over</li>
-        </ul>
-    </div>
 </div>
 
+<!-- Leaflet script must load before our map code runs. -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/api.js"></script>
 <script src="js/home.js"></script>
+<script src="js/driver-map.js"></script>
 </body>
 </html>
