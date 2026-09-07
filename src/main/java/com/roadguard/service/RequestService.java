@@ -8,6 +8,7 @@ import com.roadguard.repository.ServiceRequestRepository;
 import com.roadguard.repository.UserRepository;
 import com.roadguard.security.AuthUser;
 import com.roadguard.web.dto.CreateSosRequest;
+import com.roadguard.web.dto.MechanicCandidateResponse;
 import com.roadguard.web.dto.ServiceRequestResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ public class RequestService {
 
     private final ServiceRequestRepository requests;
     private final UserRepository users;
+    private final MatchingService matching;
 
     @Value("${app.dispatch.default-radius-km:5}")
     private double defaultRadiusKm;
@@ -64,6 +66,21 @@ public class RequestService {
             throw new AccessDeniedException("This request is not yours");
         }
         return ServiceRequestResponse.from(request);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MechanicCandidateResponse> candidatesFor(AuthUser caller, Long requestId) {
+        ServiceRequest request = requests.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("No request with id " + requestId));
+
+        if (caller.getRole() != Role.ADMIN
+                && !request.getDriver().getId().equals(caller.getId())) {
+            throw new AccessDeniedException("This request is not yours");
+        }
+
+        return matching.findCandidates(request).stream()
+                .map(MechanicCandidateResponse::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)

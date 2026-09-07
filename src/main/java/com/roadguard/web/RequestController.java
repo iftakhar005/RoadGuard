@@ -3,6 +3,7 @@ package com.roadguard.web;
 import com.roadguard.security.AuthUser;
 import com.roadguard.service.RequestService;
 import com.roadguard.web.dto.CreateSosRequest;
+import com.roadguard.web.dto.MechanicCandidateResponse;
 import com.roadguard.web.dto.ServiceRequestResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,12 @@ public class RequestController {
             @AuthenticationPrincipal AuthUser caller,
             @PathVariable Long id) {
         return ResponseEntity.ok(requests.getById(caller, id));
+    }
+
+    @GetMapping("/{id}/candidates")
+    public ResponseEntity<List<MechanicCandidateResponse>> candidates(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(requests.candidatesFor(caller, id));
     }
 }
