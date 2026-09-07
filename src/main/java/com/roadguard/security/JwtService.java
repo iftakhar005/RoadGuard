@@ -15,16 +15,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-// Makes and checks login tokens.
-//
-// A token is a signed string the client sends back on every later request. It
-// carries the username, the user id and the role, so we don't have to hit the
-// database just to find out who is calling. The signature is what stops anyone
-// editing "role":"DRIVER" into "role":"ADMIN" - change one character and the
-// signature no longer matches.
-//
-// Used by the web side and by the TCP gateway, which authenticates its HELLO
-// line with the same token.
 @Service
 public class JwtService {
 
@@ -49,7 +39,6 @@ public class JwtService {
                 .compact();
     }
 
-    // Empty if the token is expired, tampered with, or just nonsense.
     public Optional<Claims> parse(String token) {
         try {
             return Optional.of(Jwts.parser()

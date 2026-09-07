@@ -30,10 +30,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest req) {
-        // Nobody signs themselves up as an admin. Taking the option off the form
-        // is not enough on its own - anyone can post straight to this endpoint -
-        // so the refusal has to live here. Admin accounts are seeded at startup
-        // from config instead (see AdminSeeder).
+
         if (req.role() == Role.ADMIN) {
             throw new IllegalArgumentException("Admin accounts cannot be created here");
         }
@@ -52,13 +49,11 @@ public class AuthService {
         user.setPhone(req.phone());
         users.save(user);
 
-        // A mechanic needs the extra row straight away - skills, location and
-        // availability all live there, and matching reads it.
         if (req.role() == Role.MECHANIC) {
             MechanicProfile profile = new MechanicProfile(user);
             Set<Specialization> skills = req.specializations();
             if (skills == null || skills.isEmpty()) {
-                // Better to have them findable as a generalist than not at all.
+
                 profile.setSpecializations(Set.of(Specialization.GENERAL));
             } else {
                 profile.setSpecializations(skills);
@@ -76,8 +71,7 @@ public class AuthService {
                 .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
 
         if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
-            // Same message either way, so this cannot be used to work out which
-            // usernames exist.
+
             throw new BadCredentialsException("Wrong username or password");
         }
 

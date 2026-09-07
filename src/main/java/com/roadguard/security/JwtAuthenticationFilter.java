@@ -15,12 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Runs before every request. If there's a valid token in the Authorization
-// header, we tell Spring Security who this is; otherwise we just carry on and
-// let the rules decide whether the endpoint needed a login anyway.
-//
-// Note it never rejects anything itself - a bad token means "not logged in",
-// not "error". Deciding what is allowed is the config's job, not this filter's.
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -42,7 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Already authenticated earlier in the chain - leave it alone.
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             chain.doFilter(request, response);
             return;
@@ -57,8 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     } catch (UsernameNotFoundException e) {
-                        // Token is signed correctly but the account is gone.
-                        // Treat it as not logged in.
+
                     }
                 });
 

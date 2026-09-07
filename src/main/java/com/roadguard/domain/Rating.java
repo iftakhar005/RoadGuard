@@ -16,8 +16,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// Driver's score for a finished job. One per request, which is what stops
-// someone rating the same job twice.
 @Entity
 @Table(name = "ratings")
 @Getter
@@ -41,7 +39,6 @@ public class Rating {
     @JoinColumn(name = "mechanic_id", nullable = false)
     private User mechanic;
 
-    // 1 to 5. Checked before this ever gets built.
     @Column(nullable = false)
     private int stars;
 

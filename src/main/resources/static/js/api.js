@@ -1,6 +1,3 @@
-// Everything that talks to the server goes through here, so the token handling
-// lives in one place instead of being repeated on every page.
-
 const TOKEN_KEY = 'roadguard.token';
 const USER_KEY = 'roadguard.user';
 
@@ -28,7 +25,6 @@ const Auth = {
         localStorage.removeItem(USER_KEY);
     },
 
-    // Where each role goes after logging in.
     homePage(role) {
         if (role === 'DRIVER') return 'driver.html';
         if (role === 'MECHANIC') return 'mechanic.html';
@@ -37,8 +33,6 @@ const Auth = {
     }
 };
 
-// Thin wrapper over fetch. Attaches the token, and turns the server's error
-// JSON into a thrown Error so callers can just try/catch.
 async function api(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
 
@@ -67,8 +61,6 @@ async function api(path, options = {}) {
     return body;
 }
 
-// Called at the top of every signed-in page. Bounces you back to the login
-// screen if there is no token, or if the one we have is stale.
 async function requireLogin(expectedRole) {
     if (!Auth.token()) {
         window.location.href = 'index.html';

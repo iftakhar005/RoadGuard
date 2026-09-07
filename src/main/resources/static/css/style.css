@@ -1,11 +1,5 @@
-/* ==========================================================================
-   RoadGuard styles
-   No framework - everything here is ours, so nothing to download at runtime
-   and nothing that looks like a default template.
-   ========================================================================== */
-
 :root {
-    /* Deep navy base, amber for the emergency-beacon accent, blue for actions. */
+
     --navy-900: #070C18;
     --navy-800: #0D1526;
     --navy-700: #16203a;
@@ -57,17 +51,11 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ==========================================================================
-   Login / register - two panels side by side
-   ========================================================================== */
-
 .auth-layout {
     min-height: 100vh;
     display: grid;
     grid-template-columns: 1.05fr 1fr;
 }
-
-/* ---------- left: the dark brand panel ---------- */
 
 .hero {
     position: relative;
@@ -83,7 +71,6 @@ body {
     justify-content: space-between;
 }
 
-/* Faint grid, like a map underneath everything. */
 .hero::before {
     content: "";
     position: absolute;
@@ -125,11 +112,6 @@ body {
     height: 19px;
     display: block;
 }
-
-/* ---------- the beacon ---------- */
-/* Rings spreading out from one point, with mechanics sitting around it.
-   It is the dispatch idea in one picture: one call goes out to everybody
-   nearby at the same moment. */
 
 .beacon {
     position: relative;
@@ -177,7 +159,6 @@ body {
     height: 27px;
 }
 
-/* the mechanics waiting around the driver */
 .beacon-dot {
     position: absolute;
     width: 11px;
@@ -247,18 +228,11 @@ body {
     stroke: #7FE0A6;
 }
 
-/* ---------- right: the form ---------- */
-
-/* White panel, so the filled fields below have something to sit against.
-   Fields on a grey page with a hairline border read as barely there. */
 .auth-main {
     background: var(--surface);
     display: grid;
     justify-items: center;
-    /* "safe" matters here. Plain centring clips a tall form at BOTH ends once
-       it outgrows the screen - the top is cut off and the submit button
-       becomes unreachable. safe centring falls back to top-aligned instead,
-       which the register form needs once the skills list opens. */
+
     align-items: safe center;
     padding: 40px 28px;
 }
@@ -285,7 +259,6 @@ body {
     font-size: 14.5px;
 }
 
-/* segmented switch with a sliding highlight */
 .seg {
     position: relative;
     display: grid;
@@ -331,7 +304,6 @@ body {
     color: var(--ink);
 }
 
-/* panes */
 .pane {
     display: none;
 }
@@ -346,7 +318,6 @@ body {
     to   { opacity: 1; transform: none; }
 }
 
-/* fields */
 .field {
     margin-bottom: 17px;
 }
@@ -370,8 +341,6 @@ body {
     font-weight: 400;
 }
 
-/* Filled by default, white when focused. The fill is what makes an empty
-   field obviously a field. */
 input[type="text"],
 input[type="email"],
 input[type="password"] {
@@ -401,7 +370,6 @@ input:focus {
     box-shadow: 0 0 0 4px var(--blue-soft);
 }
 
-/* buttons */
 .btn {
     width: 100%;
     border: 0;
@@ -464,7 +432,6 @@ input:focus {
     to { transform: rotate(360deg); }
 }
 
-/* role picker */
 .role-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -515,7 +482,6 @@ input:focus {
     box-shadow: 0 0 0 3.5px var(--blue-soft);
 }
 
-/* skill chips - nicer to tap than checkboxes and reads faster */
 .chips {
     display: flex;
     flex-wrap: wrap;
@@ -555,7 +521,6 @@ input:focus {
     animation: fade-up .24s ease;
 }
 
-/* messages */
 .notice {
     display: none;
     padding: 11px 13px;
@@ -581,10 +546,6 @@ input:focus {
     border-color: rgba(46, 158, 91, .22);
     color: #1E6B3D;
 }
-
-/* ==========================================================================
-   Signed-in pages
-   ========================================================================== */
 
 .topbar {
     background: var(--surface);
@@ -727,15 +688,11 @@ input:focus {
     word-break: break-all;
 }
 
-/* ---------- driver map: full-bleed ---------- */
-
-/* On the map page the body itself must not scroll - the map owns the screen. */
 body.map-mode {
     height: 100vh;
     overflow: hidden;
 }
 
-/* Fills everything under the 60px top bar. */
 .map-stage {
     position: relative;
     height: calc(100vh - 60px);
@@ -751,7 +708,6 @@ body.map-mode {
     background: #dfe4ea;
 }
 
-/* Controls float over the map, bottom-left, like a real dispatch app. */
 .map-panel {
     position: absolute;
     z-index: 2;
@@ -832,7 +788,6 @@ body.map-mode {
     height: 16px;
 }
 
-/* driver pin - orange dot with a soft ring, matching the brand */
 .pin-driver span {
     display: block;
     width: 18px;
@@ -844,7 +799,6 @@ body.map-mode {
     box-shadow: 0 0 0 3px var(--amber-soft), 0 3px 8px rgba(0, 0, 0, .3);
 }
 
-/* mechanic pins - smaller green dots */
 .pin-mech span {
     display: block;
     width: 12px;
@@ -855,8 +809,6 @@ body.map-mode {
     border: 2.5px solid #fff;
     box-shadow: 0 0 0 3px rgba(46, 158, 91, .16), 0 2px 5px rgba(0, 0, 0, .25);
 }
-
-/* ---------- SOS row (placeholder button for now) ---------- */
 
 .soon-row {
     display: flex;
@@ -917,16 +869,11 @@ body.map-mode {
     margin-top: 7px;
 }
 
-/* ==========================================================================
-   Smaller screens
-   ========================================================================== */
-
 @media (max-width: 900px) {
     .auth-layout {
         grid-template-columns: 1fr;
     }
 
-    /* The brand panel becomes a compact strip rather than disappearing. */
     .hero {
         padding: 26px 24px 30px;
     }
@@ -946,8 +893,7 @@ body.map-mode {
 
     .auth-main {
         padding: 30px 22px 50px;
-        /* On a phone the panel is stacked above, so centring the form in what
-           is left just pushes it down behind a gap. */
+
         align-items: start;
     }
 }
@@ -965,7 +911,6 @@ body.map-mode {
     }
 }
 
-/* Some people get motion sick from movement they did not ask for. */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

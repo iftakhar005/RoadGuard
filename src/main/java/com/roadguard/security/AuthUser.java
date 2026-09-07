@@ -9,11 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-// What Spring Security hands to a controller as "the logged in user".
-//
-// We keep the database id on here as well as the username, because almost every
-// ownership check needs it - only the assigned mechanic may update a job, only
-// the driver who created a request may cancel it.
 public class AuthUser implements UserDetails {
 
     private final Long id;
@@ -38,8 +33,7 @@ public class AuthUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Spring's hasRole("ADMIN") looks for an authority called ROLE_ADMIN,
-        // so the prefix goes on here.
+
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 

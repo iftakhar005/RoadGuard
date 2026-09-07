@@ -15,10 +15,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// One account, whatever the role. Drivers, mechanics and admins all live here;
-// the mechanic-specific fields are in MechanicProfile instead of cluttering this.
-//
-// Note the table is "users" - "user" is a reserved word in both H2 and MySQL.
 @Entity
 @Table(name = "users")
 @Getter
@@ -36,7 +32,6 @@ public class User {
     @Column(nullable = false, unique = true, length = 120)
     private String email;
 
-    // BCrypt hash. Never the plain password.
     @Column(nullable = false)
     private String passwordHash;
 

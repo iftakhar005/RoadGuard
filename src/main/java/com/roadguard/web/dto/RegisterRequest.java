@@ -9,11 +9,6 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-// What the sign-up form sends. A record because it is only carrying values in -
-// no behaviour, no identity, nothing to store.
-//
-// The annotations are checked before the controller method even runs, so bad
-// input never reaches our code.
 public record RegisterRequest(
 
         @NotBlank @Size(min = 3, max = 50)
@@ -31,7 +26,6 @@ public record RegisterRequest(
         @Size(max = 30)
         String phone,
 
-        // Only meaningful when role is MECHANIC. Ignored otherwise.
         Set<Specialization> specializations
 ) {
 }

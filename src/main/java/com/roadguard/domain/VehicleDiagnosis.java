@@ -19,9 +19,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// What came back from the AI photo check. Stored rather than just used and
-// thrown away, so we can show the driver what it said and check afterwards
-// whether it was any good.
 @Entity
 @Table(name = "vehicle_diagnoses")
 @Getter
@@ -37,11 +34,9 @@ public class VehicleDiagnosis {
     @JoinColumn(name = "request_id", unique = true, nullable = false)
     private ServiceRequest request;
 
-    // Where the uploaded photo landed on disk.
     @Column(length = 255)
     private String imagePath;
 
-    // Short label the model gave us, e.g. "shredded rear tyre".
     @Column(length = 120)
     private String faultCategory;
 
@@ -55,15 +50,12 @@ public class VehicleDiagnosis {
 
     private double confidence;
 
-    // Safety tip shown to the driver while they wait.
     @Column(length = 500)
     private String driverGuidance;
 
-    // Parts the model thinks might be needed, kept as a JSON array string.
     @Column(length = 500)
     private String likelyParts;
 
-    // True when the AI call failed and we filled this in with safe defaults.
     @Column(nullable = false)
     private boolean fallback = false;
 

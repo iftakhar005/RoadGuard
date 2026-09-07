@@ -34,7 +34,6 @@ public class AuthController {
         return ResponseEntity.ok(auth.login(req));
     }
 
-    // Lets the frontend check on load whether the token it saved is still good.
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> me(@AuthenticationPrincipal AuthUser user) {
         return ResponseEntity.ok(Map.of(

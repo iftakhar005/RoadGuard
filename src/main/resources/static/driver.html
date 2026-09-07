@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
-    <!-- Leaflet: the map library. Both files come from a CDN, no key needed. -->
+
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 </head>
@@ -31,11 +31,9 @@
     </div>
 </header>
 
-<!-- Full-bleed map fills everything under the top bar; the controls float on top. -->
 <main class="map-stage">
     <div id="map"></div>
 
-    <!-- floating panel, bottom-left -->
     <div class="map-panel">
         <h1>Where are you?</h1>
         <p class="map-panel-sub">Drag the pin to exactly where your vehicle has broken down.</p>
@@ -68,7 +66,6 @@
     </div>
 </main>
 
-<!-- Leaflet script must load before our map code runs. -->
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/api.js"></script>
 <script src="js/home.js"></script>
