@@ -43,6 +43,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/mechanic/**").hasRole("MECHANIC")
                         .anyRequest().authenticated())
 
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
