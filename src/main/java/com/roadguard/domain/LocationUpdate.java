@@ -15,11 +15,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-// One point on a mechanic's trail. These are what the driver's map animates,
-// and what the replay screen plays back after a job is finished.
-//
-// Not every ping gets stored - that would fill the table fast. Live positions
-// are kept in memory and only sampled to here.
 @Entity
 @Table(name = "location_updates")
 @Getter
@@ -31,7 +26,6 @@ public class LocationUpdate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Null for pings sent while the mechanic isn't on a job.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
     private ServiceRequest request;

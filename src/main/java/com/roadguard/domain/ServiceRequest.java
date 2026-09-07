@@ -26,8 +26,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-// One SOS from a driver. This is the row every mechanic races to accept,
-// so it's the one that needs the most care around concurrent updates.
 @Entity
 @Table(name = "service_requests")
 @Getter
@@ -60,7 +58,6 @@ public class ServiceRequest {
     @Column(nullable = false, length = 20)
     private RequestStatus status = RequestStatus.CREATED;
 
-    // Set by the AI photo check, or worked out from issueType if there's no photo.
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Specialization requiredSpecialization;
@@ -69,26 +66,19 @@ public class ServiceRequest {
     @Column(length = 20)
     private Severity severity = Severity.MEDIUM;
 
-    // Null until somebody wins the race. Only ever set from null - that guard
-    // is a second line of defence behind the lock.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_mechanic_id")
     private User assignedMechanic;
 
-    // Identifies the current round of offers. A mechanic accepting with an old
-    // token gets rejected, which stops a stale offer card from winning after
-    // the request has already been re-dispatched.
     @Column(length = 64)
     private String currentOfferToken;
 
-    // Who this round went out to. Anyone not in here can't accept it.
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "request_offered_to",
             joinColumns = @JoinColumn(name = "request_id"))
     @Column(name = "mechanic_id")
     private Set<Long> offeredTo = new HashSet<>();
 
-    // Grows each time a round times out with nobody accepting.
     private double searchRadiusKm;
     private int searchAttempts = 0;
 
@@ -98,8 +88,6 @@ public class ServiceRequest {
     private Instant acceptedAt;
     private Instant completedAt;
 
-    // Optimistic lock. The in-process lock handles the normal case; this one
-    // catches anything that slips past it.
     @Version
     private int version;
 
@@ -112,7 +100,6 @@ public class ServiceRequest {
         this.requiredSpecialization = issueType.defaultSpecialization();
     }
 
-    // Start a fresh round of offers and hand back the new token.
     public String startNewOfferRound(Set<Long> mechanicIds) {
         this.currentOfferToken = java.util.UUID.randomUUID().toString();
         this.offeredTo = new HashSet<>(mechanicIds);

@@ -20,16 +20,6 @@ public interface MechanicProfileRepository extends JpaRepository<MechanicProfile
 
     List<MechanicProfile> findByStatus(AvailabilityStatus status);
 
-    // The first half of matching.
-    //
-    // The exact distance needs the haversine formula, which is not something SQL
-    // can do here, so that part happens in Java. But pulling every online
-    // mechanic in the country back just to throw most away would be wasteful, so
-    // this narrows to a rough box around the request first. Java then does the
-    // real distance check and the ranking on whatever survives.
-    //
-    // A GENERAL mechanic is allowed through as a fallback even when a specialist
-    // was asked for - better a generalist turns up than nobody.
     @Query("""
             SELECT m FROM MechanicProfile m
             WHERE m.status = :status
@@ -47,8 +37,6 @@ public interface MechanicProfileRepository extends JpaRepository<MechanicProfile
                                               @Param("minLng") double minLng,
                                               @Param("maxLng") double maxLng);
 
-    // What the heartbeat reaper runs on its timer: anyone who is supposed to be
-    // connected but has gone quiet for longer than the timeout.
     List<MechanicProfile> findByStatusInAndLastHeartbeatBefore(Collection<AvailabilityStatus> statuses,
                                                                Instant cutoff);
 

@@ -9,7 +9,5 @@ public interface VehicleDiagnosisRepository extends JpaRepository<VehicleDiagnos
 
     Optional<VehicleDiagnosis> findByRequestId(Long requestId);
 
-    // How often the AI call failed and we fell back to safe defaults - worth
-    // knowing before relying on it in the demo.
     long countByFallbackTrue();
 }

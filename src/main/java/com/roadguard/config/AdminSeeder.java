@@ -11,11 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-// Since nobody can register as an admin, the first one has to come from
-// somewhere - this creates it at startup if it is not already there.
-//
-// The credentials come from application-local.properties, which is git-ignored,
-// so no admin password ends up on GitHub.
 @Configuration
 @RequiredArgsConstructor
 @Slf4j

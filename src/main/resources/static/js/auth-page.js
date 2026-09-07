@@ -1,5 +1,3 @@
-// Drives the sign-in / register screen.
-
 const SPECIALIZATIONS = [
     'TIRE', 'BATTERY', 'ENGINE', 'ELECTRICAL',
     'BRAKES', 'FUEL', 'TOWING', 'GENERAL'
@@ -22,7 +20,6 @@ function clearNotice() {
     notice.textContent = '';
 }
 
-// Stops a double click firing two requests.
 function busy(button, isBusy, idleText) {
     button.disabled = isBusy;
     button.innerHTML = isBusy
@@ -30,18 +27,16 @@ function busy(button, isBusy, idleText) {
         : idleText;
 }
 
-// ---------- already signed in? ----------
 (async function skipIfAlreadyIn() {
     if (!Auth.token()) return;
     try {
         const me = await api('/api/auth/me');
         window.location.href = Auth.homePage(me.role);
     } catch {
-        Auth.clear();   // token had expired
+        Auth.clear();
     }
 })();
 
-// ---------- the sign in / register switch ----------
 const seg = document.querySelector('.seg');
 const headTitle = document.getElementById('head-title');
 const headSub = document.getElementById('head-sub');
@@ -70,7 +65,6 @@ document.querySelectorAll('.seg-btn').forEach(btn => {
     });
 });
 
-// ---------- skill chips ----------
 const chips = document.getElementById('chips');
 SPECIALIZATIONS.forEach(skill => {
     const chip = document.createElement('button');
@@ -78,7 +72,7 @@ SPECIALIZATIONS.forEach(skill => {
     chip.className = 'chip';
     chip.dataset.skill = skill;
     chip.setAttribute('aria-pressed', 'false');
-    // TIRE -> Tire, reads better than shouting
+
     chip.textContent = skill.charAt(0) + skill.slice(1).toLowerCase();
     chip.addEventListener('click', () => {
         const on = chip.classList.toggle('is-on');
@@ -87,7 +81,6 @@ SPECIALIZATIONS.forEach(skill => {
     chips.appendChild(chip);
 });
 
-// Skills only make sense for a mechanic.
 const skillsBlock = document.getElementById('skills-block');
 document.querySelectorAll('input[name="role"]').forEach(radio => {
     radio.addEventListener('change', () => {
@@ -95,7 +88,6 @@ document.querySelectorAll('input[name="role"]').forEach(radio => {
     });
 });
 
-// ---------- sign in ----------
 const loginForm = document.getElementById('login-form');
 const loginBtn = document.getElementById('login-btn');
 
@@ -125,7 +117,6 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-// ---------- register ----------
 const registerForm = document.getElementById('register-form');
 const registerBtn = document.getElementById('register-btn');
 

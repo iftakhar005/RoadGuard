@@ -1,6 +1,5 @@
 package com.roadguard.domain.enums;
 
-// What the driver picks from the dropdown on the SOS form.
 public enum IssueType {
 
     FLAT_TIRE,
@@ -14,8 +13,6 @@ public enum IssueType {
     TOWING,
     OTHER;
 
-    // Which mechanic skill to look for when we have no AI diagnosis -
-    // either the driver skipped the photo or the AI call failed.
     public Specialization defaultSpecialization() {
         return switch (this) {
             case FLAT_TIRE -> Specialization.TIRE;

@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface RatingRepository extends JpaRepository<Rating, Long> {
 
-    // One rating per request, so this doubles as the "already rated?" check.
     Optional<Rating> findByRequestId(Long requestId);
 
     boolean existsByRequestId(Long requestId);

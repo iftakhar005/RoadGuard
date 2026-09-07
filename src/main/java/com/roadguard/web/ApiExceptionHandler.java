@@ -11,12 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Turns exceptions into tidy JSON instead of a stack trace or a blank 500.
-// Without this the frontend has nothing useful to show the user.
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    // Something the caller got wrong - duplicate username, illegal state change.
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> badRequest(IllegalArgumentException e) {
         return body(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -37,8 +34,6 @@ public class ApiExceptionHandler {
         return body(HttpStatus.FORBIDDEN, "You are not allowed to do that");
     }
 
-    // Raised when the @NotBlank / @Email style checks on a DTO fail. We report
-    // the first problem rather than a wall of them.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> invalid(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()

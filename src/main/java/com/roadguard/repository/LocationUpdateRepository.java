@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface LocationUpdateRepository extends JpaRepository<LocationUpdate, Long> {
 
-    // The trail for one job, oldest first - this is what the replay screen animates.
     List<LocationUpdate> findByRequestIdOrderByRecordedAtAsc(Long requestId);
 
     List<LocationUpdate> findByMechanicIdAndRecordedAtAfterOrderByRecordedAtAsc(Long mechanicId,
