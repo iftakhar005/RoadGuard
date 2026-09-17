@@ -14,12 +14,34 @@
 <header class="topbar">
     <div class="wordmark">
         <span class="wordmark-badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#1A1206" stroke-width="2.2"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z"/>
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="rg-logo-svg">
+                <defs>
+                    <linearGradient id="rgShieldMech" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#FFBE1A"/>
+                        <stop offset="55%" stop-color="#FF8A00"/>
+                        <stop offset="100%" stop-color="#E65100"/>
+                    </linearGradient>
+                    <linearGradient id="rgRoadMech" x1="16" y1="7" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#080E1C"/>
+                        <stop offset="100%" stop-color="#141E36"/>
+                    </linearGradient>
+                    <linearGradient id="rgBevelMech" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#FFF3B0" stop-opacity="0.85"/>
+                        <stop offset="100%" stop-color="#FF9900" stop-opacity="0.1"/>
+                    </linearGradient>
+                </defs>
+                <path d="M16 2.2L27.5 6.4C27.5 16.5 22.6 25.4 16 30C9.4 25.4 4.5 16.5 4.5 6.4L16 2.2Z" fill="url(#rgShieldMech)"/>
+                <path d="M16 2.2L27.5 6.4C27.5 16.5 22.6 25.4 16 30C9.4 25.4 4.5 16.5 4.5 6.4L16 2.2Z" stroke="url(#rgBevelMech)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 5.8L24.2 8.8C24.2 16.2 20.6 23.2 16 26.8C11.4 23.2 7.8 16.2 7.8 8.8L16 5.8Z" fill="url(#rgRoadMech)"/>
+                <polygon points="12,25.2 14.8,13.2 15.8,13.2 13.8,25.8" fill="rgba(255,255,255,0.22)"/>
+                <polygon points="20,25.2 17.2,13.2 16.2,13.2 18.2,25.8" fill="rgba(255,255,255,0.22)"/>
+                <line x1="16" y1="24.5" x2="16" y2="20" stroke="#FFC107" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="16" y1="17.5" x2="16" y2="14.5" stroke="#FFC107" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M16 7.5L16.9 10.1L19.5 11L16.9 11.9L16 14.5L15.1 11.9L12.5 11L15.1 10.1Z" fill="#FFFFFF"/>
+                <circle cx="16" cy="11" r="1.1" fill="#FFB800"/>
             </svg>
         </span>
-        RoadGuard
+        <span class="wordmark-title">Road<span class="brand-guard">Guard</span></span>
     </div>
     <div class="topbar-right">
         <span class="avatar" id="avatar">·</span>
