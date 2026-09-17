@@ -2,9 +2,12 @@ package com.roadguard.web;
 
 import com.roadguard.security.AuthUser;
 import com.roadguard.service.AuthService;
+import com.roadguard.service.PasswordResetService;
 import com.roadguard.web.dto.AuthResponse;
+import com.roadguard.web.dto.ForgotPasswordRequest;
 import com.roadguard.web.dto.LoginRequest;
 import com.roadguard.web.dto.RegisterRequest;
+import com.roadguard.web.dto.ResetPasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService auth;
+    private final PasswordResetService passwordReset;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
@@ -32,6 +36,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
         return ResponseEntity.ok(auth.login(req));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        return ResponseEntity.ok(passwordReset.initiateReset(req));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        return ResponseEntity.ok(passwordReset.completeReset(req));
     }
 
     @GetMapping("/me")
