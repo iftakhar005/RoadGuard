@@ -57,7 +57,6 @@ public class PasswordResetService {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "A 6-digit verification code has been sent to your email.");
         response.put("email", email);
-        response.put("codeHint", code); // Included for immediate testing and presentation
         return response;
     }
 
