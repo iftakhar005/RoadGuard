@@ -67,12 +67,13 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest req) {
-        User user = users.findByUsername(req.username())
-                .orElseThrow(() -> new BadCredentialsException("Wrong username or password"));
+        String identifier = req.email().trim();
+        User user = users.findByEmailIgnoreCase(identifier)
+                .or(() -> users.findByUsernameIgnoreCase(identifier))
+                .orElseThrow(() -> new BadCredentialsException("Wrong email or password"));
 
         if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
-
-            throw new BadCredentialsException("Wrong username or password");
+            throw new BadCredentialsException("Wrong email or password");
         }
 
         return tokenFor(user);
