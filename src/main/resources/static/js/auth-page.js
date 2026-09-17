@@ -334,12 +334,10 @@ let currentRecoveryEmail = '';
 function showForgotStep(step) {
     const step1 = document.getElementById('forgot-step1-form');
     const step2 = document.getElementById('forgot-step2-form');
-    const demoBanner = document.getElementById('demo-code-banner');
 
     if (step === 1) {
         step1.style.display = 'block';
         step2.style.display = 'none';
-        demoBanner.style.display = 'none';
     } else {
         step1.style.display = 'none';
         step2.style.display = 'block';
@@ -385,12 +383,6 @@ forgotStep1Form.addEventListener('submit', async (e) => {
         currentRecoveryEmail = email;
         showForgotStep(2);
         showOk(res.message || 'Verification code sent to your email.');
-
-        const demoBanner = document.getElementById('demo-code-banner');
-        if (res.codeHint) {
-            demoBanner.style.display = 'block';
-            demoBanner.innerHTML = `<strong>Demo Helper:</strong> 6-digit recovery code is <strong style="letter-spacing:1px">${res.codeHint}</strong> (also logged to server console).`;
-        }
     } catch (err) {
         showError(err.message);
     } finally {
@@ -408,12 +400,6 @@ document.getElementById('resend-code-btn').addEventListener('click', async () =>
             body: JSON.stringify({ email: currentRecoveryEmail })
         });
         showOk('A new verification code has been dispatched.');
-
-        const demoBanner = document.getElementById('demo-code-banner');
-        if (res.codeHint) {
-            demoBanner.style.display = 'block';
-            demoBanner.innerHTML = `<strong>Demo Helper:</strong> New recovery code is <strong style="letter-spacing:1px">${res.codeHint}</strong> (also logged to server console).`;
-        }
     } catch (err) {
         showError(err.message);
     }
