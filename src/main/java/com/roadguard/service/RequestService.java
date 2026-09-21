@@ -6,6 +6,8 @@ import com.roadguard.domain.enums.RequestStatus;
 import com.roadguard.domain.enums.Role;
 import com.roadguard.domain.enums.Severity;
 import com.roadguard.domain.enums.AcceptOutcome;
+import com.roadguard.domain.MechanicProfile;
+import com.roadguard.repository.MechanicProfileRepository;
 import com.roadguard.repository.RequestOfferRepository;
 import com.roadguard.repository.ServiceRequestRepository;
 import com.roadguard.repository.UserRepository;
@@ -40,6 +42,7 @@ public class RequestService {
     private final DispatchService dispatch;
     private final AssignmentService assignment;
     private final RequestOfferRepository offerRows;
+    private final MechanicProfileRepository mechanics;
 
     @Value("${app.dispatch.default-radius-km:5}")
     private double defaultRadiusKm;
@@ -91,7 +94,14 @@ public class RequestService {
         if (!canView(caller, request)) {
             throw new AccessDeniedException("This request is not yours");
         }
-        return ServiceRequestResponse.from(request);
+        return ServiceRequestResponse.from(request, assignedProfile(request));
+    }
+
+    private MechanicProfile assignedProfile(ServiceRequest request) {
+        if (request.getAssignedMechanic() == null) {
+            return null;
+        }
+        return mechanics.findByUserId(request.getAssignedMechanic().getId()).orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -164,7 +174,7 @@ public class RequestService {
     public List<ServiceRequestResponse> myRequests(AuthUser caller) {
         return requests.findByDriverIdOrderByCreatedAtDesc(caller.getId())
                 .stream()
-                .map(ServiceRequestResponse::from)
+                .map(r -> ServiceRequestResponse.from(r, assignedProfile(r)))
                 .toList();
     }
 

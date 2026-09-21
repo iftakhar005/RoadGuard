@@ -871,6 +871,50 @@
     box-shadow: 0 0 0 3px var(--blue-soft);
 }
 
+#job-map {
+    height: 280px;
+    width: 100%;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    background: #dfe4ea;
+    z-index: 1;
+}
+
+.route-summary {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 13.5px;
+    color: var(--ink);
+}
+
+.job-route {
+    filter: drop-shadow(0 1px 3px rgba(47, 107, 255, .45));
+}
+
+.pin-helper span {
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #6FD79A, var(--green) 60%, #1F7A45);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 4px rgba(46, 158, 91, .22), 0 3px 10px rgba(16, 24, 40, .4);
+    animation: helper-bob 1.8s ease-in-out infinite;
+}
+
+@keyframes helper-bob {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.14);
+    }
+}
+
+.assigned #helper-eta {
+    font-variant-numeric: tabular-nums;
+}
+
 #mech-map {
     height: 240px;
     width: 100%;

@@ -154,6 +154,7 @@ function renderJob() {
     if (!job) {
         wrap.innerHTML = '';
         wrap.style.display = 'none';
+        if (typeof JobMap !== 'undefined') JobMap.hide();
         return;
     }
     wrap.style.display = '';
@@ -197,11 +198,19 @@ function renderJob() {
         <div class="job-actions" style="margin-top:16px">
             ${next ? `<button class="btn ${isLast ? 'btn-done' : 'btn-step'}"
                         data-act="step" data-status="${next.key}">${next.label}</button>` : ''}
-            <a class="btn btn-decline" style="text-decoration:none"
-               href="https://www.openstreetmap.org/?mlat=${job.originLat}&mlon=${job.originLng}#map=16/${job.originLat}/${job.originLng}"
-               target="_blank" rel="noopener">Open in map</a>
+            <button class="btn btn-decline" data-act="refit">Recentre the route</button>
         </div>
     </section>`;
+
+    if (typeof JobMap !== 'undefined') {
+        const me = state.lastPosition
+            || (state.profile && state.profile.currentLat != null
+                ? { lat: state.profile.currentLat, lng: state.profile.currentLng }
+                : null);
+        if (me) {
+            JobMap.show(job, me);
+        }
+    }
 }
 
 function escapeHtml(s) {
@@ -329,6 +338,8 @@ document.addEventListener('click', (e) => {
         onDecline(btn.dataset.request, btn.dataset.token, btn.closest('.offer'));
     } else if (act === 'step') {
         onStep(btn.dataset.status, btn);
+    } else if (act === 'refit') {
+        JobMap.refit();
     }
 });
 
