@@ -126,6 +126,41 @@ public class AssignmentService {
         offers.saveAll(round);
     }
 
+    public boolean releaseFromMechanic(Long requestId, Long mechanicUserId) {
+        ReentrantLock lock = locks.computeIfAbsent(requestId, id -> new ReentrantLock(true));
+        lock.lock();
+        try {
+            Boolean released = tx.execute(status -> {
+                ServiceRequest request = requests.findById(requestId).orElse(null);
+                if (request == null) {
+                    return false;
+                }
+                User assigned = request.getAssignedMechanic();
+                if (assigned == null || !assigned.getId().equals(mechanicUserId)) {
+                    return false;
+                }
+                if (!request.getStatus().isAssignedToMechanic()) {
+                    return false;
+                }
+                if (!request.getStatus().canTransitionTo(RequestStatus.REASSIGNING)) {
+                    return false;
+                }
+
+                request.setAssignedMechanic(null);
+                request.setStatus(RequestStatus.REASSIGNING);
+                request.setCurrentOfferToken(null);
+                request.getOfferedTo().clear();
+                requests.save(request);
+                return true;
+            });
+            return Boolean.TRUE.equals(released);
+        } catch (OptimisticLockingFailureException e) {
+            return false;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public AcceptOutcome decline(Long requestId, Long mechanicUserId, String offerToken) {
         return tx.execute(status -> {
             ServiceRequest request = requests.findById(requestId).orElse(null);
