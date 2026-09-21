@@ -56,27 +56,11 @@ function esc(s) {
 function showForm() {
     sosEl('sos-panel').innerHTML = `
         <h1>Need help?</h1>
-        <p class="map-panel-sub">Set where you are, then tell us what is wrong.</p>
+        <p class="map-panel-sub">Drag the pin to where you are, then tell us what is wrong.</p>
 
         <div class="coords">
             <span class="coords-label">Your location</span>
             <span class="coords-val" id="coords">getting your position…</span>
-        </div>
-
-        <div class="loc-bar" style="margin-top:12px">
-            <div class="loc-search">
-                <div class="loc-search-row">
-                    <input type="text" id="place-search" autocomplete="off"
-                           placeholder="Search a place, e.g. Banani, Dhaka">
-                    <button type="button" class="btn btn-locate" id="place-search-btn">Search</button>
-                </div>
-                <div class="place-results" id="place-results" hidden></div>
-            </div>
-            <div class="loc-manual">
-                <input type="text" id="loc-lat" inputmode="decimal" placeholder="Latitude">
-                <input type="text" id="loc-lng" inputmode="decimal" placeholder="Longitude">
-                <button type="button" class="btn btn-locate" id="loc-apply">Move pin</button>
-            </div>
         </div>
 
         <div class="field" style="margin-top:14px">
