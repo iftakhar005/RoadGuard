@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/console.css" rel="stylesheet">
 </head>
 <body data-role="MECHANIC">
@@ -106,6 +107,16 @@
             </label>
         </section>
 
+        <section class="card map-card">
+            <p class="section-label" style="margin-bottom:12px">
+                Where you are
+                <span style="margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none"
+                      class="coords-val" id="mech-coords">--</span>
+            </p>
+            <div id="mech-map"></div>
+            <p class="map-hint">Drag the pin to set where you are working from. Jobs are offered by distance.</p>
+        </section>
+
         <div id="job-wrap" style="display:none"></div>
 
         <div>
@@ -121,7 +132,11 @@
 
 <div class="toast-stack" id="toasts"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="js/api.js"></script>
+<script src="js/live.js"></script>
 <script src="js/home.js"></script>
 <script src="js/mechanic-console.js"></script>
 </body>

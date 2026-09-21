@@ -1,4 +1,4 @@
-const POLL_MS = 2000;
+const POLL_MS = 15000;
 const HEARTBEAT_MS = 5000;
 
 const STEPS = [
@@ -334,8 +334,55 @@ document.addEventListener('click', (e) => {
 
 el('duty-toggle').addEventListener('change', (e) => setDuty(e.target.checked));
 
+function setupMap() {
+    if (typeof L === 'undefined') return;
+
+    const start = (state.profile && state.profile.currentLat != null)
+        ? [state.profile.currentLat, state.profile.currentLng]
+        : [23.8103, 90.4125];
+
+    const map = L.map('mech-map', { zoomControl: true }).setView(start, 14);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const pin = L.marker(start, {
+        draggable: true,
+        icon: L.divIcon({ className: 'pin-mech-self', html: '<span></span>', iconSize: [26, 26], iconAnchor: [13, 13] })
+    }).addTo(map).bindTooltip('Drag to set where you are', { direction: 'top', offset: [0, -14] });
+
+    state.lastPosition = { lat: start[0], lng: start[1] };
+    el('mech-coords').textContent = `${start[0].toFixed(5)}, ${start[1].toFixed(5)}`;
+
+    pin.on('dragend', async () => {
+        const p = pin.getLatLng();
+        state.lastPosition = { lat: p.lat, lng: p.lng };
+        el('mech-coords').textContent = `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
+        if (state.profile && state.profile.status !== 'OFFLINE') {
+            try {
+                await api('/api/mechanic/location', {
+                    method: 'POST',
+                    body: JSON.stringify({ lat: p.lat, lng: p.lng })
+                });
+                toast('Location updated', '');
+            } catch (e) {
+                toast(e.message, 'bad');
+            }
+        }
+    });
+
+    state.map = map;
+    state.pin = pin;
+    setTimeout(() => map.invalidateSize(), 200);
+}
+
 (async function boot() {
     await refresh();
+    setupMap();
+
+    Live.onMessage(() => refresh());
+    Live.connect();
 
     setInterval(refresh, POLL_MS);
 
