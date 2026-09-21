@@ -1,4 +1,4 @@
-const SOS_POLL_MS = 2000;
+const SOS_POLL_MS = 15000;
 
 const ISSUES = [
     ['FLAT_TIRE', 'Flat tyre'],
@@ -156,6 +156,7 @@ async function sendSos() {
             })
         });
         activeRequest = created;
+        goLive(created.id);
         sosToast('Help is on the way, looking for a mechanic', 'win');
         showStatus(created);
         startPolling();
@@ -223,12 +224,19 @@ document.addEventListener('click', (e) => {
     }
 });
 
+function goLive(requestId) {
+    Live.subscribeTopic('/topic/request/' + requestId);
+}
+
 (async function bootSos() {
+    Live.onMessage(() => poll());
+    Live.connect();
     try {
         const mine = await api('/api/requests/mine');
         const live = (mine || []).find((r) => LIVE.includes(r.status));
         if (live) {
             activeRequest = live;
+            goLive(live.id);
             showStatus(live);
             startPolling();
             return;

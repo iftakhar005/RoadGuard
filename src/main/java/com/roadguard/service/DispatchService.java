@@ -35,6 +35,7 @@ public class DispatchService {
     private final UserRepository users;
     private final MatchingService matching;
     private final AssignmentService assignment;
+    private final RealtimeNotifier realtime;
     private final TransactionTemplate tx;
 
     private final BlockingQueue<DispatchTask> queue = new PriorityBlockingQueue<>();
@@ -55,12 +56,14 @@ public class DispatchService {
                            UserRepository users,
                            MatchingService matching,
                            AssignmentService assignment,
+                           RealtimeNotifier realtime,
                            TransactionTemplate tx) {
         this.requests = requests;
         this.offers = offers;
         this.users = users;
         this.matching = matching;
         this.assignment = assignment;
+        this.realtime = realtime;
         this.tx = tx;
     }
 
@@ -161,6 +164,7 @@ public class DispatchService {
 
         if (result != null && result.sent()) {
             broadcasts.incrementAndGet();
+            realtime.offersSent(requestId, result.offeredTo());
             log.info("Request {} offered to {} mechanics", requestId, result.offeredTo().size());
         }
         return result;

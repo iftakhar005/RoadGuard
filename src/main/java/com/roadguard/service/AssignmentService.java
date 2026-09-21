@@ -31,6 +31,7 @@ public class AssignmentService {
     private final RequestOfferRepository offers;
     private final UserRepository users;
     private final TransactionTemplate tx;
+    private final RealtimeNotifier realtime;
 
     private static final Set<RequestStatus> HANDLED_BY_MECHANIC = EnumSet.of(
             RequestStatus.EN_ROUTE,
@@ -46,12 +47,14 @@ public class AssignmentService {
                              MechanicProfileRepository mechanics,
                              RequestOfferRepository offers,
                              UserRepository users,
-                             TransactionTemplate tx) {
+                             TransactionTemplate tx,
+                             RealtimeNotifier realtime) {
         this.requests = requests;
         this.mechanics = mechanics;
         this.offers = offers;
         this.users = users;
         this.tx = tx;
+        this.realtime = realtime;
     }
 
     public AcceptOutcome accept(Long requestId, Long mechanicUserId, String offerToken) {
@@ -62,10 +65,19 @@ public class AssignmentService {
         ReentrantLock lock = locks.computeIfAbsent(requestId, id -> new ReentrantLock(true));
         lock.lock();
         try {
-            return runAccept(requestId, mechanicUserId, offerToken);
+            AcceptOutcome outcome = runAccept(requestId, mechanicUserId, offerToken);
+            if (outcome == AcceptOutcome.ACCEPTED) {
+                pushRequest(requestId);
+                realtime.mechanicChanged(mechanicUserId);
+            }
+            return outcome;
         } finally {
             lock.unlock();
         }
+    }
+
+    private void pushRequest(Long requestId) {
+        requests.findById(requestId).ifPresent(realtime::requestChanged);
     }
 
     private AcceptOutcome runAccept(Long requestId, Long mechanicUserId, String offerToken) {
@@ -138,6 +150,15 @@ public class AssignmentService {
         if (!HANDLED_BY_MECHANIC.contains(target)) {
             return StatusChange.NOT_ALLOWED;
         }
+        StatusChange change = doAdvance(requestId, mechanicUserId, target);
+        if (change == StatusChange.OK) {
+            pushRequest(requestId);
+            realtime.mechanicChanged(mechanicUserId);
+        }
+        return change;
+    }
+
+    private StatusChange doAdvance(Long requestId, Long mechanicUserId, RequestStatus target) {
         return withLock(requestId, () -> tx.execute(status -> {
             ServiceRequest request = requests.findById(requestId).orElse(null);
             if (request == null) {
@@ -165,6 +186,14 @@ public class AssignmentService {
     }
 
     public StatusChange cancel(Long requestId, Long driverUserId) {
+        StatusChange change = doCancel(requestId, driverUserId);
+        if (change == StatusChange.OK) {
+            pushRequest(requestId);
+        }
+        return change;
+    }
+
+    private StatusChange doCancel(Long requestId, Long driverUserId) {
         return withLock(requestId, () -> tx.execute(status -> {
             ServiceRequest request = requests.findById(requestId).orElse(null);
             if (request == null) {
@@ -285,6 +314,10 @@ public class AssignmentService {
                 requests.save(request);
                 return true;
             });
+            if (Boolean.TRUE.equals(released)) {
+                pushRequest(requestId);
+                realtime.mechanicChanged(mechanicUserId);
+            }
             return Boolean.TRUE.equals(released);
         } catch (OptimisticLockingFailureException e) {
             return false;
