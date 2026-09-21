@@ -1,5 +1,6 @@
 package com.roadguard.web.dto;
 
+import com.roadguard.domain.MechanicProfile;
 import com.roadguard.domain.ServiceRequest;
 import com.roadguard.domain.enums.IssueType;
 import com.roadguard.domain.enums.RequestStatus;
@@ -20,11 +21,22 @@ public record ServiceRequestResponse(
         double searchRadiusKm,
         Long assignedMechanicId,
         String assignedMechanicName,
+        Double mechanicLat,
+        Double mechanicLng,
         Instant createdAt,
         Instant acceptedAt,
         Instant completedAt
 ) {
     public static ServiceRequestResponse from(ServiceRequest req) {
+        return from(req, null);
+    }
+
+    public static ServiceRequestResponse from(ServiceRequest req, MechanicProfile mechanic) {
+
+        boolean share = mechanic != null
+                && req.getStatus().isAssignedToMechanic()
+                && mechanic.hasLocation();
+
         return new ServiceRequestResponse(
                 req.getId(),
                 req.getStatus(),
@@ -37,6 +49,8 @@ public record ServiceRequestResponse(
                 req.getSearchRadiusKm(),
                 req.getAssignedMechanic() == null ? null : req.getAssignedMechanic().getId(),
                 req.getAssignedMechanic() == null ? null : req.getAssignedMechanic().getUsername(),
+                share ? mechanic.getCurrentLat() : null,
+                share ? mechanic.getCurrentLng() : null,
                 req.getCreatedAt(),
                 req.getAcceptedAt(),
                 req.getCompletedAt());

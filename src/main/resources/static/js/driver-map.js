@@ -125,8 +125,95 @@ async function loadShops() {
     }
 }
 
+const helperLayer = L.layerGroup().addTo(map);
+let helperMarker = null;
+let helperLine = null;
+let helperRoutedFrom = null;
+let helperRoutedAt = 0;
+let helperBusy = false;
+let helperLabel = '';
+
+function writeHelperLabel() {
+    const box = document.getElementById('helper-eta');
+    if (box && helperLabel) {
+        box.textContent = helperLabel;
+    }
+}
+
+async function drawHelper(from, to) {
+    if (helperBusy) return;
+    helperBusy = true;
+    try {
+        const result = await Route.between(from, to);
+        helperLine.setLatLngs(result.line);
+        helperLine.setStyle({ dashArray: result.onRoads ? null : '9 10' });
+
+        helperLabel = Route.describe(result) + (result.onRoads ? ' away' : ' away, direct line');
+        writeHelperLabel();
+
+        helperRoutedFrom = from;
+        helperRoutedAt = Date.now();
+    } finally {
+        helperBusy = false;
+    }
+}
+
 window.RoadGuardMap = {
     refreshShops: loadShops,
+
+    setOrigin(lat, lng) {
+        driverPin.setLatLng([lat, lng]);
+        showCoords(lat, lng);
+    },
+
+    showHelper(lat, lng, toLat, toLng) {
+        const from = { lat, lng };
+        const to = { lat: toLat, lng: toLng };
+
+        if (!helperMarker) {
+            helperLine = L.polyline([], {
+                className: 'job-route',
+                color: '#2E9E5B',
+                weight: 5,
+                opacity: .85,
+                lineJoin: 'round',
+                lineCap: 'round'
+            }).addTo(helperLayer);
+
+            helperMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'pin-helper',
+                    html: '<span></span>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(helperLayer).bindTooltip('Your mechanic', { direction: 'top', offset: [0, -16] });
+        }
+
+        helperMarker.setLatLng([lat, lng]);
+        writeHelperLabel();
+
+        const moved = helperRoutedFrom ? Route.haversineKm(helperRoutedFrom, from) : Infinity;
+        if (moved > 0.08 || Date.now() - helperRoutedAt > 25000) {
+            drawHelper(from, to);
+        }
+    },
+
+    hideHelper() {
+        helperLayer.clearLayers();
+        helperMarker = null;
+        helperLine = null;
+        helperRoutedFrom = null;
+        helperRoutedAt = 0;
+        helperLabel = '';
+    },
+
+    fitHelper() {
+        if (helperLine && helperLine.getLatLngs().length > 1) {
+            map.fitBounds(L.latLngBounds(helperLine.getLatLngs()).pad(0.25));
+        }
+    },
+
     pinPosition() {
         const p = driverPin.getLatLng();
         return { lat: p.lat, lng: p.lng };
@@ -136,12 +223,17 @@ window.RoadGuardMap = {
         showCoords(p.lat, p.lng);
     },
     lockPin(locked) {
+        const already = !driverPin.dragging.enabled();
+        if (locked === already) {
+            return;
+        }
+        driverPin.unbindTooltip();
         if (locked) {
             driverPin.dragging.disable();
-            driverPin.unbindTooltip();
             driverPin.bindTooltip('Where you broke down', { direction: 'top', offset: [0, -14] });
         } else {
             driverPin.dragging.enable();
+            driverPin.bindTooltip('You are here - drag me', { direction: 'top', offset: [0, -14] });
         }
     },
     showMechanics(points) {

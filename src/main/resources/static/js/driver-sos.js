@@ -98,6 +98,8 @@ function showForm() {
         SosRadar.hide();
     }
     if (window.RoadGuardMap) {
+        window.RoadGuardMap.hideHelper();
+        window.RoadGuardMap.lockPin(false);
         window.RoadGuardMap.bindCoords();
     }
 }
@@ -109,13 +111,7 @@ function showStatus(req) {
     const hunting = waiting || req.status === 'ESCALATED';
     const assigned = req.assignedMechanicName;
 
-    if (typeof SosRadar !== 'undefined') {
-        if (hunting) {
-            SosRadar.show(req.originLat, req.originLng, req.searchRadiusKm);
-        } else {
-            SosRadar.hide();
-        }
-    }
+    const tracking = req.mechanicLat != null && req.mechanicLng != null;
 
     sosEl('sos-panel').innerHTML = `
         <div class="sos-live ${waiting ? 'is-waiting' : ''}">
@@ -131,8 +127,9 @@ function showStatus(req) {
             <span class="assigned-avatar">${esc(assigned.charAt(0).toUpperCase())}</span>
             <div>
                 <strong>${esc(assigned)}</strong>
-                <span>your mechanic</span>
+                <span id="helper-eta">${tracking ? 'working out the route' : 'your mechanic'}</span>
             </div>
+            ${tracking ? '<button class="btn btn-locate" id="helper-fit" type="button">Track</button>' : ''}
         </div>` : ''}
 
         <dl class="job-grid" style="margin-top:14px">
@@ -145,6 +142,27 @@ function showStatus(req) {
                 ? `<button class="btn btn-primary" id="sos-new">Send another request</button>`
                 : `<button class="btn btn-decline" id="sos-cancel">Cancel request</button>`}
         </div>`;
+
+    if (typeof SosRadar !== 'undefined') {
+        if (hunting) {
+            SosRadar.show(req.originLat, req.originLng, req.searchRadiusKm);
+        } else {
+            SosRadar.hide();
+        }
+    }
+
+    if (window.RoadGuardMap) {
+        if (!finished) {
+            window.RoadGuardMap.setOrigin(req.originLat, req.originLng);
+            window.RoadGuardMap.lockPin(true);
+        }
+        if (tracking) {
+            window.RoadGuardMap.showHelper(
+                req.mechanicLat, req.mechanicLng, req.originLat, req.originLng);
+        } else {
+            window.RoadGuardMap.hideHelper();
+        }
+    }
 }
 
 async function sendSos() {
@@ -240,6 +258,10 @@ function stopPolling() {
 }
 
 document.addEventListener('click', (e) => {
+    if (e.target.closest('#helper-fit')) {
+        window.RoadGuardMap.fitHelper();
+        return;
+    }
     if (e.target.closest('#sos-send')) sendSos();
     else if (e.target.closest('#sos-cancel')) cancelSos();
     else if (e.target.closest('#sos-new')) {
