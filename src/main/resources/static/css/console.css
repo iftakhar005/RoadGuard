@@ -798,17 +798,6 @@
     box-shadow: 0 0 0 3px var(--blue-soft);
 }
 
-.map-panel .loc-manual input {
-    flex: 1 1 110px;
-    width: auto;
-    min-width: 0;
-}
-
-.map-panel .loc-manual .btn-locate {
-    flex: 1 1 100%;
-    justify-content: center;
-}
-
 #mech-map {
     height: 240px;
     width: 100%;
