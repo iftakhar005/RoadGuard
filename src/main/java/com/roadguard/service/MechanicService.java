@@ -59,6 +59,14 @@ public class MechanicService {
         return MechanicProfileResponse.from(profile);
     }
 
+    @Transactional
+    public MechanicProfileResponse heartbeat(AuthUser caller) {
+        MechanicProfile profile = profileOf(caller);
+        profile.setLastHeartbeat(Instant.now());
+        mechanics.save(profile);
+        return MechanicProfileResponse.from(profile);
+    }
+
     private MechanicProfile profileOf(AuthUser caller) {
         return mechanics.findByUserId(caller.getId())
                 .orElseThrow(() -> new IllegalStateException("No mechanic profile for this account"));

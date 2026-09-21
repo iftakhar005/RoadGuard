@@ -46,6 +46,11 @@ public class MechanicController {
         return ResponseEntity.ok(mechanics.updateLocation(caller, req));
     }
 
+    @PostMapping("/heartbeat")
+    public ResponseEntity<MechanicProfileResponse> heartbeat(@AuthenticationPrincipal AuthUser caller) {
+        return ResponseEntity.ok(mechanics.heartbeat(caller));
+    }
+
     @GetMapping("/offers")
     public ResponseEntity<List<OfferResponse>> openOffers(@AuthenticationPrincipal AuthUser caller) {
         return ResponseEntity.ok(requests.openOffersFor(caller));
