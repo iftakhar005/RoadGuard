@@ -36,8 +36,8 @@ class MechanicSkillsTest {
 
     private static final AtomicInteger UNIQUE = new AtomicInteger();
 
-    private static final double LAT = 23.8103;
-    private static final double LNG = 90.4125;
+    private static final double LAT = 21.4272;
+    private static final double LNG = 92.0058;
 
     @Autowired MechanicService mechanicService;
     @Autowired MatchingService matching;
