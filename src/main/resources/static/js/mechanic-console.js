@@ -374,6 +374,12 @@ function setupMap() {
 
     state.map = map;
     state.pin = pin;
+
+    if (typeof Shop !== 'undefined') {
+        Shop.bind();
+        Shop.load(map, start);
+    }
+
     setTimeout(() => map.invalidateSize(), 200);
 }
 

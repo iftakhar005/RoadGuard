@@ -114,7 +114,64 @@
                       class="coords-val" id="mech-coords">--</span>
             </p>
             <div id="mech-map"></div>
-            <p class="map-hint">Drag the pin to set where you are working from. Jobs are offered by distance.</p>
+            <p class="map-hint">
+                <span class="legend"><i class="dot-you"></i> where you are now</span>
+                <span class="legend"><i class="dot-shop"></i> your shop</span>
+                Drag either pin. Jobs are offered by how close you are.
+            </p>
+        </section>
+
+        <section class="card">
+            <p class="section-label">My shop</p>
+
+            <div class="shop-grid">
+                <div>
+                    <div class="field">
+                        <label for="shop-name">Shop name</label>
+                        <input type="text" id="shop-name" placeholder="e.g. Rafiq Auto Care" maxlength="120">
+                    </div>
+
+                    <div class="field">
+                        <label for="shop-type">What kind of shop</label>
+                        <select id="shop-type" class="sos-select"></select>
+                    </div>
+
+                    <div class="field">
+                        <label for="shop-phone">Contact number</label>
+                        <input type="text" id="shop-phone" placeholder="01700 000000" maxlength="30">
+                    </div>
+
+                    <div class="field">
+                        <label for="shop-address">Address <span class="optional">(optional)</span></label>
+                        <input type="text" id="shop-address" placeholder="Road 7, Banani" maxlength="300">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="field">
+                        <label>Shop picture</label>
+                        <label class="shop-image-drop" for="shop-image">
+                            <div class="shop-image-preview" id="shop-image-preview"></div>
+                            <span class="shop-image-hint">Click to choose a picture<br><small>JPG, PNG or WEBP, up to 5 MB</small></span>
+                        </label>
+                        <input type="file" id="shop-image" accept="image/jpeg,image/png,image/webp" hidden>
+                    </div>
+
+                    <div class="field">
+                        <label>Shop location</label>
+                        <div class="coords">
+                            <span class="coords-label">Pinned at</span>
+                            <span class="coords-val" id="shop-coords">--</span>
+                        </div>
+                        <p class="map-hint" style="margin-top:6px">Drag the orange pin on the map above.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shop-foot">
+                <span class="shop-status" id="shop-status">Not set up yet.</span>
+                <button class="btn btn-primary" id="shop-save" style="width:auto;min-width:150px">Save shop</button>
+            </div>
         </section>
 
         <div id="job-wrap" style="display:none"></div>
@@ -138,6 +195,7 @@
 <script src="js/api.js"></script>
 <script src="js/live.js"></script>
 <script src="js/home.js"></script>
+<script src="js/mechanic-shop.js"></script>
 <script src="js/mechanic-console.js"></script>
 </body>
 </html>

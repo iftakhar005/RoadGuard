@@ -73,7 +73,60 @@ document.addEventListener('click', (e) => {
     }
 });
 
+const shopLayer = L.layerGroup().addTo(map);
+
+const shopIcon = L.divIcon({
+    className: 'pin-shop',
+    html: '<span></span>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+});
+
+function shopPopup(shop) {
+    const open = shop.status === 'ONLINE';
+    const busy = shop.status === 'BUSY';
+    const statusText = open ? 'Open now' : (busy ? 'On a job' : 'Closed');
+    const statusClass = open ? 'shop-open' : 'shop-shut';
+    const rating = shop.ratingCount > 0
+        ? shop.avgRating.toFixed(1) + ' / 5 (' + shop.ratingCount + ')'
+        : 'No ratings yet';
+    const skills = (shop.specializations || []).join(', ') || 'General';
+    const safe = (v) => String(v == null ? '' : v)
+        .replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    return `
+        <div class="shop-pop">
+            ${shop.imageUrl ? `<img src="${safe(shop.imageUrl)}" alt="${safe(shop.shopName)}">` : ''}
+            <h4>${safe(shop.shopName)}</h4>
+            <span class="shop-pop-type">${safe(shop.shopTypeLabel || shop.shopType || '')}</span>
+            <dl>
+                <div><dt>Status</dt><dd class="${statusClass}">${statusText}</dd></div>
+                <div><dt>Phone</dt><dd>${safe(shop.contactPhone)}</dd></div>
+                ${shop.shopAddress ? `<div><dt>Address</dt><dd>${safe(shop.shopAddress)}</dd></div>` : ''}
+                <div><dt>Does</dt><dd>${safe(skills)}</dd></div>
+                <div><dt>Rating</dt><dd>${safe(rating)}</dd></div>
+            </dl>
+        </div>`;
+}
+
+async function loadShops() {
+    try {
+        const shops = await api('/api/shops');
+        shopLayer.clearLayers();
+        (shops || []).forEach((shop) => {
+            if (shop.shopLat == null || shop.shopLng == null) return;
+            L.marker([shop.shopLat, shop.shopLng], { icon: shopIcon })
+                .addTo(shopLayer)
+                .bindTooltip(shop.shopName, { direction: 'top', offset: [0, -16] })
+                .bindPopup(shopPopup(shop), { maxWidth: 260 });
+        });
+    } catch (e) {
+        /* shops are a nice to have on this screen */
+    }
+}
+
 window.RoadGuardMap = {
+    refreshShops: loadShops,
     pinPosition() {
         const p = driverPin.getLatLng();
         return { lat: p.lat, lng: p.lng };
@@ -109,3 +162,6 @@ window.addEventListener('load', () => map.invalidateSize());
 map.whenReady(() => setTimeout(() => map.invalidateSize(), 100));
 
 locate();
+
+loadShops();
+setInterval(loadShops, 30000);

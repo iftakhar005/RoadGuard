@@ -1,6 +1,7 @@
 package com.roadguard.domain;
 
 import com.roadguard.domain.enums.AvailabilityStatus;
+import com.roadguard.domain.enums.ShopType;
 import com.roadguard.domain.enums.Specialization;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -58,6 +59,25 @@ public class MechanicProfile {
     private double avgRating = 0.0;
     private int ratingCount = 0;
 
+    @Column(length = 120)
+    private String shopName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private ShopType shopType;
+
+    @Column(length = 30)
+    private String contactPhone;
+
+    @Column(length = 255)
+    private String shopImagePath;
+
+    @Column(length = 300)
+    private String shopAddress;
+
+    private Double shopLat;
+    private Double shopLng;
+
     @Version
     private int version;
 
@@ -67,6 +87,10 @@ public class MechanicProfile {
 
     public boolean hasSkill(Specialization needed) {
         return specializations.contains(needed);
+    }
+
+    public boolean hasShop() {
+        return shopName != null && !shopName.isBlank() && shopLat != null && shopLng != null;
     }
 
     public boolean hasLocation() {
