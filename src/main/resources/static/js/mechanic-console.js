@@ -334,6 +334,23 @@ document.addEventListener('click', (e) => {
 
 el('duty-toggle').addEventListener('change', (e) => setDuty(e.target.checked));
 
+let saveTimer = null;
+
+function saveMyLocation(lat, lng) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+        try {
+            state.profile = await api('/api/mechanic/location', {
+                method: 'POST',
+                body: JSON.stringify({ lat, lng })
+            });
+            toast('Location saved', 'win');
+        } catch (e) {
+            toast(e.message, 'bad');
+        }
+    }, 400);
+}
+
 function setupMap() {
     if (typeof L === 'undefined') return;
 
@@ -350,26 +367,16 @@ function setupMap() {
     const pin = L.marker(start, {
         draggable: true,
         icon: L.divIcon({ className: 'pin-mech-self', html: '<span></span>', iconSize: [26, 26], iconAnchor: [13, 13] })
-    }).addTo(map).bindTooltip('Drag to set where you are', { direction: 'top', offset: [0, -14] });
+    }).addTo(map).bindTooltip('Where you are - drag to move', { direction: 'top', offset: [0, -14] });
 
     state.lastPosition = { lat: start[0], lng: start[1] };
     el('mech-coords').textContent = `${start[0].toFixed(5)}, ${start[1].toFixed(5)}`;
 
-    pin.on('dragend', async () => {
-        const p = pin.getLatLng();
-        state.lastPosition = { lat: p.lat, lng: p.lng };
-        el('mech-coords').textContent = `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
-        if (state.profile && state.profile.status !== 'OFFLINE') {
-            try {
-                await api('/api/mechanic/location', {
-                    method: 'POST',
-                    body: JSON.stringify({ lat: p.lat, lng: p.lng })
-                });
-                toast('Location updated', '');
-            } catch (e) {
-                toast(e.message, 'bad');
-            }
-        }
+    PinPicker.mount(map);
+    PinPicker.add('me', pin, (lat, lng, settled) => {
+        state.lastPosition = { lat, lng };
+        el('mech-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        if (settled) saveMyLocation(lat, lng);
     });
 
     state.map = map;
@@ -379,6 +386,8 @@ function setupMap() {
         Shop.bind();
         Shop.load(map, start);
     }
+
+    PinPicker.select('me');
 
     setTimeout(() => map.invalidateSize(), 200);
 }

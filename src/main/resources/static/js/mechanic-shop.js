@@ -50,7 +50,11 @@ const Shop = (function () {
         elid('shop-status').className = 'shop-status' + (hasShop ? ' is-live' : '');
     }
 
-    function placePin(map, lat, lng) {
+    function showCoords(lat, lng) {
+        elid('shop-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+
+    function placePin(map, lat, lng, placed) {
         const icon = L.divIcon({
             className: 'pin-shop',
             html: '<span></span>',
@@ -63,13 +67,11 @@ const Shop = (function () {
         } else {
             shopPin = L.marker([lat, lng], { draggable: true, icon })
                 .addTo(map)
-                .bindTooltip('Your shop - drag to move', { direction: 'top', offset: [0, -16] });
-            shopPin.on('dragend', () => {
-                const p = shopPin.getLatLng();
-                elid('shop-coords').textContent = `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
-            });
+                .bindTooltip(placed ? 'Your shop' : 'Your shop - put it where the shop is',
+                    { direction: 'top', offset: [0, -16] });
+            PinPicker.add('shop', shopPin, showCoords);
         }
-        elid('shop-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        showCoords(lat, lng);
     }
 
     async function load(map, fallback) {
@@ -80,9 +82,10 @@ const Shop = (function () {
         }
         render();
 
-        const lat = (shop && shop.shopLat != null) ? shop.shopLat : fallback[0];
-        const lng = (shop && shop.shopLng != null) ? shop.shopLng : fallback[1];
-        placePin(map, lat, lng);
+        const placed = shop && shop.shopLat != null && shop.shopLng != null;
+        const lat = placed ? shop.shopLat : fallback[0] + 0.0014;
+        const lng = placed ? shop.shopLng : fallback[1] + 0.0014;
+        placePin(map, lat, lng, placed);
     }
 
     async function save() {
@@ -127,6 +130,7 @@ const Shop = (function () {
             }
 
             toast('Shop saved', 'win');
+            if (shopPin) shopPin.setTooltipContent('Your shop');
             render();
         } catch (err) {
             toast(err.message, 'bad');
