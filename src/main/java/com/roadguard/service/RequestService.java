@@ -116,6 +116,20 @@ public class RequestService {
         return assignment.decline(requestId, caller.getId(), offerToken);
     }
 
+    public AssignmentService.StatusChange advanceStatus(AuthUser caller, Long requestId, RequestStatus target) {
+        if (caller.getRole() != Role.MECHANIC) {
+            throw new AccessDeniedException("Only the assigned mechanic can update a job");
+        }
+        return assignment.advanceStatus(requestId, caller.getId(), target);
+    }
+
+    public AssignmentService.StatusChange cancel(AuthUser caller, Long requestId) {
+        if (caller.getRole() != Role.DRIVER) {
+            throw new AccessDeniedException("Only the driver can cancel their request");
+        }
+        return assignment.cancel(requestId, caller.getId());
+    }
+
     @Transactional(readOnly = true)
     public List<OfferResponse> openOffersFor(AuthUser caller) {
         if (caller.getRole() != Role.MECHANIC) {

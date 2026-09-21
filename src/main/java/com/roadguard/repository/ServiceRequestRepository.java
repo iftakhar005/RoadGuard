@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,8 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM ServiceRequest r WHERE r.id = :id")
     Optional<ServiceRequest> findByIdForUpdate(@Param("id") Long id);
+
+    List<ServiceRequest> findByStatusAndOfferedAtBefore(RequestStatus status, Instant cutoff);
 
     long countByStatusIn(Collection<RequestStatus> statuses);
 }

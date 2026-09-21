@@ -2,11 +2,13 @@ package com.roadguard.web;
 
 import com.roadguard.domain.enums.AcceptOutcome;
 import com.roadguard.security.AuthUser;
+import com.roadguard.service.AssignmentService;
 import com.roadguard.service.RequestService;
 import com.roadguard.web.dto.AcceptOfferRequest;
 import com.roadguard.web.dto.CreateSosRequest;
 import com.roadguard.web.dto.MechanicCandidateResponse;
 import com.roadguard.web.dto.ServiceRequestResponse;
+import com.roadguard.web.dto.StatusUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -70,6 +72,31 @@ public class RequestController {
         return outcome.isWin()
                 ? ResponseEntity.ok(body)
                 : ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @PostMapping("/{id}/status")
+    public ResponseEntity<Map<String, Object>> updateStatus(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @Valid @RequestBody StatusUpdateRequest req) {
+        return statusReply(id, requests.advanceStatus(caller, id, req.status()));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Map<String, Object>> cancel(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id) {
+        return statusReply(id, requests.cancel(caller, id));
+    }
+
+    private ResponseEntity<Map<String, Object>> statusReply(Long id, AssignmentService.StatusChange change) {
+        Map<String, Object> body = Map.of("requestId", id, "result", change.name());
+        return switch (change) {
+            case OK -> ResponseEntity.ok(body);
+            case NOT_FOUND -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+            case NOT_YOURS -> ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+            case NOT_ALLOWED -> ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        };
     }
 
     @PostMapping("/{id}/decline")
