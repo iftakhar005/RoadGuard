@@ -43,6 +43,11 @@ public class RequestController {
         return ResponseEntity.ok(requests.myRequests(caller));
     }
 
+    @GetMapping("/mine-assigned")
+    public ResponseEntity<List<ServiceRequestResponse>> mineAssigned(@AuthenticationPrincipal AuthUser caller) {
+        return ResponseEntity.ok(requests.assignedToMe(caller));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ServiceRequestResponse> byId(
             @AuthenticationPrincipal AuthUser caller,

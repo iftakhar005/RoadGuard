@@ -10,6 +10,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/console.css" rel="stylesheet">
 </head>
 <body data-role="DRIVER" class="map-mode">
 
@@ -76,42 +77,15 @@
 
 <main class="map-stage">
     <div id="map"></div>
-
-    <div class="map-panel">
-        <h1>Where are you?</h1>
-        <p class="map-panel-sub">Drag the pin to exactly where your vehicle has broken down.</p>
-
-        <div class="coords">
-            <span class="coords-label">Your location</span>
-            <span class="coords-val" id="coords">getting your position…</span>
-        </div>
-
-        <div class="map-panel-actions">
-            <button class="btn btn-sos" disabled title="Coming in the next update">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 9v4M12 17h.01"/>
-                    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
-                </svg>
-                Send SOS
-            </button>
-            <button class="btn btn-locate" id="locate-btn" type="button" title="Recentre on me">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-                </svg>
-                Recentre
-            </button>
-        </div>
-
-        <p class="map-panel-note">The SOS button is next - it will broadcast this location to nearby mechanics.</p>
-    </div>
+    <div class="map-panel" id="sos-panel"></div>
 </main>
+
+<div class="toast-stack" id="toasts"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/api.js"></script>
 <script src="js/home.js"></script>
 <script src="js/driver-map.js"></script>
+<script src="js/driver-sos.js"></script>
 </body>
 </html>

@@ -28,6 +28,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RequestService {
 
+    private static final List<RequestStatus> ACTIVE_FOR_MECHANIC = List.of(
+            RequestStatus.ACCEPTED,
+            RequestStatus.EN_ROUTE,
+            RequestStatus.ARRIVED,
+            RequestStatus.IN_PROGRESS);
+
     private final ServiceRequestRepository requests;
     private final UserRepository users;
     private final MatchingService matching;
@@ -139,6 +145,17 @@ public class RequestService {
                 .filter(o -> o.getOfferToken().equals(o.getRequest().getCurrentOfferToken()))
                 .filter(o -> o.getRequest().getStatus() == RequestStatus.OFFERED)
                 .map(OfferResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceRequestResponse> assignedToMe(AuthUser caller) {
+        if (caller.getRole() != Role.MECHANIC) {
+            throw new AccessDeniedException("Only a mechanic has assigned jobs");
+        }
+        return requests.findByAssignedMechanicIdAndStatusIn(caller.getId(), ACTIVE_FOR_MECHANIC)
+                .stream()
+                .map(ServiceRequestResponse::from)
                 .toList();
     }
 

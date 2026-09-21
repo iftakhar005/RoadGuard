@@ -81,9 +81,18 @@ public class OfferTimeoutService {
             }
         }
 
-        return new SweepResult(widened, escalated);
+        int retried = retryStranded();
+        return new SweepResult(widened, escalated, retried);
     }
 
-    public record SweepResult(int widened, int escalated) {
+    private int retryStranded() {
+        List<ServiceRequest> stranded = requests.findByStatusIn(List.of(RequestStatus.SEARCHING));
+        for (ServiceRequest request : stranded) {
+            dispatch.enqueue(request.getId(), request.getSeverity());
+        }
+        return stranded.size();
+    }
+
+    public record SweepResult(int widened, int escalated, int retried) {
     }
 }

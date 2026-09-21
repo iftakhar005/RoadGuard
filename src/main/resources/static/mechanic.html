@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/console.css" rel="stylesheet">
 </head>
 <body data-role="MECHANIC">
 
@@ -72,28 +73,56 @@
     </div>
 </header>
 
-<div class="page">
-    <div class="page-head">
-        <h1>Mechanic console</h1>
-        <p>You are signed in. Everything below was fetched from a protected endpoint.</p>
-    </div>
+<div class="console-shell">
+    <div class="console">
 
-    <div class="card">
-        <h2>Your session</h2>
-        <div class="rows" id="session-rows"></div>
-    </div>
+        <div class="console-head">
+            <div>
+                <h1>Mechanic console</h1>
+                <p>Go on duty to start receiving breakdowns near you.</p>
+            </div>
+        </div>
 
-    <div class="card">
-        <h2>Coming next</h2>
-        <ul class="next-list">
-            <li><span class="dot"></span>Online / offline switch, sending your location to the server</li>
-            <li><span class="dot"></span>Incoming job offers with a countdown, and Accept / Decline</li>
-            <li><span class="dot"></span>Job buttons - on my way, arrived, working, done</li>
-        </ul>
+        <section class="card duty" id="duty-card">
+            <div class="duty-state">
+                <span class="duty-orb">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 5.5a4 4 0 0 0 5 5L21 9v6a2 2 0 0 1-2 2h-6l-4.6 4.6a2 2 0 0 1-2.8-2.8L10 14"/>
+                        <path d="M3 3l6 6"/>
+                    </svg>
+                </span>
+                <div class="duty-text">
+                    <strong id="duty-title">Off duty</strong>
+                    <span id="duty-sub">Go on duty to start receiving jobs.</span>
+                    <div class="duty-skills" id="duty-skills"></div>
+                </div>
+            </div>
+
+            <label class="switch">
+                <input type="checkbox" id="duty-toggle">
+                <span class="switch-track"></span>
+                <span class="switch-label" id="duty-toggle-label">Off duty</span>
+            </label>
+        </section>
+
+        <div id="job-wrap" style="display:none"></div>
+
+        <div>
+            <p class="section-label">
+                Incoming jobs
+                <span class="count-pill" id="offer-count" style="display:none">0</span>
+            </p>
+            <div class="offer-list" id="offer-list"></div>
+        </div>
+
     </div>
 </div>
 
+<div class="toast-stack" id="toasts"></div>
+
 <script src="js/api.js"></script>
 <script src="js/home.js"></script>
+<script src="js/mechanic-console.js"></script>
 </body>
 </html>

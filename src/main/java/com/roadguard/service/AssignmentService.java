@@ -244,6 +244,10 @@ public class AssignmentService {
         }));
     }
 
+    public <T> T runLocked(Long requestId, java.util.function.Supplier<T> action) {
+        return withLock(requestId, action);
+    }
+
     private <T> T withLock(Long requestId, java.util.function.Supplier<T> action) {
         ReentrantLock lock = locks.computeIfAbsent(requestId, id -> new ReentrantLock(true));
         lock.lock();
