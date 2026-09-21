@@ -151,8 +151,15 @@ class OfferTimeoutTest {
         OfferTimeoutService.SweepResult result = timeouts.sweepOnce();
 
         assertTrue(result.widened() >= 1, "the sweep should have widened at least this request");
-        assertEquals(RequestStatus.SEARCHING,
-                requests.findById(o.requestId()).orElseThrow().getStatus());
+
+        ServiceRequest after = requests.findById(o.requestId()).orElseThrow();
+        assertEquals(10, after.getSearchRadiusKm(), "the circle should have doubled");
+        assertNull(after.getAssignedMechanic(), "nobody accepted, so it stays unassigned");
+
+        assertTrue(after.getStatus() == RequestStatus.SEARCHING
+                        || after.getStatus() == RequestStatus.OFFERED,
+                "it is looking again, either queued or already back out on offer, but was "
+                        + after.getStatus());
     }
 
     @Test

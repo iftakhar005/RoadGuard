@@ -81,16 +81,50 @@ public class OfferTimeoutService {
             }
         }
 
-        int retried = retryStranded();
-        return new SweepResult(widened, escalated, retried);
+        Stranded stranded = retryStranded(cutoff);
+        return new SweepResult(
+                widened + stranded.widened(),
+                escalated + stranded.escalated(),
+                stranded.retried());
     }
 
-    private int retryStranded() {
-        List<ServiceRequest> stranded = requests.findByStatusIn(List.of(RequestStatus.SEARCHING));
+    private Stranded retryStranded(Instant cutoff) {
+        List<ServiceRequest> stranded =
+                requests.findByStatusIn(List.of(RequestStatus.SEARCHING, RequestStatus.REASSIGNING));
+
+        int widened = 0;
+        int escalated = 0;
+        int retried = 0;
+
         for (ServiceRequest request : stranded) {
-            dispatch.enqueue(request.getId(), request.getSeverity());
+            Long requestId = request.getId();
+
+            AssignmentService.ExpiryOutcome outcome =
+                    assignment.expireSearch(requestId, cutoff, maxRadiusKm, maxAttempts);
+
+            switch (outcome) {
+                case WIDENED -> {
+                    widened++;
+                    log.info("Request {} found nobody in range, widening search and trying again", requestId);
+                }
+                case ESCALATED -> {
+                    escalated++;
+                    log.info("Request {} escalated to admin, nobody reachable after {} attempts",
+                            requestId, maxAttempts);
+                }
+                case NOT_EXPIRED -> {
+                }
+            }
+
+            if (outcome != AssignmentService.ExpiryOutcome.ESCALATED) {
+                dispatch.enqueue(requestId, request.getSeverity());
+                retried++;
+            }
         }
-        return stranded.size();
+        return new Stranded(widened, escalated, retried);
+    }
+
+    private record Stranded(int widened, int escalated, int retried) {
     }
 
     public record SweepResult(int widened, int escalated, int retried) {

@@ -87,6 +87,8 @@ public class ServiceRequest {
 
     private Instant offeredAt;
 
+    private Instant searchingSince;
+
     private Instant acceptedAt;
     private Instant completedAt;
 
@@ -100,6 +102,14 @@ public class ServiceRequest {
         this.originLng = originLng;
         this.note = note;
         this.requiredSpecialization = issueType.defaultSpecialization();
+    }
+
+    public void beginSearchRound() {
+        this.searchingSince = Instant.now();
+    }
+
+    public Instant searchingSinceOrCreated() {
+        return searchingSince != null ? searchingSince : createdAt;
     }
 
     public String startNewOfferRound(Set<Long> mechanicIds) {

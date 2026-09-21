@@ -268,6 +268,44 @@ public class AssignmentService {
                 return ExpiryOutcome.NOT_EXPIRED;
             }
             request.setStatus(RequestStatus.SEARCHING);
+            request.beginSearchRound();
+            requests.save(request);
+            return ExpiryOutcome.WIDENED;
+        }));
+    }
+
+    public ExpiryOutcome expireSearch(Long requestId,
+                                      Instant cutoff,
+                                      double maxRadiusKm,
+                                      int maxAttempts) {
+        return withLock(requestId, () -> tx.execute(status -> {
+            ServiceRequest request = requests.findById(requestId).orElse(null);
+            if (request == null) {
+                return ExpiryOutcome.NOT_EXPIRED;
+            }
+
+            RequestStatus current = request.getStatus();
+            if (current != RequestStatus.SEARCHING && current != RequestStatus.REASSIGNING) {
+                return ExpiryOutcome.NOT_EXPIRED;
+            }
+            if (request.searchingSinceOrCreated().isAfter(cutoff)) {
+                return ExpiryOutcome.NOT_EXPIRED;
+            }
+
+            request.setSearchAttempts(request.getSearchAttempts() + 1);
+
+            boolean atMaxRadius = request.getSearchRadiusKm() >= maxRadiusKm;
+            if (request.getSearchAttempts() > maxAttempts && atMaxRadius) {
+                if (!current.canTransitionTo(RequestStatus.ESCALATED)) {
+                    return ExpiryOutcome.NOT_EXPIRED;
+                }
+                request.setStatus(RequestStatus.ESCALATED);
+                requests.save(request);
+                return ExpiryOutcome.ESCALATED;
+            }
+
+            request.setSearchRadiusKm(Math.min(request.getSearchRadiusKm() * 2, maxRadiusKm));
+            request.beginSearchRound();
             requests.save(request);
             return ExpiryOutcome.WIDENED;
         }));
@@ -309,6 +347,7 @@ public class AssignmentService {
 
                 request.setAssignedMechanic(null);
                 request.setStatus(RequestStatus.REASSIGNING);
+                request.beginSearchRound();
                 request.setCurrentOfferToken(null);
                 request.getOfferedTo().clear();
                 requests.save(request);

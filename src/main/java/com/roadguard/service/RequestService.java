@@ -67,6 +67,7 @@ public class RequestService {
                     "Cannot start searching from " + request.getStatus());
         }
         request.setStatus(RequestStatus.SEARCHING);
+        request.beginSearchRound();
 
         requests.save(request);
 
