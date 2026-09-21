@@ -1,12 +1,15 @@
 package com.roadguard.web;
 
+import com.roadguard.domain.enums.AcceptOutcome;
 import com.roadguard.security.AuthUser;
 import com.roadguard.service.RequestService;
+import com.roadguard.web.dto.AcceptOfferRequest;
 import com.roadguard.web.dto.CreateSosRequest;
 import com.roadguard.web.dto.MechanicCandidateResponse;
 import com.roadguard.web.dto.ServiceRequestResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -49,5 +53,32 @@ public class RequestController {
             @AuthenticationPrincipal AuthUser caller,
             @PathVariable Long id) {
         return ResponseEntity.ok(requests.candidatesFor(caller, id));
+    }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<Map<String, Object>> accept(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @Valid @RequestBody AcceptOfferRequest req) {
+
+        AcceptOutcome outcome = requests.accept(caller, id, req.offerToken());
+        Map<String, Object> body = Map.of(
+                "requestId", id,
+                "outcome", outcome.name(),
+                "won", outcome.isWin());
+
+        return outcome.isWin()
+                ? ResponseEntity.ok(body)
+                : ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @PostMapping("/{id}/decline")
+    public ResponseEntity<Map<String, Object>> decline(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @Valid @RequestBody AcceptOfferRequest req) {
+
+        AcceptOutcome outcome = requests.decline(caller, id, req.offerToken());
+        return ResponseEntity.ok(Map.of("requestId", id, "outcome", outcome.name()));
     }
 }
