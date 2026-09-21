@@ -40,5 +40,7 @@ public interface MechanicProfileRepository extends JpaRepository<MechanicProfile
     List<MechanicProfile> findByStatusInAndLastHeartbeatBefore(Collection<AvailabilityStatus> statuses,
                                                                Instant cutoff);
 
+    List<MechanicProfile> findByShopNameIsNotNullAndShopLatIsNotNull();
+
     long countByStatus(AvailabilityStatus status);
 }
