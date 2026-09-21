@@ -11,6 +11,9 @@
     --blue-dark: #0b1a46;
     --blue-soft: rgba(47, 107, 255, .09);
 
+    --live: #2F6BFF;
+    --live-soft: rgba(47, 107, 255, .22);
+
     --red: #E5484D;
     --red-soft: rgba(229, 72, 77, .1);
     --green: #2E9E5B;
@@ -1910,13 +1913,41 @@ body.map-mode {
 
 .pin-driver span {
     display: block;
-    width: 18px;
-    height: 18px;
-    margin: 4px;
+    position: relative;
+    width: 16px;
+    height: 16px;
+    margin: 5px;
     border-radius: 50%;
-    background: linear-gradient(150deg, var(--amber), #FF7A2F);
+    background: radial-gradient(circle at 34% 30%, #7FA6FF, var(--live) 58%, #1B4FD8);
     border: 3px solid #fff;
-    box-shadow: 0 0 0 3px var(--amber-soft), 0 3px 8px rgba(0, 0, 0, .3);
+    box-shadow: 0 0 0 3px var(--live-soft), 0 3px 10px rgba(16, 24, 40, .45);
+}
+
+.pin-driver span::before,
+.pin-driver span::after {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    background: var(--live);
+    pointer-events: none;
+    animation: driver-halo 2.6s cubic-bezier(.22, .61, .36, 1) infinite;
+}
+
+.pin-driver span::after {
+    animation-delay: 1.3s;
+}
+
+@keyframes driver-halo {
+    0% {
+        transform: scale(.45);
+        opacity: .38;
+    }
+    75%,
+    100% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
 }
 
 .pin-mech span {
