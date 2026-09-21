@@ -89,6 +89,15 @@ public class MechanicProfile {
         return specializations.contains(needed);
     }
 
+    public void replaceSkills(Set<Specialization> wanted) {
+        specializations.clear();
+        if (wanted == null || wanted.isEmpty()) {
+            specializations.add(Specialization.GENERAL);
+        } else {
+            specializations.addAll(wanted);
+        }
+    }
+
     public boolean hasShop() {
         return shopName != null && !shopName.isBlank() && shopLat != null && shopLng != null;
     }

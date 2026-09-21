@@ -392,9 +392,18 @@ function setupMap() {
     setTimeout(() => map.invalidateSize(), 200);
 }
 
+function onSkillsSaved(profile) {
+    state.profile = profile;
+    renderDuty();
+}
+
 (async function boot() {
     await refresh();
     setupMap();
+
+    if (typeof Skills !== 'undefined' && state.profile) {
+        Skills.show(state.profile.specializations);
+    }
 
     Live.onMessage(() => refresh());
     Live.connect();

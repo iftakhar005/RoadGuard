@@ -7,6 +7,7 @@ import com.roadguard.security.AuthUser;
 import com.roadguard.web.dto.LocationRequest;
 import com.roadguard.web.dto.MechanicProfileResponse;
 import com.roadguard.web.dto.MechanicStatusRequest;
+import com.roadguard.web.dto.SkillsRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +56,14 @@ public class MechanicService {
         profile.setCurrentLat(req.lat());
         profile.setCurrentLng(req.lng());
         profile.setLastHeartbeat(Instant.now());
+        mechanics.save(profile);
+        return MechanicProfileResponse.from(profile);
+    }
+
+    @Transactional
+    public MechanicProfileResponse updateSkills(AuthUser caller, SkillsRequest req) {
+        MechanicProfile profile = profileOf(caller);
+        profile.replaceSkills(req.specializations());
         mechanics.save(profile);
         return MechanicProfileResponse.from(profile);
     }
