@@ -94,6 +94,9 @@ function showForm() {
             </button>
         </div>`;
 
+    if (typeof SosRadar !== 'undefined') {
+        SosRadar.hide();
+    }
     if (window.RoadGuardMap) {
         window.RoadGuardMap.bindCoords();
     }
@@ -103,7 +106,16 @@ function showStatus(req) {
     const [title, sub] = STATUS_COPY[req.status] || [req.status, ''];
     const finished = req.status === 'COMPLETED' || req.status === 'CANCELLED';
     const waiting = ['SEARCHING', 'OFFERED', 'REASSIGNING'].includes(req.status);
+    const hunting = waiting || req.status === 'ESCALATED';
     const assigned = req.assignedMechanicName;
+
+    if (typeof SosRadar !== 'undefined') {
+        if (hunting) {
+            SosRadar.show(req.originLat, req.originLng, req.searchRadiusKm);
+        } else {
+            SosRadar.hide();
+        }
+    }
 
     sosEl('sos-panel').innerHTML = `
         <div class="sos-live ${waiting ? 'is-waiting' : ''}">
@@ -159,6 +171,9 @@ async function sendSos() {
         goLive(created.id);
         sosToast('Help is on the way, looking for a mechanic', 'win');
         showStatus(created);
+        if (typeof SosRadar !== 'undefined') {
+            setTimeout(() => SosRadar.fit(), 400);
+        }
         startPolling();
     } catch (err) {
         sosToast(err.message, 'bad');
@@ -186,6 +201,7 @@ async function poll() {
     try {
         const fresh = await api(`/api/requests/${activeRequest.id}`);
         const changed = fresh.status !== activeRequest.status;
+        const wasKm = activeRequest.searchRadiusKm;
         activeRequest = fresh;
         showStatus(fresh);
 
@@ -194,6 +210,15 @@ async function poll() {
         }
         if (changed && fresh.status === 'REASSIGNING') {
             sosToast('Your mechanic dropped off, finding another', 'lose');
+        }
+        if (changed && fresh.status === 'ESCALATED') {
+            sosToast('Nobody free even at ' + fresh.searchRadiusKm + ' km, our team has been alerted', 'lose');
+        }
+        if (fresh.searchRadiusKm > wasKm) {
+            sosToast('Nobody free within ' + wasKm + ' km, widening to ' + fresh.searchRadiusKm + ' km', '');
+            if (typeof SosRadar !== 'undefined') {
+                setTimeout(() => SosRadar.fit(), 900);
+            }
         }
 
         if (!LIVE.includes(fresh.status)) {
