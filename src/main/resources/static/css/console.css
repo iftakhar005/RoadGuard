@@ -642,6 +642,36 @@
     align-items: center;
 }
 
+/* ---------------- sos search radar ---------------- */
+
+.sos-boundary {
+    stroke-dasharray: 7 9;
+    animation: sos-sweep 2.4s linear infinite;
+}
+
+@keyframes sos-sweep {
+    to {
+        stroke-dashoffset: -32;
+    }
+}
+
+.sos-ping {
+    pointer-events: none;
+}
+
+.sos-fill {
+    animation: sos-breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes sos-breathe {
+    0%, 100% {
+        fill-opacity: .05;
+    }
+    50% {
+        fill-opacity: .11;
+    }
+}
+
 .loc-bar {
     display: grid;
     gap: 10px;
