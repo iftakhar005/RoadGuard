@@ -642,6 +642,49 @@
     align-items: center;
 }
 
+.map-legend {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    max-width: calc(100vw - 32px);
+    padding: 9px 14px;
+    background: rgba(255, 255, 255, .94);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 4px 18px -6px rgba(16, 24, 40, .25);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-2);
+}
+
+.dot-live {
+    background: var(--live);
+}
+
+.dot-mech {
+    background: var(--green);
+}
+
+.dot-sos {
+    background: var(--red);
+}
+
+@media (max-width: 640px) {
+    .map-legend {
+        top: auto;
+        bottom: 8px;
+        right: 8px;
+        left: 8px;
+        justify-content: center;
+        border-radius: var(--r-md);
+    }
+}
+
 /* ---------------- sos search radar ---------------- */
 
 .sos-boundary {
