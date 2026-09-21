@@ -1,6 +1,12 @@
 const SPECIALIZATIONS = [
-    'TIRE', 'BATTERY', 'ENGINE', 'ELECTRICAL',
-    'BRAKES', 'FUEL', 'TOWING', 'GENERAL'
+    ['TIRE', 'Tyres'],
+    ['BATTERY', 'Battery'],
+    ['ENGINE', 'Engine'],
+    ['ELECTRICAL', 'Electrical'],
+    ['BRAKES', 'Brakes'],
+    ['FUEL', 'Fuel'],
+    ['TOWING', 'Towing'],
+    ['GENERAL', 'Anything else']
 ];
 
 const notice = document.getElementById('notice');
@@ -92,14 +98,14 @@ document.querySelectorAll('.seg-btn').forEach(btn => {
 });
 
 const chips = document.getElementById('chips');
-SPECIALIZATIONS.forEach(skill => {
+SPECIALIZATIONS.forEach(([skill, label]) => {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'chip';
     chip.dataset.skill = skill;
     chip.setAttribute('aria-pressed', 'false');
 
-    chip.textContent = skill.charAt(0) + skill.slice(1).toLowerCase();
+    chip.textContent = label;
     chip.addEventListener('click', () => {
         const on = chip.classList.toggle('is-on');
         chip.setAttribute('aria-pressed', String(on));

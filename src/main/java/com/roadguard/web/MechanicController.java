@@ -10,6 +10,7 @@ import com.roadguard.web.dto.MechanicStatusRequest;
 import com.roadguard.web.dto.OfferResponse;
 import com.roadguard.web.dto.ShopRequest;
 import com.roadguard.web.dto.ShopResponse;
+import com.roadguard.web.dto.SkillsRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -51,6 +52,13 @@ public class MechanicController {
             @AuthenticationPrincipal AuthUser caller,
             @Valid @RequestBody LocationRequest req) {
         return ResponseEntity.ok(mechanics.updateLocation(caller, req));
+    }
+
+    @PostMapping("/skills")
+    public ResponseEntity<MechanicProfileResponse> updateSkills(
+            @AuthenticationPrincipal AuthUser caller,
+            @Valid @RequestBody SkillsRequest req) {
+        return ResponseEntity.ok(mechanics.updateSkills(caller, req));
     }
 
     @PostMapping("/heartbeat")
