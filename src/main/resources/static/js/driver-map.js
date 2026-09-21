@@ -1,7 +1,5 @@
 const FALLBACK = [23.8103, 90.4125];
 
-const coordsEl = document.getElementById('coords');
-
 const map = L.map('map', { zoomControl: true }).setView(FALLBACK, 15);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -20,11 +18,16 @@ const driverPin = L.marker(FALLBACK, { draggable: true, icon: driverIcon })
     .addTo(map)
     .bindTooltip('You are here - drag me', { direction: 'top', offset: [0, -14] });
 
-function showCoords(lat, lng) {
-    coordsEl.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+function coordsBox() {
+    return document.getElementById('coords');
 }
 
-showCoords(FALLBACK[0], FALLBACK[1]);
+function showCoords(lat, lng) {
+    const box = coordsBox();
+    if (box) {
+        box.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+}
 
 driverPin.on('drag', (e) => {
     const { lat, lng } = e.target.getLatLng();
@@ -38,52 +41,65 @@ const mechanicIcon = L.divIcon({
     iconAnchor: [10, 10]
 });
 
-const sampleMechanics = [
-    { name: 'Rafiq (Tire, Battery)', d: [0.004, 0.003] },
-    { name: 'Karim (Engine)', d: [-0.005, 0.004] },
-    { name: 'Sadia (General)', d: [0.003, -0.006] }
-];
-
-let mechLayer = L.layerGroup().addTo(map);
-
-function placeMechanics(centreLat, centreLng) {
-    mechLayer.clearLayers();
-    sampleMechanics.forEach(m => {
-        L.marker([centreLat + m.d[0], centreLng + m.d[1]], { icon: mechanicIcon })
-            .addTo(mechLayer)
-            .bindTooltip(m.name + ' · demo', { direction: 'top', offset: [0, -12] });
-    });
-}
-
-placeMechanics(FALLBACK[0], FALLBACK[1]);
+const mechLayer = L.layerGroup().addTo(map);
 
 function locate() {
+    const box = coordsBox();
     if (!navigator.geolocation) {
-        coordsEl.textContent = 'this browser cannot share location';
+        if (box) box.textContent = 'this browser cannot share location';
         return;
     }
-    coordsEl.textContent = 'getting your position…';
+    if (box) box.textContent = 'getting your position…';
+
     navigator.geolocation.getCurrentPosition(
         (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             map.setView([lat, lng], 16);
             driverPin.setLatLng([lat, lng]);
-            placeMechanics(lat, lng);
             showCoords(lat, lng);
         },
         () => {
-
-            coordsEl.textContent = FALLBACK[0].toFixed(5) + ', ' + FALLBACK[1].toFixed(5)
-                + '  (location off - drag the pin)';
+            const here = driverPin.getLatLng();
+            showCoords(here.lat, here.lng);
         },
         { enableHighAccuracy: true, timeout: 8000 }
     );
 }
 
-document.getElementById('locate-btn').addEventListener('click', locate);
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#locate-btn')) {
+        locate();
+    }
+});
 
-locate();
+window.RoadGuardMap = {
+    pinPosition() {
+        const p = driverPin.getLatLng();
+        return { lat: p.lat, lng: p.lng };
+    },
+    bindCoords() {
+        const p = driverPin.getLatLng();
+        showCoords(p.lat, p.lng);
+    },
+    lockPin(locked) {
+        if (locked) {
+            driverPin.dragging.disable();
+            driverPin.unbindTooltip();
+            driverPin.bindTooltip('Where you broke down', { direction: 'top', offset: [0, -14] });
+        } else {
+            driverPin.dragging.enable();
+        }
+    },
+    showMechanics(points) {
+        mechLayer.clearLayers();
+        (points || []).forEach((m) => {
+            L.marker([m.lat, m.lng], { icon: mechanicIcon })
+                .addTo(mechLayer)
+                .bindTooltip(m.name || 'mechanic', { direction: 'top', offset: [0, -12] });
+        });
+    }
+};
 
 const mapEl = document.getElementById('map');
 if (window.ResizeObserver) {
@@ -91,3 +107,5 @@ if (window.ResizeObserver) {
 }
 window.addEventListener('load', () => map.invalidateSize());
 map.whenReady(() => setTimeout(() => map.invalidateSize(), 100));
+
+locate();

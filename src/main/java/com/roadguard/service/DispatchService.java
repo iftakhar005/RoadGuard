@@ -34,6 +34,7 @@ public class DispatchService {
     private final RequestOfferRepository offers;
     private final UserRepository users;
     private final MatchingService matching;
+    private final AssignmentService assignment;
     private final TransactionTemplate tx;
 
     private final BlockingQueue<DispatchTask> queue = new PriorityBlockingQueue<>();
@@ -53,11 +54,13 @@ public class DispatchService {
                            RequestOfferRepository offers,
                            UserRepository users,
                            MatchingService matching,
+                           AssignmentService assignment,
                            TransactionTemplate tx) {
         this.requests = requests;
         this.offers = offers;
         this.users = users;
         this.matching = matching;
+        this.assignment = assignment;
         this.tx = tx;
     }
 
@@ -112,7 +115,7 @@ public class DispatchService {
     }
 
     public BroadcastResult broadcast(Long requestId) {
-        BroadcastResult result = tx.execute(status -> {
+        BroadcastResult result = assignment.runLocked(requestId, () -> tx.execute(status -> {
             ServiceRequest request = requests.findById(requestId).orElse(null);
             if (request == null) {
                 return BroadcastResult.notFound();
@@ -154,7 +157,7 @@ public class DispatchService {
             offers.saveAll(rows);
 
             return BroadcastResult.sent(token, offeredTo);
-        });
+        }));
 
         if (result != null && result.sent()) {
             broadcasts.incrementAndGet();
