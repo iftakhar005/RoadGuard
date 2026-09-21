@@ -85,6 +85,8 @@ public class ServiceRequest {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    private Instant offeredAt;
+
     private Instant acceptedAt;
     private Instant completedAt;
 
@@ -103,6 +105,7 @@ public class ServiceRequest {
     public String startNewOfferRound(Set<Long> mechanicIds) {
         this.currentOfferToken = java.util.UUID.randomUUID().toString();
         this.offeredTo = new HashSet<>(mechanicIds);
+        this.offeredAt = Instant.now();
         return this.currentOfferToken;
     }
 
