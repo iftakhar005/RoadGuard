@@ -109,15 +109,43 @@
 
         <section class="card map-card">
             <p class="section-label" style="margin-bottom:12px">
-                Where you are
+                Set your location
                 <span style="margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none"
                       class="coords-val" id="mech-coords">--</span>
             </p>
+
+            <div class="loc-bar">
+                <div class="loc-tabs">
+                    <button type="button" class="loc-tab is-on" data-target="me">
+                        <i class="dot-you"></i> Where I am
+                    </button>
+                    <button type="button" class="loc-tab" data-target="shop">
+                        <i class="dot-shop"></i> My shop
+                    </button>
+                </div>
+
+                <div class="loc-search">
+                    <div class="loc-search-row">
+                        <input type="text" id="place-search" autocomplete="off"
+                               placeholder="Search a place, e.g. Banani, Dhaka">
+                        <button type="button" class="btn btn-locate" id="place-search-btn">Search</button>
+                    </div>
+                    <div class="place-results" id="place-results" hidden></div>
+                </div>
+
+                <div class="loc-manual">
+                    <input type="text" id="loc-lat" inputmode="decimal" placeholder="Latitude">
+                    <input type="text" id="loc-lng" inputmode="decimal" placeholder="Longitude">
+                    <button type="button" class="btn btn-locate" id="loc-apply">Move pin</button>
+                    <button type="button" class="btn btn-locate" id="loc-gps">Use GPS</button>
+                </div>
+            </div>
+
             <div id="mech-map"></div>
-            <p class="map-hint">
+            <p class="map-hint" id="place-note">
                 <span class="legend"><i class="dot-you"></i> where you are now</span>
                 <span class="legend"><i class="dot-shop"></i> your shop</span>
-                Drag either pin. Jobs are offered by how close you are.
+                Pick which pin you are setting, then search a place, type coordinates or drag it.
             </p>
         </section>
 
@@ -163,7 +191,10 @@
                             <span class="coords-label">Pinned at</span>
                             <span class="coords-val" id="shop-coords">--</span>
                         </div>
-                        <p class="map-hint" style="margin-top:6px">Drag the orange pin on the map above.</p>
+                        <p class="map-hint" style="margin-top:6px">
+                            Pick <strong>My shop</strong> above the map, then search, type the
+                            coordinates or drag the orange pin.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -195,6 +226,7 @@
 <script src="js/api.js"></script>
 <script src="js/live.js"></script>
 <script src="js/home.js"></script>
+<script src="js/pin-picker.js"></script>
 <script src="js/mechanic-shop.js"></script>
 <script src="js/mechanic-console.js"></script>
 </body>

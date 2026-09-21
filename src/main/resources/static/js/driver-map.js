@@ -29,10 +29,8 @@ function showCoords(lat, lng) {
     }
 }
 
-driverPin.on('drag', (e) => {
-    const { lat, lng } = e.target.getLatLng();
-    showCoords(lat, lng);
-});
+PinPicker.mount(map);
+PinPicker.add('me', driverPin, showCoords);
 
 const mechanicIcon = L.divIcon({
     className: 'pin-mech',
@@ -58,6 +56,7 @@ function locate() {
             map.setView([lat, lng], 16);
             driverPin.setLatLng([lat, lng]);
             showCoords(lat, lng);
+            PinPicker.select('me');
         },
         () => {
             const here = driverPin.getLatLng();
@@ -134,6 +133,7 @@ window.RoadGuardMap = {
     bindCoords() {
         const p = driverPin.getLatLng();
         showCoords(p.lat, p.lng);
+        PinPicker.bindControls();
     },
     lockPin(locked) {
         if (locked) {
