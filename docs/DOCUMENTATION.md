@@ -322,7 +322,7 @@ This divides the **system**, so each person owns a coherent area and can answer
 any question inside it. Both should be able to describe the other's half in one
 sentence.
 
-### Person A — 60% · The Engine
+### Ifty · The Engine
 
 Owns the backend: concurrency, persistence, security.
 
@@ -337,7 +337,7 @@ Owns the backend: concurrency, persistence, security.
 | Security | `SecurityConfig`, `AuthService`, the JWT filter | Stateless JWT; BCrypt; role rules; why secrets are git-ignored |
 | Tests | 9 test classes, 104 tests | How a `CountDownLatch` creates a true race |
 
-### Person B — 40% · The Experience
+### Sakib · The Experience
 
 Owns everything the user sees, and the real-time client.
 
