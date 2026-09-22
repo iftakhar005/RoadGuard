@@ -43,3 +43,6 @@ replays/
 data/
 *.mv.db
 *.trace.db
+
+# self signed certificate for phone testing, generate your own
+certs/
