@@ -880,6 +880,54 @@
     z-index: 1;
 }
 
+.gps-note {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.gps-note:empty {
+    display: none;
+}
+
+.gps-note::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-3);
+    flex: none;
+}
+
+.gps-note.is-good {
+    color: var(--green);
+}
+
+.gps-note.is-good::before {
+    background: var(--green);
+    animation: sos-pulse 1.6s ease-in-out infinite;
+}
+
+.gps-note.is-weak {
+    color: #B4690E;
+}
+
+.gps-note.is-weak::before {
+    background: var(--amber);
+}
+
+.gps-note.is-bad {
+    color: var(--red);
+}
+
+.gps-note.is-bad::before {
+    background: var(--red);
+}
+
 .route-summary {
     font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
     font-size: 13.5px;
