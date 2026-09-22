@@ -311,6 +311,29 @@ public class AssignmentService {
         }));
     }
 
+    public boolean giveUpOnDiagnosing(Long requestId, Instant cutoff) {
+        return withLock(requestId, () -> tx.execute(status -> {
+            ServiceRequest request = requests.findById(requestId).orElse(null);
+            if (request == null || request.getStatus() != RequestStatus.DIAGNOSING) {
+                return false;
+            }
+            if (request.searchingSinceOrCreated().isAfter(cutoff)) {
+                return false;
+            }
+            if (!request.getStatus().canTransitionTo(RequestStatus.SEARCHING)) {
+                return false;
+            }
+
+            if (request.getRequiredSpecialization() == null) {
+                request.setRequiredSpecialization(request.getIssueType().defaultSpecialization());
+            }
+            request.setStatus(RequestStatus.SEARCHING);
+            request.beginSearchRound();
+            requests.save(request);
+            return true;
+        }));
+    }
+
     public boolean reviveEscalated(Long requestId) {
         return withLock(requestId, () -> tx.execute(status -> {
             ServiceRequest request = requests.findById(requestId).orElse(null);

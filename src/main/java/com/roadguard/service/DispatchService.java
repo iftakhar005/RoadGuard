@@ -51,6 +51,9 @@ public class DispatchService {
     @Value("${app.dispatch.offer-count:3}")
     private int offerCount;
 
+    @Value("${app.dispatch.urgent-offer-count:5}")
+    private int urgentOfferCount;
+
     public DispatchService(ServiceRequestRepository requests,
                            RequestOfferRepository offers,
                            UserRepository users,
@@ -134,8 +137,9 @@ public class DispatchService {
                 return BroadcastResult.noCandidates();
             }
 
-            List<MatchingService.Candidate> top = candidates.size() > offerCount
-                    ? candidates.subList(0, offerCount)
+            int wanted = offersFor(request.getSeverity());
+            List<MatchingService.Candidate> top = candidates.size() > wanted
+                    ? candidates.subList(0, wanted)
                     : candidates;
 
             Set<Long> offeredTo = new LinkedHashSet<>();
@@ -168,6 +172,12 @@ public class DispatchService {
             log.info("Request {} offered to {} mechanics", requestId, result.offeredTo().size());
         }
         return result;
+    }
+
+    int offersFor(Severity severity) {
+        return severity != null && severity.isUrgent()
+                ? urgentOfferCount
+                : offerCount;
     }
 
     public int queueDepth() {
