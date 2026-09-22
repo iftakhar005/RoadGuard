@@ -276,7 +276,19 @@ function goLive(requestId) {
 }
 
 (async function bootSos() {
-    Live.onMessage(() => poll());
+    Live.onMessage((msg) => {
+        if (msg && msg.type === 'MOVED') {
+            if (!activeRequest || msg.requestId !== activeRequest.id) return;
+            activeRequest.mechanicLat = msg.lat;
+            activeRequest.mechanicLng = msg.lng;
+            if (window.RoadGuardMap) {
+                window.RoadGuardMap.showHelper(
+                    msg.lat, msg.lng, activeRequest.originLat, activeRequest.originLng);
+            }
+            return;
+        }
+        poll();
+    });
     Live.connect();
     try {
         const mine = await api('/api/requests/mine');
