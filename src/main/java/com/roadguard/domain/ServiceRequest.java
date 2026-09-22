@@ -89,6 +89,12 @@ public class ServiceRequest {
 
     private Instant searchingSince;
 
+    @Column(length = 120)
+    private String aiFaultCategory;
+
+    @Column(length = 500)
+    private String aiGuidance;
+
     private Instant acceptedAt;
     private Instant completedAt;
 
