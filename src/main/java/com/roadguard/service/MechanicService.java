@@ -13,6 +13,8 @@ import com.roadguard.web.dto.SkillsRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,6 +32,7 @@ public class MechanicService {
     private final MechanicProfileRepository mechanics;
     private final ServiceRequestRepository requests;
     private final RealtimeNotifier realtime;
+    private final OfferTimeoutService timeouts;
 
     @Transactional(readOnly = true)
     public MechanicProfileResponse myProfile(AuthUser caller) {
@@ -61,9 +64,23 @@ public class MechanicService {
             throw new IllegalStateException("Finish your current job before going back online");
         }
 
+        boolean cameBack = req.status() == AvailabilityStatus.ONLINE
+                && profile.getStatus() != AvailabilityStatus.ONLINE;
+
         profile.setStatus(req.status());
         profile.setLastHeartbeat(Instant.now());
         mechanics.save(profile);
+
+        if (cameBack) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            timeouts.reviveEscalated();
+                        }
+                    });
+        }
+
         return MechanicProfileResponse.from(profile);
     }
 
