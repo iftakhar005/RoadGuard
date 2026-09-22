@@ -132,6 +132,37 @@ let helperRoutedFrom = null;
 let helperRoutedAt = 0;
 let helperBusy = false;
 let helperLabel = '';
+let helperGlide = null;
+
+function glideHelperTo(to) {
+    if (!helperMarker) return;
+
+    const from = helperMarker.getLatLng();
+    if (helperGlide) {
+        cancelAnimationFrame(helperGlide);
+        helperGlide = null;
+    }
+
+    const jump = Route.haversineKm({ lat: from.lat, lng: from.lng }, to);
+    if (jump > 1 || jump === 0) {
+        helperMarker.setLatLng([to.lat, to.lng]);
+        return;
+    }
+
+    const started = performance.now();
+    const span = 1200;
+
+    function step(now) {
+        const t = Math.min(1, (now - started) / span);
+        const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        helperMarker.setLatLng([
+            from.lat + (to.lat - from.lat) * eased,
+            from.lng + (to.lng - from.lng) * eased
+        ]);
+        helperGlide = t < 1 ? requestAnimationFrame(step) : null;
+    }
+    helperGlide = requestAnimationFrame(step);
+}
 
 function writeHelperLabel() {
     const box = document.getElementById('helper-eta');
@@ -190,7 +221,7 @@ window.RoadGuardMap = {
             }).addTo(helperLayer).bindTooltip('Your mechanic', { direction: 'top', offset: [0, -16] });
         }
 
-        helperMarker.setLatLng([lat, lng]);
+        glideHelperTo(from);
         writeHelperLabel();
 
         const moved = helperRoutedFrom ? Route.haversineKm(helperRoutedFrom, from) : Infinity;
@@ -200,6 +231,10 @@ window.RoadGuardMap = {
     },
 
     hideHelper() {
+        if (helperGlide) {
+            cancelAnimationFrame(helperGlide);
+            helperGlide = null;
+        }
         helperLayer.clearLayers();
         helperMarker = null;
         helperLine = null;

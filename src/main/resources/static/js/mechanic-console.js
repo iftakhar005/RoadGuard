@@ -59,6 +59,89 @@ function position() {
     });
 }
 
+const WORST_ACCURACY_M = 120;
+const JITTER_KM = 0.015;
+
+const gps = { watchId: null, accuracy: null, fixes: 0 };
+
+function gpsNote(text, kind) {
+    const note = el('gps-note');
+    if (!note) return;
+    note.textContent = text;
+    note.className = 'gps-note' + (kind ? ' is-' + kind : '');
+}
+
+function following(accuracy) {
+    gpsNote('Following your location, accurate to about '
+        + Math.round(accuracy) + ' m', 'good');
+}
+
+function onFix(pos) {
+    const accuracy = pos.coords.accuracy;
+    const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+
+    gps.fixes += 1;
+    gps.accuracy = accuracy;
+
+    if (accuracy > WORST_ACCURACY_M) {
+        gpsNote('Weak signal, give or take ' + Math.round(accuracy)
+            + ' m, holding your last position', 'weak');
+        return;
+    }
+
+    const moved = state.lastPosition
+        ? Route.haversineKm(state.lastPosition, next)
+        : Infinity;
+
+    if (moved < JITTER_KM) {
+        following(accuracy);
+        return;
+    }
+
+    state.lastPosition = next;
+    if (state.pin) {
+        state.pin.setLatLng([next.lat, next.lng]);
+    }
+    el('mech-coords').textContent = `${next.lat.toFixed(5)}, ${next.lng.toFixed(5)}`;
+    following(accuracy);
+    saveMyLocation(next.lat, next.lng);
+}
+
+function onFixFailed(err) {
+    if (err && err.code === 1) {
+        gpsNote('Location permission was refused, place the pin by hand', 'bad');
+    } else {
+        gpsNote('No GPS fix yet, place the pin by hand if it does not arrive', 'weak');
+    }
+}
+
+function startFollowing() {
+    if (gps.watchId !== null) return;
+
+    if (!navigator.geolocation) {
+        gpsNote('This browser cannot share a location, place the pin by hand', 'bad');
+        return;
+    }
+    if (!window.isSecureContext) {
+        gpsNote('Location needs https or localhost, place the pin by hand', 'bad');
+        return;
+    }
+
+    gpsNote('Looking for a GPS fix');
+    gps.watchId = navigator.geolocation.watchPosition(onFix, onFixFailed, {
+        enableHighAccuracy: true,
+        maximumAge: 2000,
+        timeout: 20000
+    });
+}
+
+function stopFollowing() {
+    if (gps.watchId === null) return;
+    navigator.geolocation.clearWatch(gps.watchId);
+    gps.watchId = null;
+    gpsNote('');
+}
+
 function renderDuty() {
     const p = state.profile;
     if (!p) return;
@@ -267,6 +350,11 @@ async function setDuty(on) {
             method: 'POST',
             body: JSON.stringify(body)
         });
+        if (on) {
+            startFollowing();
+        } else {
+            stopFollowing();
+        }
         toast(on ? 'You are on duty' : 'You are off duty', on ? 'win' : '');
         await refresh();
     } catch (err) {
@@ -414,6 +502,10 @@ function onSkillsSaved(profile) {
 
     if (typeof Skills !== 'undefined' && state.profile) {
         Skills.show(state.profile.specializations);
+    }
+
+    if (state.profile && state.profile.status !== 'OFFLINE') {
+        startFollowing();
     }
 
     Live.onMessage(() => refresh());
