@@ -64,6 +64,20 @@ public class RealtimeNotifier {
         toAdmin("STATUS", request.getId());
     }
 
+    public void mechanicMoved(Long requestId, double lat, double lng) {
+        Map<String, Object> payload = Map.of(
+                "type", "MOVED",
+                "requestId", requestId,
+                "lat", lat,
+                "lng", lng,
+                "at", Instant.now().toString());
+        try {
+            messaging.convertAndSend("/topic/request/" + requestId, payload);
+        } catch (Exception e) {
+            log.debug("Could not push a movement: {}", e.toString());
+        }
+    }
+
     public void mechanicChanged(Long mechanicUserId) {
         sendToUser(mechanicUserId, Map.of(
                 "type", "MECHANIC",
