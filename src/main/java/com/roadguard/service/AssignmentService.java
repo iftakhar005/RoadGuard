@@ -311,6 +311,24 @@ public class AssignmentService {
         }));
     }
 
+    public boolean reviveEscalated(Long requestId) {
+        return withLock(requestId, () -> tx.execute(status -> {
+            ServiceRequest request = requests.findById(requestId).orElse(null);
+            if (request == null || request.getStatus() != RequestStatus.ESCALATED) {
+                return false;
+            }
+            if (!request.getStatus().canTransitionTo(RequestStatus.SEARCHING)) {
+                return false;
+            }
+
+            request.setSearchAttempts(0);
+            request.setStatus(RequestStatus.SEARCHING);
+            request.beginSearchRound();
+            requests.save(request);
+            return true;
+        }));
+    }
+
     public <T> T runLocked(Long requestId, java.util.function.Supplier<T> action) {
         return withLock(requestId, action);
     }

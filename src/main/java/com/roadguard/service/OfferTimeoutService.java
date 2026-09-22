@@ -28,6 +28,9 @@ public class OfferTimeoutService {
     @Value("${app.dispatch.max-attempts:3}")
     private int maxAttempts;
 
+    @Value("${app.dispatch.revive-within-sec:1800}")
+    private long reviveWithinSeconds;
+
     public OfferTimeoutService(ServiceRequestRepository requests,
                                AssignmentService assignment,
                                DispatchService dispatch) {
@@ -86,6 +89,26 @@ public class OfferTimeoutService {
                 widened + stranded.widened(),
                 escalated + stranded.escalated(),
                 stranded.retried());
+    }
+
+    public int reviveEscalated() {
+        Instant tooOld = Instant.now().minusSeconds(reviveWithinSeconds);
+
+        List<ServiceRequest> giveUps = requests.findByStatusIn(List.of(RequestStatus.ESCALATED));
+        int revived = 0;
+
+        for (ServiceRequest request : giveUps) {
+            if (request.getCreatedAt().isBefore(tooOld)) {
+                continue;
+            }
+            if (assignment.reviveEscalated(request.getId())) {
+                revived++;
+                dispatch.enqueue(request.getId(), request.getSeverity());
+                log.info("Request {} was given up on, a mechanic came back so it is searching again",
+                        request.getId());
+            }
+        }
+        return revived;
     }
 
     private Stranded retryStranded(Instant cutoff) {
