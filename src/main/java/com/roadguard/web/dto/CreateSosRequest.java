@@ -18,6 +18,11 @@ public record CreateSosRequest(
         Double originLng,
 
         @Size(max = 500)
-        String note
+        String note,
+
+        Boolean hasPhoto
 ) {
+    public boolean wantsTriage() {
+        return Boolean.TRUE.equals(hasPhoto);
+    }
 }

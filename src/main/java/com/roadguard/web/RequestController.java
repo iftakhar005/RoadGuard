@@ -48,6 +48,15 @@ public class RequestController {
         return ResponseEntity.ok(requests.assignedToMe(caller));
     }
 
+    @PostMapping(value = "/{id}/photo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ServiceRequestResponse> attachPhoto(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestPart("file")
+            org.springframework.web.multipart.MultipartFile file) {
+        return ResponseEntity.ok(requests.attachPhoto(caller, id, file));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ServiceRequestResponse> byId(
             @AuthenticationPrincipal AuthUser caller,

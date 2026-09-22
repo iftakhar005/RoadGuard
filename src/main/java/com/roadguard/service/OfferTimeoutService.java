@@ -31,6 +31,9 @@ public class OfferTimeoutService {
     @Value("${app.dispatch.revive-within-sec:1800}")
     private long reviveWithinSeconds;
 
+    @Value("${app.ai.diagnosing-timeout-sec:30}")
+    private long diagnosingTimeoutSeconds;
+
     public OfferTimeoutService(ServiceRequestRepository requests,
                                AssignmentService assignment,
                                DispatchService dispatch) {
@@ -84,11 +87,31 @@ public class OfferTimeoutService {
             }
         }
 
+        int abandoned = giveUpOnDiagnosing();
+
         Stranded stranded = retryStranded(cutoff);
         return new SweepResult(
                 widened + stranded.widened(),
                 escalated + stranded.escalated(),
                 stranded.retried());
+    }
+
+    private int giveUpOnDiagnosing() {
+        Instant cutoff = Instant.now().minusSeconds(diagnosingTimeoutSeconds);
+
+        List<ServiceRequest> waiting =
+                requests.findByStatusIn(List.of(RequestStatus.DIAGNOSING));
+
+        int moved = 0;
+        for (ServiceRequest request : waiting) {
+            if (assignment.giveUpOnDiagnosing(request.getId(), cutoff)) {
+                moved++;
+                dispatch.enqueue(request.getId(), request.getSeverity());
+                log.info("Request {} never got its photo, searching on the issue type alone",
+                        request.getId());
+            }
+        }
+        return moved;
     }
 
     public int reviveEscalated() {
