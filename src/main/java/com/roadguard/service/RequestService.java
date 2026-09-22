@@ -156,6 +156,8 @@ public class RequestService {
             request.setRequiredSpecialization(result.specialization());
             request.setSeverity(result.severity());
             request.setSearchRadiusKm(radiusFor(result.severity()));
+            request.setAiFaultCategory(result.faultCategory());
+            request.setAiGuidance(result.driverGuidance());
 
             VehicleDiagnosis diagnosis =
                     new VehicleDiagnosis(request, result.specialization(), result.severity());

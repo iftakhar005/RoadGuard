@@ -23,6 +23,8 @@ public record ServiceRequestResponse(
         String assignedMechanicName,
         Double mechanicLat,
         Double mechanicLng,
+        String aiFaultCategory,
+        String aiGuidance,
         Instant createdAt,
         Instant acceptedAt,
         Instant completedAt
@@ -51,6 +53,8 @@ public record ServiceRequestResponse(
                 req.getAssignedMechanic() == null ? null : req.getAssignedMechanic().getUsername(),
                 share ? mechanic.getCurrentLat() : null,
                 share ? mechanic.getCurrentLng() : null,
+                req.getAiFaultCategory(),
+                req.getAiGuidance(),
                 req.getCreatedAt(),
                 req.getAcceptedAt(),
                 req.getCompletedAt());
