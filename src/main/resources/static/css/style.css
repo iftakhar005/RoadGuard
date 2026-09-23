@@ -2002,6 +2002,41 @@ input:focus {
     margin-top: 18px;
 }
 
+.map-stage > .chat-host {
+    position: absolute;
+    z-index: 3;
+    right: 24px;
+    bottom: 24px;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    margin-top: 0;
+    padding: 4px 18px 16px;
+    background: rgba(255, 255, 255, .97);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: 0 8px 30px -8px rgba(16, 24, 40, .28);
+}
+
+.map-stage > .chat-host[hidden] {
+    display: none;
+}
+
+.map-stage > .chat-host .chat-panel {
+    border-top: 0;
+}
+
+@media (max-width: 900px) {
+    .map-stage > .chat-host {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-height: 44vh;
+    }
+}
+
 .chat-panel {
     border-top: 1px solid var(--line);
     padding-top: 18px;

@@ -54,7 +54,12 @@ const RoadGuardChat = (() => {
             const earlier = await api('/api/requests/' + requestId + '/chat');
             (earlier || []).forEach(render);
         } catch (e) {
-            /* an empty conversation is the normal case */
+            const host = mounted.get(String(requestId));
+            const list = host && host.querySelector(`[data-chat-messages="${requestId}"]`);
+            const empty = list && list.querySelector('.chat-empty');
+            if (empty) {
+                empty.textContent = 'Earlier messages could not be loaded. New ones will still arrive.';
+            }
         }
     }
 
