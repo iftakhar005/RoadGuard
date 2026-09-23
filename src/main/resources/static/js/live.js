@@ -22,6 +22,9 @@ const Live = (function () {
         document.querySelectorAll('[data-live-label]').forEach((el) => {
             el.textContent = ok ? 'Live' : 'Reconnecting';
         });
+        document.querySelectorAll('[data-chat-connection]').forEach((el) => {
+            el.textContent = ok ? 'Live' : 'Reconnecting...';
+        });
     }
 
     let wanted = [];
@@ -69,6 +72,12 @@ const Live = (function () {
         }, 3000);
     }
 
+    function publish(destination, body) {
+        if (!client || !connected) return false;
+        client.send(destination, {}, JSON.stringify(body));
+        return true;
+    }
+
     return {
         connect,
         onMessage(handler) {
@@ -84,6 +93,7 @@ const Live = (function () {
             if (client && connected) {
                 subscriptions.push(client.subscribe(topic, (frame) => fire(JSON.parse(frame.body))));
             }
-        }
+        },
+        publish
     };
 })();

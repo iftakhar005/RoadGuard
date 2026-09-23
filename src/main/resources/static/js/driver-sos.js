@@ -186,6 +186,15 @@ function showStatus(req) {
             window.RoadGuardMap.hideHelper();
         }
     }
+
+    const chatHost = sosEl('driver-chat');
+    if (chatHost && typeof RoadGuardChat !== 'undefined') {
+        const chatOpen = assigned && !finished;
+        chatHost.hidden = !chatOpen;
+        if (chatOpen) {
+            RoadGuardChat.mount(req.id, 'DRIVER', chatHost);
+        }
+    }
 }
 
 async function sendPhoto(requestId, photo) {
@@ -351,6 +360,7 @@ function goLive(requestId) {
 
 (async function bootSos() {
     Live.onMessage((msg) => {
+        if (msg && (msg.type === 'CHAT_ERROR' || (msg.senderRole && msg.requestId))) return;
         if (msg && msg.type === 'MOVED') {
             if (!activeRequest || msg.requestId !== activeRequest.id) return;
             activeRequest.mechanicLat = msg.lat;
