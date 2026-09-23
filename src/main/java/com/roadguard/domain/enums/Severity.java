@@ -7,6 +7,10 @@ public enum Severity {
     HIGH,
     CRITICAL;
 
+    public boolean isUrgent() {
+        return this == HIGH || this == CRITICAL;
+    }
+
     public int priority() {
         return switch (this) {
             case CRITICAL -> 0;
@@ -14,9 +18,5 @@ public enum Severity {
             case MEDIUM -> 2;
             case LOW -> 3;
         };
-    }
-
-    public boolean isUrgent() {
-        return this == HIGH || this == CRITICAL;
     }
 }

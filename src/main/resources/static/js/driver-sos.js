@@ -75,6 +75,18 @@ function showForm() {
             <input type="text" id="sos-note" placeholder="e.g. front left tyre, near the flyover">
         </div>
 
+        <div class="field">
+            <label>Photo of the problem <span class="optional">(optional)</span></label>
+            <label class="shop-image-drop" for="sos-photo">
+                <div class="shop-image-preview" id="sos-photo-preview"></div>
+                <span class="shop-image-hint" id="sos-photo-hint">
+                    Add a photo and we will work out who you need<br>
+                    <small>JPG, PNG or WEBP, up to 5 MB</small>
+                </span>
+            </label>
+            <input type="file" id="sos-photo" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+        </div>
+
         <div class="map-panel-actions">
             <button class="btn btn-sos" id="sos-send">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
@@ -132,8 +144,19 @@ function showStatus(req) {
             ${tracking ? '<button class="btn btn-locate" id="helper-fit" type="button">Track</button>' : ''}
         </div>` : ''}
 
+        ${req.aiGuidance ? `
+        <div class="ai-read">
+            <div class="ai-read-head">
+                <span class="ai-badge">Photo check</span>
+                ${req.aiFaultCategory ? `<strong>${esc(req.aiFaultCategory)}</strong>` : ''}
+                <span class="sev" data-v="${esc(req.severity)}">${esc(req.severity)}</span>
+            </div>
+            <p>${esc(req.aiGuidance)}</p>
+        </div>` : ''}
+
         <dl class="job-grid" style="margin-top:14px">
             <div class="job-cell"><dt>Problem</dt><dd>${esc(req.issueType.replace('_', ' '))}</dd></div>
+            <div class="job-cell"><dt>Needs</dt><dd>${esc(req.requiredSpecialization || '—')}</dd></div>
             <div class="job-cell"><dt>Search radius</dt><dd>${req.searchRadiusKm} km</dd></div>
         </dl>
 
@@ -165,6 +188,23 @@ function showStatus(req) {
     }
 }
 
+async function sendPhoto(requestId, photo) {
+    const form = new FormData();
+    form.append('file', photo);
+
+    const res = await fetch('/api/requests/' + requestId + '/photo', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + Auth.token() },
+        body: form
+    });
+
+    if (!res.ok) {
+        sosToast('The photo could not be read, searching on the problem you picked', '');
+        return await api('/api/requests/' + requestId);
+    }
+    return await res.json();
+}
+
 async function sendSos() {
     const btn = sosEl('sos-send');
     const pin = window.RoadGuardMap ? window.RoadGuardMap.pinPosition() : null;
@@ -173,18 +213,29 @@ async function sendSos() {
         return;
     }
 
+    const photo = sosEl('sos-photo') ? sosEl('sos-photo').files[0] : null;
+
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Sending';
     try {
-        const created = await api('/api/requests', {
+        let created = await api('/api/requests', {
             method: 'POST',
             body: JSON.stringify({
                 issueType: sosEl('sos-issue').value,
                 originLat: pin.lat,
                 originLng: pin.lng,
-                note: sosEl('sos-note').value.trim() || null
+                note: sosEl('sos-note').value.trim() || null,
+                hasPhoto: !!photo
             })
         });
+
+        if (photo) {
+            btn.innerHTML = '<span class="spinner"></span>Checking the photo';
+            activeRequest = created;
+            showStatus(created);
+            created = await sendPhoto(created.id, photo);
+        }
+
         activeRequest = created;
         goLive(created.id);
         sosToast('Help is on the way, looking for a mechanic', 'win');
@@ -257,6 +308,29 @@ function stopPolling() {
     pollTimer = null;
 }
 
+document.addEventListener('change', (e) => {
+    if (!e.target.closest('#sos-photo')) return;
+
+    const file = e.target.files[0];
+    const preview = sosEl('sos-photo-preview');
+    const hint = sosEl('sos-photo-hint');
+    if (!file || !preview) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+        sosToast('That photo is larger than 5 MB', 'bad');
+        e.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        preview.style.backgroundImage = `url(${reader.result})`;
+        preview.classList.add('has-image');
+        if (hint) hint.innerHTML = 'Photo ready<br><small>tap to choose a different one</small>';
+    };
+    reader.readAsDataURL(file);
+});
+
 document.addEventListener('click', (e) => {
     if (e.target.closest('#helper-fit')) {
         window.RoadGuardMap.fitHelper();
@@ -283,7 +357,7 @@ function goLive(requestId) {
             activeRequest.mechanicLng = msg.lng;
             if (window.RoadGuardMap) {
                 window.RoadGuardMap.showHelper(
-                    msg.lat, msg.lng, activeRequest.originLat, activeRequest.originLng);
+                    msg.lat, msg.lng, activeRequest.originLat, activeRequest.originLng, true);
             }
             return;
         }

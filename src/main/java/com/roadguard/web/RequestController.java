@@ -12,6 +12,8 @@ import com.roadguard.web.dto.StatusUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,6 +48,25 @@ public class RequestController {
     @GetMapping("/mine-assigned")
     public ResponseEntity<List<ServiceRequestResponse>> mineAssigned(@AuthenticationPrincipal AuthUser caller) {
         return ResponseEntity.ok(requests.assignedToMe(caller));
+    }
+
+    @PostMapping(value = "/{id}/photo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ServiceRequestResponse> attachPhoto(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestPart("file")
+            org.springframework.web.multipart.MultipartFile file) {
+        return ResponseEntity.ok(requests.attachPhoto(caller, id, file));
+    }
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<Resource> photo(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id) {
+        RequestService.StoredImage image = requests.photoFor(caller, id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(image.contentType()))
+                .body(image.resource());
     }
 
     @GetMapping("/{id}")
