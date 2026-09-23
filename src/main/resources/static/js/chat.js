@@ -20,7 +20,14 @@ const RoadGuardChat = (() => {
                         <p class="section-label">Live chat</p>
                         <p class="chat-subtitle">Message your ${role === 'DRIVER' ? 'mechanic' : 'driver'} securely.</p>
                     </div>
-                    <span class="chat-connection" data-chat-connection="${key}">Connecting...</span>
+                    <div class="chat-heading-right">
+                        <span class="chat-connection" data-chat-connection="${key}">Connecting...</span>
+                        <button type="button" class="chat-toggle" data-chat-toggle="${key}"
+                                aria-expanded="true" title="Hide the chat">
+                            <span class="chat-unread" data-chat-unread="${key}" hidden>0</span>
+                            <span class="chat-chevron" aria-hidden="true"></span>
+                        </button>
+                    </div>
                 </div>
                 <div class="chat-messages" data-chat-messages="${key}" aria-live="polite">
                     <p class="chat-empty">No messages yet. Share an update when you are ready.</p>
@@ -46,10 +53,62 @@ const RoadGuardChat = (() => {
         host.querySelector(`[data-chat-file="${key}"]`).addEventListener('change', event => previewFile(event, key));
         host.querySelector(`[data-chat-connection="${key}"]`).textContent = Live.isConnected() ? 'Live' : 'Reconnecting...';
 
+        host.querySelector(`[data-chat-toggle="${key}"]`)
+            .addEventListener('click', () => setMinimised(key, !host.classList.contains('is-min')));
+
+        setMinimised(key, localStorage.getItem(MIN_KEY + key) === '1', true);
+
         loadHistory(key);
     }
 
+    const MIN_KEY = 'roadguard.chat.min.';
+
+    function setMinimised(requestId, minimised, quiet) {
+        const host = mounted.get(String(requestId));
+        if (!host) return;
+
+        host.classList.toggle('is-min', minimised);
+
+        const toggle = host.querySelector(`[data-chat-toggle="${requestId}"]`);
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', String(!minimised));
+            toggle.title = minimised ? 'Show the chat' : 'Hide the chat';
+        }
+
+        try {
+            localStorage.setItem(MIN_KEY + requestId, minimised ? '1' : '0');
+        } catch (e) {
+            /* a browser that refuses storage still opens and closes the panel */
+        }
+
+        if (!minimised) {
+            unread.set(String(requestId), 0);
+            paintUnread(requestId);
+            const list = host.querySelector(`[data-chat-messages="${requestId}"]`);
+            if (list && !quiet) list.scrollTop = list.scrollHeight;
+        }
+    }
+
+    const unread = new Map();
+
+    function paintUnread(requestId) {
+        const host = mounted.get(String(requestId));
+        if (!host) return;
+        const badge = host.querySelector(`[data-chat-unread="${requestId}"]`);
+        if (!badge) return;
+        const count = unread.get(String(requestId)) || 0;
+        badge.hidden = count === 0;
+        badge.textContent = count > 9 ? '9+' : String(count);
+
+        document.dispatchEvent(new CustomEvent('chat-unread', {
+            detail: { requestId: String(requestId), count }
+        }));
+    }
+
+    const loadingHistory = new Set();
+
     async function loadHistory(requestId) {
+        loadingHistory.add(String(requestId));
         try {
             const earlier = await api('/api/requests/' + requestId + '/chat');
             (earlier || []).forEach(render);
@@ -60,6 +119,8 @@ const RoadGuardChat = (() => {
             if (empty) {
                 empty.textContent = 'Earlier messages could not be loaded. New ones will still arrive.';
             }
+        } finally {
+            loadingHistory.delete(String(requestId));
         }
     }
 
@@ -133,6 +194,13 @@ const RoadGuardChat = (() => {
         row.innerHTML = `<div class="chat-bubble"><strong>${esc(message.sender)}</strong>${message.text ? `<p>${esc(message.text)}</p>` : ''}${message.mediaUrl ? `<img src="${esc(message.mediaUrl)}" alt="Shared image" loading="lazy">` : ''}<time>${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(message.sentAt))}</time></div>`;
         list.appendChild(row);
         list.scrollTop = list.scrollHeight;
+
+        if (host.classList.contains('is-min') && !mine
+                && !loadingHistory.has(String(message.requestId))) {
+            const key = String(message.requestId);
+            unread.set(key, (unread.get(key) || 0) + 1);
+            paintUnread(key);
+        }
     }
 
     if (typeof Live !== 'undefined') {
@@ -148,5 +216,10 @@ const RoadGuardChat = (() => {
         });
     }
 
-    return { mount };
+    return {
+        mount,
+        reveal(requestId) {
+            setMinimised(requestId, false);
+        }
+    };
 })();

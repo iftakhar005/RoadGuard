@@ -275,6 +275,7 @@ function renderJob() {
         if (typeof JobMap !== 'undefined') JobMap.hide();
         const idleChat = el('mech-chat-card');
         if (idleChat) idleChat.style.display = 'none';
+        showJumpBar(false);
         return;
     }
     wrap.style.display = '';
@@ -327,6 +328,8 @@ function renderJob() {
         chatCard.style.display = '';
         RoadGuardChat.mount(job.id, 'MECHANIC', el('mech-chat'));
     }
+
+    showJumpBar(true);
 
     if (typeof JobMap !== 'undefined') {
         const me = state.lastPosition
@@ -478,6 +481,36 @@ document.addEventListener('click', (e) => {
     } else if (act === 'refit') {
         JobMap.refit();
     }
+});
+
+document.addEventListener('click', (e) => {
+    const jump = e.target.closest('[data-jump]');
+    if (!jump) return;
+
+    const target = el(jump.dataset.jump);
+    if (!target || target.hidden || target.style.display === 'none') return;
+
+    if (jump.dataset.jump === 'mech-chat-card'
+            && typeof RoadGuardChat !== 'undefined' && state.job) {
+        RoadGuardChat.reveal(state.job.id);
+    }
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('is-pointed');
+    setTimeout(() => target.classList.remove('is-pointed'), 1200);
+});
+
+function showJumpBar(onJob) {
+    const bar = el('jump-bar');
+    if (bar) bar.hidden = !onJob;
+}
+
+document.addEventListener('chat-unread', (e) => {
+    const badge = el('jump-chat-badge');
+    if (!badge) return;
+    const count = e.detail.count;
+    badge.hidden = count === 0;
+    badge.textContent = count > 9 ? '9+' : String(count);
 });
 
 el('duty-toggle').addEventListener('change', (e) => setDuty(e.target.checked));
