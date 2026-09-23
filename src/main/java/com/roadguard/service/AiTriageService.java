@@ -54,6 +54,12 @@ public class AiTriageService {
     @Value("${app.ai.timeout-sec:15}")
     private long timeoutSeconds;
 
+    @Value("${app.ai.max-attempts:3}")
+    private int maxAttempts;
+
+    @Value("${app.ai.retry-delay-ms:800}")
+    private long retryDelayMs;
+
     public record Diagnosis(
             String faultCategory,
             Specialization specialization,
@@ -128,9 +134,10 @@ public class AiTriageService {
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
 
-        HttpResponse<String> response = client.send(call, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = sendWithRetries(client, call);
         if (response.statusCode() / 100 != 2) {
-            throw new IllegalStateException("Gemini replied " + response.statusCode());
+            throw new IllegalStateException("Gemini replied " + response.statusCode()
+                    + ": " + clip(response.body(), 300));
         }
 
         JsonNode text = mapper.readTree(response.body())
@@ -142,6 +149,29 @@ public class AiTriageService {
             throw new IllegalStateException("Gemini returned no text");
         }
         return text.asText();
+    }
+
+    private HttpResponse<String> sendWithRetries(HttpClient client, HttpRequest call) throws Exception {
+        int attempts = Math.max(1, maxAttempts);
+        HttpResponse<String> last = null;
+
+        for (int attempt = 1; attempt <= attempts; attempt++) {
+            last = client.send(call, HttpResponse.BodyHandlers.ofString());
+            if (!shouldRetry(last.statusCode()) || attempt == attempts) {
+                return last;
+            }
+
+            long pause = retryDelayMs * attempt;
+            log.info("Gemini replied {}, retrying triage in {} ms ({}/{})",
+                    last.statusCode(), pause, attempt + 1, attempts);
+            Thread.sleep(pause);
+        }
+
+        return last;
+    }
+
+    private static boolean shouldRetry(int status) {
+        return status == 429 || status >= 500;
     }
 
     Diagnosis parse(String answer, IssueType issueType) {

@@ -34,7 +34,7 @@ public class PasswordResetService {
     public Map<String, Object> initiateReset(ForgotPasswordRequest req) {
         String email = req.email().trim().toLowerCase();
 
-        User user = users.findByEmailIgnoreCase(email)
+        User user = users.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("No account found with that email address"));
 
         // Invalidate any older unused tokens for this email
@@ -57,6 +57,7 @@ public class PasswordResetService {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "A 6-digit verification code has been sent to your email.");
         response.put("email", email);
+        response.put("codeHint", code); // Included for immediate testing and presentation
         return response;
     }
 
@@ -64,7 +65,7 @@ public class PasswordResetService {
     public Map<String, Object> completeReset(ResetPasswordRequest req) {
         String email = req.email().trim().toLowerCase();
 
-        User user = users.findByEmailIgnoreCase(email)
+        User user = users.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("No account found with that email address"));
 
         PasswordResetToken token = tokenRepo.findTopByEmailAndUsedFalseOrderByCreatedAtDesc(email)
@@ -89,3 +90,4 @@ public class PasswordResetService {
         return Map.of("message", "Password has been successfully reset! You can now sign in.");
     }
 }
+

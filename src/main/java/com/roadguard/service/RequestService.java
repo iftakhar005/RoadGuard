@@ -29,6 +29,8 @@ import com.roadguard.web.dto.ServiceRequestResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -280,8 +282,52 @@ public class RequestService {
         return offerRows.findByMechanicIdAndOutcomeIsNull(caller.getId()).stream()
                 .filter(o -> o.getOfferToken().equals(o.getRequest().getCurrentOfferToken()))
                 .filter(o -> o.getRequest().getStatus() == RequestStatus.OFFERED)
-                .map(OfferResponse::from)
+                .map(offer -> OfferResponse.from(
+                        offer,
+                        diagnoses.findByRequestId(offer.getRequest().getId())
+                                .filter(d -> d.getImagePath() != null && !d.getImagePath().isBlank())
+                                .map(d -> "/api/requests/" + offer.getRequest().getId() + "/photo")
+                                .orElse(null)))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public StoredImage photoFor(AuthUser caller, Long requestId) {
+        ServiceRequest request = requests.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("No request with id " + requestId));
+
+        boolean activeOffer = caller.getRole() == Role.MECHANIC
+                && offerRows.findByMechanicIdAndOutcomeIsNull(caller.getId()).stream()
+                        .anyMatch(offer -> offer.getRequest().getId().equals(requestId)
+                                && offer.getOfferToken().equals(request.getCurrentOfferToken())
+                                && request.getStatus() == RequestStatus.OFFERED);
+
+        if (!canView(caller, request) && !activeOffer) {
+            throw new AccessDeniedException("You cannot view this picture");
+        }
+
+        VehicleDiagnosis diagnosis = diagnoses.findByRequestId(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("This request has no picture"));
+        Path file = UploadRules.within(
+                Paths.get(uploadsDir, "sos").toAbsolutePath().normalize(), diagnosis.getImagePath());
+        if (!Files.isRegularFile(file)) {
+            throw new IllegalArgumentException("This picture is no longer available");
+        }
+        return new StoredImage(new FileSystemResource(file), contentTypeFor(diagnosis.getImagePath()));
+    }
+
+    private String contentTypeFor(String name) {
+        String lower = name.toLowerCase(java.util.Locale.ROOT);
+        if (lower.endsWith(".png")) {
+            return "image/png";
+        }
+        if (lower.endsWith(".webp")) {
+            return "image/webp";
+        }
+        return "image/jpeg";
+    }
+
+    public record StoredImage(Resource resource, String contentType) {
     }
 
     @Transactional(readOnly = true)

@@ -77,6 +77,7 @@ public class MechanicService {
                         @Override
                         public void afterCommit() {
                             timeouts.reviveEscalated();
+                            timeouts.requeueActiveSearches();
                         }
                     });
         }
