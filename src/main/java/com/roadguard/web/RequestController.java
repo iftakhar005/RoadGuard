@@ -32,6 +32,7 @@ import java.util.Map;
 public class RequestController {
 
     private final RequestService requests;
+    private final com.roadguard.service.ChatService chat;
 
     @PostMapping
     public ResponseEntity<ServiceRequestResponse> createSos(
@@ -67,6 +68,29 @@ public class RequestController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(image.contentType()))
                 .body(image.resource());
+    }
+
+    @GetMapping("/{id}/chat")
+    public ResponseEntity<java.util.List<com.roadguard.service.ChatService.Line>> conversation(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(chat.conversation(caller, id));
+    }
+
+    @GetMapping("/{id}/chat/media/{name}")
+    public ResponseEntity<byte[]> chatImage(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @PathVariable String name) {
+
+        byte[] bytes = chat.image(caller, id, name);
+        String type = name.endsWith(".png") ? "image/png"
+                : name.endsWith(".webp") ? "image/webp" : "image/jpeg";
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, type)
+                .header(org.springframework.http.HttpHeaders.CACHE_CONTROL, "private, max-age=86400")
+                .body(bytes);
     }
 
     @GetMapping("/{id}")

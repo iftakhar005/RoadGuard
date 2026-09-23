@@ -7,9 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 </head>
-<body data-role="ADMIN">
+<body class="admin-page" data-role="ADMIN">
 
 <header class="topbar">
     <div class="topbar-brand">
@@ -74,26 +75,53 @@
 
 <div class="page">
     <div class="page-head">
-        <h1>Admin</h1>
-        <p>You are signed in. Everything below was fetched from a protected endpoint.</p>
+        <div>
+            <span class="eyebrow">Operations overview</span>
+            <h1>Admin dashboard</h1>
+            <p>Monitor the rescue network and active roadside requests.</p>
+        </div>
+        <span class="dashboard-updated" id="dashboard-updated">Loading live data...</span>
     </div>
 
-    <div class="card">
-        <h2>Your session</h2>
-        <div class="rows" id="session-rows"></div>
+    <div class="admin-metrics" id="admin-metrics" aria-live="polite">
+        <div class="metric-card"><span class="metric-label">Active requests</span><strong id="metric-active">--</strong><span class="metric-note">Currently in the network</span></div>
+        <div class="metric-card"><span class="metric-label">Online mechanics</span><strong id="metric-online">--</strong><span class="metric-note" id="metric-online-note">of -- registered</span></div>
+        <div class="metric-card"><span class="metric-label">Drivers</span><strong id="metric-drivers">--</strong><span class="metric-note">Registered accounts</span></div>
+        <div class="metric-card"><span class="metric-label">Mechanics</span><strong id="metric-mechanics">--</strong><span class="metric-note">Registered accounts</span></div>
     </div>
 
-    <div class="card">
-        <h2>Coming next</h2>
-        <ul class="next-list">
-            <li><span class="dot"></span>One map showing every mechanic and every live request</li>
-            <li><span class="dot"></span>Counters - open requests, active mechanics, average time to accept</li>
-            <li><span class="dot"></span>Force a job onto a mechanic, plus the unsafe-mode switch for the race demo</li>
-        </ul>
+    <div class="admin-map-card card">
+        <div class="card-heading-row">
+            <div>
+                <h2>Live dispatch map</h2>
+                <p class="card-subtitle">Requests and mechanics with a current location.</p>
+            </div>
+            <div class="map-legend">
+                <span><i class="legend-dot request-dot"></i>Request</span>
+                <span><i class="legend-dot online-dot"></i>Available</span>
+                <span><i class="legend-dot busy-dot"></i>Busy</span>
+            </div>
+        </div>
+        <div id="admin-map" class="admin-map" aria-label="Live map of service requests and mechanics"></div>
+        <div id="map-empty" class="map-empty" hidden>No location data is available yet.</div>
+    </div>
+
+    <div class="card admin-requests-card">
+        <div class="card-heading-row">
+            <div>
+                <h2>Recent requests</h2>
+                <p class="card-subtitle">The latest activity across RoadGuard.</p>
+            </div>
+            <span class="live-chip"><span class="live-status-dot"></span>Live</span>
+        </div>
+        <div class="admin-request-list" id="admin-request-list" aria-live="polite">
+            <div class="empty-state">Loading requests...</div>
+        </div>
     </div>
 </div>
 
 <script src="js/api.js"></script>
-<script src="js/home.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>

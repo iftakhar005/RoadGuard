@@ -4,6 +4,7 @@ import com.roadguard.domain.MechanicProfile;
 import com.roadguard.domain.enums.AvailabilityStatus;
 import com.roadguard.domain.enums.Specialization;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,6 +20,9 @@ public interface MechanicProfileRepository extends JpaRepository<MechanicProfile
     Optional<MechanicProfile> findByUserUsername(String username);
 
     List<MechanicProfile> findByStatus(AvailabilityStatus status);
+
+    @EntityGraph(attributePaths = "user")
+    List<MechanicProfile> findAllByCurrentLatIsNotNullAndCurrentLngIsNotNull();
 
     @Query("""
             SELECT m FROM MechanicProfile m

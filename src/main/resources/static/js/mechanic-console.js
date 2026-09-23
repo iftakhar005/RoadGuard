@@ -273,6 +273,8 @@ function renderJob() {
         wrap.innerHTML = '';
         wrap.style.display = 'none';
         if (typeof JobMap !== 'undefined') JobMap.hide();
+        const idleChat = el('mech-chat-card');
+        if (idleChat) idleChat.style.display = 'none';
         return;
     }
     wrap.style.display = '';
@@ -319,6 +321,12 @@ function renderJob() {
             <button class="btn btn-decline" data-act="refit">Recentre the route</button>
         </div>
     </section>`;
+
+    const chatCard = el('mech-chat-card');
+    if (chatCard && typeof RoadGuardChat !== 'undefined') {
+        chatCard.style.display = '';
+        RoadGuardChat.mount(job.id, 'MECHANIC', el('mech-chat'));
+    }
 
     if (typeof JobMap !== 'undefined') {
         const me = state.lastPosition
@@ -552,7 +560,10 @@ function onSkillsSaved(profile) {
         startFollowing();
     }
 
-    Live.onMessage(() => refresh());
+    Live.onMessage((msg) => {
+        if (msg && (msg.type === 'CHAT_ERROR' || (msg.senderRole && msg.requestId))) return;
+        refresh();
+    });
     Live.connect();
 
     setInterval(refresh, POLL_MS);
