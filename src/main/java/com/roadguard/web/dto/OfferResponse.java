@@ -16,12 +16,17 @@ public record OfferResponse(
         Specialization requiredSpecialization,
         Severity severity,
         String note,
+        String imageUrl,
         double originLat,
         double originLng,
         Double distanceKm,
         Instant sentAt
 ) {
     public static OfferResponse from(RequestOffer offer) {
+        return from(offer, null);
+    }
+
+    public static OfferResponse from(RequestOffer offer, String imageUrl) {
         ServiceRequest r = offer.getRequest();
         return new OfferResponse(
                 r.getId(),
@@ -30,6 +35,7 @@ public record OfferResponse(
                 r.getRequiredSpecialization(),
                 r.getSeverity(),
                 r.getNote(),
+                imageUrl,
                 r.getOriginLat(),
                 r.getOriginLng(),
                 null,
@@ -46,6 +52,7 @@ public record OfferResponse(
                 r.getRequiredSpecialization(),
                 r.getSeverity(),
                 r.getNote(),
+                null,
                 r.getOriginLat(),
                 r.getOriginLng(),
                 Math.round(km * 1000.0) / 1000.0,

@@ -142,6 +142,12 @@ function stopFollowing() {
     gpsNote('');
 }
 
+function switchToManualLocation() {
+    if (!state.job || gps.watchId === null) return;
+    stopFollowing();
+    gpsNote('Manual location mode - drag the pin or enter coordinates to simulate movement', 'good');
+}
+
 function renderDuty() {
     const p = state.profile;
     if (!p) return;
@@ -205,8 +211,12 @@ function renderOffers() {
     list.innerHTML = offers.map((o) => {
         const distance = o.distanceKm == null ? '' : `<span>${o.distanceKm.toFixed(1)} km away</span><span>&middot;</span>`;
         const note = o.note ? `<p class="offer-note">${escapeHtml(o.note)}</p>` : '';
+        const image = o.imageUrl
+            ? `<div class="offer-photo" data-photo-url="${escapeHtml(o.imageUrl)}">Loading photo...</div>`
+            : '';
         return `
         <article class="offer" data-severity="${o.severity}" data-request="${o.requestId}">
+            ${image}
             <div class="offer-top">
                 <div>
                     <h3 class="offer-issue">${ISSUE_LABEL[o.issueType] || o.issueType}</h3>
@@ -228,6 +238,31 @@ function renderOffers() {
             <div class="countdown"><span style="width:100%"></span></div>
         </article>`;
     }).join('');
+
+    loadOfferPhotos();
+}
+
+async function loadOfferPhotos() {
+    const token = Auth.token();
+    if (!token) return;
+
+    const placeholders = document.querySelectorAll('[data-photo-url]');
+    await Promise.all([...placeholders].map(async (placeholder) => {
+        try {
+            const response = await fetch(placeholder.dataset.photoUrl, {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            if (!response.ok) throw new Error('Photo request failed');
+
+            const image = document.createElement('img');
+            image.className = 'offer-photo';
+            image.alt = 'Driver vehicle issue';
+            image.src = URL.createObjectURL(await response.blob());
+            placeholder.replaceWith(image);
+        } catch {
+            placeholder.remove();
+        }
+    }));
 }
 
 function renderJob() {
@@ -291,7 +326,13 @@ function renderJob() {
                 ? { lat: state.profile.currentLat, lng: state.profile.currentLng }
                 : null);
         if (me) {
-            JobMap.show(job, me);
+            JobMap.show(job, me, (lat, lng) => {
+                switchToManualLocation();
+                state.lastPosition = { lat, lng };
+                if (state.pin) state.pin.setLatLng([lat, lng]);
+                el('mech-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                saveMyLocation(lat, lng);
+            });
         }
     }
 }
@@ -475,7 +516,10 @@ function setupMap() {
     PinPicker.add('me', pin, (lat, lng, settled) => {
         state.lastPosition = { lat, lng };
         el('mech-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        if (settled) saveMyLocation(lat, lng);
+        if (settled) {
+            switchToManualLocation();
+            saveMyLocation(lat, lng);
+        }
     });
 
     state.map = map;

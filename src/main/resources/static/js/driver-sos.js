@@ -357,7 +357,7 @@ function goLive(requestId) {
             activeRequest.mechanicLng = msg.lng;
             if (window.RoadGuardMap) {
                 window.RoadGuardMap.showHelper(
-                    msg.lat, msg.lng, activeRequest.originLat, activeRequest.originLng);
+                    msg.lat, msg.lng, activeRequest.originLat, activeRequest.originLng, true);
             }
             return;
         }

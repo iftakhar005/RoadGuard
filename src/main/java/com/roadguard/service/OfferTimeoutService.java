@@ -134,6 +134,16 @@ public class OfferTimeoutService {
         return revived;
     }
 
+    public int requeueActiveSearches() {
+        List<ServiceRequest> active =
+                requests.findByStatusIn(List.of(RequestStatus.SEARCHING, RequestStatus.REASSIGNING));
+
+        for (ServiceRequest request : active) {
+            dispatch.enqueue(request.getId(), request.getSeverity());
+        }
+        return active.size();
+    }
+
     private Stranded retryStranded(Instant cutoff) {
         List<ServiceRequest> stranded =
                 requests.findByStatusIn(List.of(RequestStatus.SEARCHING, RequestStatus.REASSIGNING));

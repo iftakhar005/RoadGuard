@@ -197,7 +197,7 @@ window.RoadGuardMap = {
         showCoords(lat, lng);
     },
 
-    showHelper(lat, lng, toLat, toLng) {
+    showHelper(lat, lng, toLat, toLng, refreshRoute) {
         const from = { lat, lng };
         const to = { lat: toLat, lng: toLng };
 
@@ -225,7 +225,7 @@ window.RoadGuardMap = {
         writeHelperLabel();
 
         const moved = helperRoutedFrom ? Route.haversineKm(helperRoutedFrom, from) : Infinity;
-        if (moved > 0.08 || Date.now() - helperRoutedAt > 25000) {
+        if (refreshRoute || moved > 0.08 || Date.now() - helperRoutedAt > 25000) {
             drawHelper(from, to);
         }
     },

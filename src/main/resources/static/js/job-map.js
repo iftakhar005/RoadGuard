@@ -12,6 +12,7 @@ const JobMap = (function () {
     let routedFrom = null;
     let routedAt = 0;
     let pending = false;
+    let moveHandler = null;
 
     const el = (id) => document.getElementById(id);
 
@@ -50,9 +51,14 @@ const JobMap = (function () {
             lineCap: 'round'
         }).addTo(map);
 
-        meMarker = L.marker([me.lat, me.lng], { icon: pins.me })
+        meMarker = L.marker([me.lat, me.lng], { draggable: true, icon: pins.me })
             .addTo(map)
             .bindTooltip('You', { direction: 'top', offset: [0, -14] });
+
+        meMarker.on('dragend', () => {
+            const position = meMarker.getLatLng();
+            if (moveHandler) moveHandler(position.lat, position.lng);
+        });
 
         themMarker = L.marker([them.lat, them.lng], { icon: pins.them })
             .addTo(map)
@@ -88,8 +94,10 @@ const JobMap = (function () {
         }
     }
 
-    function show(job, me) {
+    function show(job, me, onMove) {
         if (typeof L === 'undefined' || !me || me.lat == null) return;
+
+        moveHandler = onMove || null;
 
         const them = { lat: job.originLat, lng: job.originLng };
         el('job-map-card').style.display = '';
