@@ -24,6 +24,12 @@ const RoadGuardChat = (() => {
                         <span class="chat-connection" data-chat-connection="${key}">Connecting...</span>
                         <button type="button" class="chat-toggle" data-chat-toggle="${key}"
                                 aria-expanded="true" title="Hide the chat">
+                            <svg class="chat-icon-bubble" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4.2-1L3 20l1.2-4.4A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/>
+                            </svg>
+                            <span class="chat-min-label">Message your ${role === 'DRIVER' ? 'mechanic' : 'driver'}</span>
                             <span class="chat-unread" data-chat-unread="${key}" hidden>0</span>
                             <span class="chat-chevron" aria-hidden="true"></span>
                         </button>
