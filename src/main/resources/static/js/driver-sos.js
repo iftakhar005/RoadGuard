@@ -192,7 +192,7 @@ function showStatus(req) {
         const chatOpen = assigned && !finished;
         chatHost.hidden = !chatOpen;
         if (chatOpen) {
-            RoadGuardChat.mount(req.id, 'DRIVER', chatHost);
+            RoadGuardChat.mount(req.id, 'DRIVER', chatHost, req.assignedMechanicName);
         }
     }
 }

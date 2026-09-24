@@ -9,11 +9,29 @@ const RoadGuardChat = (() => {
         }[character]));
     }
 
-    function mount(requestId, role, host) {
+    function mount(requestId, role, host, withWhom) {
         if (!host || mounted.get(String(requestId)) === host) return;
         const key = String(requestId);
         mounted.set(key, host);
+
+        const them = withWhom || (role === 'DRIVER' ? 'Your mechanic' : 'The driver');
+        const initial = esc(them.charAt(0).toUpperCase());
+
         host.innerHTML = `
+            <button type="button" class="chat-handle" data-chat-toggle="${key}"
+                    aria-expanded="false" title="Open the chat">
+                <span class="chat-handle-avatar">${initial}</span>
+                <span class="chat-handle-text">
+                    <strong>${esc(them)}</strong>
+                    <small>Tap to send a message</small>
+                </span>
+                <svg class="chat-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4.2-1L3 20l1.2-4.4A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/>
+                </svg>
+                <span class="chat-unread" data-chat-unread="${key}" hidden>0</span>
+            </button>
+
             <section class="chat-panel" aria-label="Chat for request ${esc(requestId)}">
                 <div class="chat-heading">
                     <div>
@@ -24,13 +42,6 @@ const RoadGuardChat = (() => {
                         <span class="chat-connection" data-chat-connection="${key}">Connecting...</span>
                         <button type="button" class="chat-toggle" data-chat-toggle="${key}"
                                 aria-expanded="true" title="Hide the chat">
-                            <svg class="chat-icon-bubble" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2"
-                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4.2-1L3 20l1.2-4.4A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/>
-                            </svg>
-                            <span class="chat-min-label">Message your ${role === 'DRIVER' ? 'mechanic' : 'driver'}</span>
-                            <span class="chat-unread" data-chat-unread="${key}" hidden>0</span>
                             <span class="chat-chevron" aria-hidden="true"></span>
                         </button>
                     </div>
@@ -59,8 +70,9 @@ const RoadGuardChat = (() => {
         host.querySelector(`[data-chat-file="${key}"]`).addEventListener('change', event => previewFile(event, key));
         host.querySelector(`[data-chat-connection="${key}"]`).textContent = Live.isConnected() ? 'Live' : 'Reconnecting...';
 
-        host.querySelector(`[data-chat-toggle="${key}"]`)
-            .addEventListener('click', () => setMinimised(key, !host.classList.contains('is-min')));
+        host.querySelectorAll(`[data-chat-toggle="${key}"]`).forEach((button) =>
+            button.addEventListener('click',
+                () => setMinimised(key, !host.classList.contains('is-min'))));
 
         setMinimised(key, localStorage.getItem(MIN_KEY + key) === '1', true);
 
@@ -75,11 +87,10 @@ const RoadGuardChat = (() => {
 
         host.classList.toggle('is-min', minimised);
 
-        const toggle = host.querySelector(`[data-chat-toggle="${requestId}"]`);
-        if (toggle) {
-            toggle.setAttribute('aria-expanded', String(!minimised));
-            toggle.title = minimised ? 'Show the chat' : 'Hide the chat';
-        }
+        host.querySelectorAll(`[data-chat-toggle="${requestId}"]`).forEach((button) => {
+            button.setAttribute('aria-expanded', String(!minimised));
+            button.title = minimised ? 'Open the chat' : 'Hide the chat';
+        });
 
         try {
             localStorage.setItem(MIN_KEY + requestId, minimised ? '1' : '0');
@@ -100,11 +111,11 @@ const RoadGuardChat = (() => {
     function paintUnread(requestId) {
         const host = mounted.get(String(requestId));
         if (!host) return;
-        const badge = host.querySelector(`[data-chat-unread="${requestId}"]`);
-        if (!badge) return;
         const count = unread.get(String(requestId)) || 0;
-        badge.hidden = count === 0;
-        badge.textContent = count > 9 ? '9+' : String(count);
+        host.querySelectorAll(`[data-chat-unread="${requestId}"]`).forEach((badge) => {
+            badge.hidden = count === 0;
+            badge.textContent = count > 9 ? '9+' : String(count);
+        });
 
         document.dispatchEvent(new CustomEvent('chat-unread', {
             detail: { requestId: String(requestId), count }
