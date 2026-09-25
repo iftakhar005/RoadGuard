@@ -24,6 +24,11 @@ public class AdminController {
     private final UserRepository users;
     private final MechanicProfileRepository mechanics;
     private final ServiceRequestRepository requests;
+    private final com.roadguard.service.DispatchService dispatch;
+    private final com.roadguard.service.AssignmentService assignment;
+
+    @org.springframework.beans.factory.annotation.Value("${app.demo.allow-unsafe:true}")
+    private boolean allowUnsafe;
 
     @GetMapping("/overview")
     public ResponseEntity<AdminOverviewResponse> overview() {
@@ -57,7 +62,59 @@ public class AdminController {
                 recentRequests,
                 activeRequestLocations,
                 mechanicLocations,
+                new EngineState(
+                        dispatch.queueDepth(),
+                        dispatch.broadcastCount(),
+                        assignment.isSafeMode(),
+                        allowUnsafe),
                 Instant.now()));
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/safe-mode")
+    public ResponseEntity<EngineState> setSafeMode(
+            @org.springframework.web.bind.annotation.RequestBody SafeModeRequest body) {
+
+        if (!allowUnsafe && !body.enabled()) {
+            throw new IllegalArgumentException(
+                    "Turning the accept lock off is only allowed while demo mode is on");
+        }
+        assignment.setSafeMode(body.enabled());
+
+        return ResponseEntity.ok(new EngineState(
+                dispatch.queueDepth(),
+                dispatch.broadcastCount(),
+                assignment.isSafeMode(),
+                allowUnsafe));
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/requests/{id}/redispatch")
+    public ResponseEntity<java.util.Map<String, Object>> redispatch(
+            @org.springframework.web.bind.annotation.PathVariable Long id) {
+
+        ServiceRequest request = requests.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No request with id " + id));
+
+        if (request.getStatus().isTerminal()) {
+            throw new IllegalArgumentException("That job is already finished");
+        }
+
+        boolean revived = assignment.reviveEscalated(id);
+        dispatch.enqueue(id, request.getSeverity());
+
+        return ResponseEntity.ok(java.util.Map.of(
+                "requestId", id,
+                "revived", revived,
+                "queued", true));
+    }
+
+    public record SafeModeRequest(boolean enabled) {
+    }
+
+    public record EngineState(
+            int queueDepth,
+            long broadcasts,
+            boolean safeMode,
+            boolean unsafeAllowed) {
     }
 
     public record AdminOverviewResponse(
@@ -68,6 +125,7 @@ public class AdminController {
             List<AdminRequestRow> recentRequests,
             List<AdminRequestRow> activeRequestLocations,
             List<AdminMechanicRow> mechanicLocations,
+            EngineState engine,
             Instant generatedAt) {
     }
 

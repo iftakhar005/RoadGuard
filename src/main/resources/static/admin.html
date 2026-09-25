@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/console.css" rel="stylesheet">
 </head>
 <body class="admin-page" data-role="ADMIN">
 
@@ -88,7 +89,39 @@
         <div class="metric-card"><span class="metric-label">Online mechanics</span><strong id="metric-online">--</strong><span class="metric-note" id="metric-online-note">of -- registered</span></div>
         <div class="metric-card"><span class="metric-label">Drivers</span><strong id="metric-drivers">--</strong><span class="metric-note">Registered accounts</span></div>
         <div class="metric-card"><span class="metric-label">Mechanics</span><strong id="metric-mechanics">--</strong><span class="metric-note">Registered accounts</span></div>
+        <div class="metric-card"><span class="metric-label">Dispatch queue</span><strong id="metric-queue">--</strong><span class="metric-note">Jobs waiting for a worker</span></div>
+        <div class="metric-card"><span class="metric-label">Broadcasts</span><strong id="metric-broadcasts">--</strong><span class="metric-note">Offer rounds sent</span></div>
     </div>
+
+    <section class="card engine-card">
+        <div class="engine-head">
+            <div>
+                <p class="section-label">The accept lock</p>
+                <p class="engine-sub" id="engine-sub">
+                    Every accept is taken under a per-request lock, so exactly one mechanic wins.
+                </p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="safe-toggle" checked>
+                <span class="switch-track"></span>
+                <span class="switch-label" id="safe-label">Lock on</span>
+            </label>
+        </div>
+        <p class="engine-warning" id="engine-warning" hidden>
+            The lock is off. Two mechanics can now win the same job. This is for demonstrating
+            why the lock exists, and nothing else.
+        </p>
+    </section>
+
+    <section class="card feed-card">
+        <p class="section-label" style="margin-bottom:10px">
+            Live activity
+            <span class="feed-live" id="feed-live">waiting</span>
+        </p>
+        <div class="feed" id="admin-feed">
+            <p class="feed-empty">Nothing has happened yet. Send an SOS and watch it arrive.</p>
+        </div>
+    </section>
 
     <div class="admin-map-card card">
         <div class="card-heading-row">
@@ -122,6 +155,9 @@
 
 <script src="js/api.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="js/live.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>
