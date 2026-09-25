@@ -18,6 +18,7 @@ public class RealtimeNotifier {
 
     private final SimpMessagingTemplate messaging;
     private final UserRepository users;
+    private final org.springframework.context.ApplicationEventPublisher events;
 
     public void offersSent(Long requestId, Collection<Long> mechanicUserIds) {
         Map<String, Object> payload = Map.of(
@@ -28,6 +29,7 @@ public class RealtimeNotifier {
         for (Long userId : mechanicUserIds) {
             sendToUser(userId, payload);
         }
+        events.publishEvent(new com.roadguard.tcp.OffersSentEvent(requestId, mechanicUserIds));
         toAdmin("OFFER", requestId);
     }
 
@@ -40,6 +42,7 @@ public class RealtimeNotifier {
         for (Long userId : mechanicUserIds) {
             sendToUser(userId, payload);
         }
+        events.publishEvent(new com.roadguard.tcp.OfferClosedEvent(requestId, mechanicUserIds));
     }
 
     public void requestChanged(ServiceRequest request) {
@@ -60,6 +63,8 @@ public class RealtimeNotifier {
 
         if (request.getAssignedMechanic() != null) {
             sendToUser(request.getAssignedMechanic().getId(), payload);
+            events.publishEvent(new com.roadguard.tcp.RequestAssignedEvent(
+                    request.getId(), request.getAssignedMechanic().getId()));
         }
         toAdmin("STATUS", request.getId());
     }
