@@ -113,6 +113,28 @@
         </p>
     </section>
 
+    <section class="card gateway-card">
+        <div class="engine-head">
+            <div>
+                <p class="section-label">Device gateway</p>
+                <p class="engine-sub" id="gateway-sub">
+                    A plain socket on its own port, outside HTTP. Checking...
+                </p>
+            </div>
+            <div class="gateway-actions">
+                <select id="probe-mechanic" aria-label="Connect as which mechanic"></select>
+                <button class="btn-probe" id="probe-btn" type="button">Open a connection</button>
+            </div>
+        </div>
+        <p class="gateway-note">
+            The browser cannot open a socket, so the connection is made from the server and the
+            conversation is copied here line by line. Whatever the mechanic's availability and
+            position were beforehand are put back afterwards.
+        </p>
+        <pre class="transcript" id="transcript" hidden></pre>
+        <p class="transcript-verdict" id="transcript-verdict" hidden></p>
+    </section>
+
     <section class="card feed-card">
         <p class="section-label" style="margin-bottom:10px">
             Live activity
