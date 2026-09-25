@@ -1428,3 +1428,108 @@
 @media (max-width: 720px) {
     .shop-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------------- admin: the engine and its activity ---------------- */
+
+.engine-card {
+    margin-bottom: 18px;
+}
+
+.engine-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.engine-sub {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--ink-3);
+    max-width: 62ch;
+}
+
+.engine-warning {
+    margin: 14px 0 0;
+    padding: 11px 13px;
+    border-radius: var(--r-md);
+    background: var(--red-soft);
+    border: 1px solid rgba(229, 72, 77, .28);
+    color: #9B2C2C;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.engine-warning[hidden] {
+    display: none;
+}
+
+.feed-card {
+    margin-bottom: 18px;
+}
+
+.feed-live {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--green);
+}
+
+.feed {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: #FAFBFD;
+    padding: 6px 0;
+}
+
+.feed-line {
+    margin: 0;
+    padding: 6px 13px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    border-bottom: 1px solid #EEF1F6;
+    display: flex;
+    gap: 10px;
+}
+
+.feed-line:last-child {
+    border-bottom: 0;
+}
+
+.feed-line time {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    flex: none;
+}
+
+.feed-empty {
+    margin: 0;
+    padding: 16px 13px;
+    font-size: 13px;
+    color: var(--ink-3);
+    text-align: center;
+}
+
+.redispatch-btn {
+    border: 1px solid #DCE2EC;
+    background: var(--surface);
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+
+.redispatch-btn:hover {
+    border-color: var(--live);
+    color: var(--live);
+}
