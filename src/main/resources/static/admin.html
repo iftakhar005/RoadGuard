@@ -122,14 +122,18 @@
                 </p>
             </div>
             <div class="gateway-actions">
-                <select id="probe-mechanic" aria-label="Connect as which mechanic"></select>
-                <button class="btn-probe" id="probe-btn" type="button">Open a connection</button>
+                <label class="probe-as" for="probe-mechanic">Sign in as</label>
+                <select id="probe-mechanic" aria-label="Sign in as which mechanic"></select>
+                <button class="btn-probe" id="probe-btn" type="button">Run a test call</button>
             </div>
         </div>
         <p class="gateway-note">
-            The browser cannot open a socket, so the connection is made from the server and the
-            conversation is copied here line by line. Whatever the mechanic's availability and
-            position were beforehand are put back afterwards.
+            This is not live traffic. It dials the gateway and sends the same six commands every
+            time - one bad token, one good one, a valid position, a malformed one, a heartbeat and
+            a command that does not exist - so the replies show the protocol accepting and refusing
+            things. Picking a mechanic only decides whose name and position the call uses; their
+            availability is untouched, and whatever it was is put back afterwards.
+            The browser cannot open a socket, so the call is made from the server and copied here.
         </p>
         <pre class="transcript" id="transcript" hidden></pre>
         <p class="transcript-verdict" id="transcript-verdict" hidden></p>

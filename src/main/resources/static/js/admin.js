@@ -45,7 +45,7 @@ function wireProbe() {
         const verdict = document.getElementById('transcript-verdict');
 
         button.disabled = true;
-        button.textContent = 'Connecting...';
+        button.textContent = 'Calling...';
         screen.hidden = false;
         screen.textContent = '';
         verdict.hidden = true;
@@ -57,13 +57,13 @@ function wireProbe() {
             });
             paintTranscript(result);
             note(result.reached
-                ? `Opened a socket to the gateway as ${result.mechanic}`
+                ? `Test call to the gateway signed in as ${result.mechanic}`
                 : 'Could not reach the gateway');
         } catch (e) {
             screen.textContent = 'The probe failed: ' + e.message;
         } finally {
             button.disabled = false;
-            button.textContent = 'Open a connection';
+            button.textContent = 'Run a test call';
             loadGateway();
         }
     });
