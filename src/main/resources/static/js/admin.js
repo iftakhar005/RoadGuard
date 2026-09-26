@@ -11,76 +11,7 @@
     setInterval(refresh, 5000);
     watchTheEngine();
     wireSafeMode();
-    loadGateway();
-    wireProbe();
 })();
-
-async function loadGateway() {
-    const sub = document.getElementById('gateway-sub');
-    const picker = document.getElementById('probe-mechanic');
-    if (!sub || !picker) return;
-
-    try {
-        const gateway = await api('/api/admin/gateway');
-        sub.textContent = gateway.listening
-            ? `Listening on port ${gateway.port}, ${gateway.connected} device${gateway.connected === 1 ? '' : 's'} connected right now.`
-            : 'Not listening. Nothing can reach the gateway.';
-
-        picker.innerHTML = (gateway.mechanics || [])
-            .map(m => `<option value="${escapeHtml(m.userId)}">${escapeHtml(m.username)} - ${formatLabel(m.status)}</option>`)
-            .join('');
-        document.getElementById('probe-btn').disabled = !gateway.listening || !picker.options.length;
-    } catch (e) {
-        sub.textContent = 'Could not read the gateway state.';
-    }
-}
-
-function wireProbe() {
-    const button = document.getElementById('probe-btn');
-    if (!button) return;
-
-    button.addEventListener('click', async () => {
-        const picker = document.getElementById('probe-mechanic');
-        const screen = document.getElementById('transcript');
-        const verdict = document.getElementById('transcript-verdict');
-
-        button.disabled = true;
-        button.textContent = 'Calling...';
-        screen.hidden = false;
-        screen.textContent = '';
-        verdict.hidden = true;
-
-        try {
-            const result = await api('/api/admin/gateway/probe', {
-                method: 'POST',
-                body: JSON.stringify({ mechanicUserId: Number(picker.value) || null })
-            });
-            paintTranscript(result);
-            note(result.reached
-                ? `Test call to the gateway signed in as ${result.mechanic}`
-                : 'Could not reach the gateway');
-        } catch (e) {
-            screen.textContent = 'The probe failed: ' + e.message;
-        } finally {
-            button.disabled = false;
-            button.textContent = 'Run a test call';
-            loadGateway();
-        }
-    });
-}
-
-function paintTranscript(result) {
-    const screen = document.getElementById('transcript');
-    const verdict = document.getElementById('transcript-verdict');
-
-    screen.innerHTML = (result.lines || []).map(line => {
-        const arrow = line.direction === 'sent' ? '&gt;&gt;' : line.direction === 'received' ? '&lt;&lt;' : '  ';
-        return `<span class="t-line t-${line.direction}"><span class="t-at">${String(line.atMs).padStart(5)}ms</span> ${arrow} ${escapeHtml(line.text)}</span>`;
-    }).join('\n');
-
-    verdict.hidden = false;
-    verdict.textContent = result.note || '';
-}
 
 async function refresh() {
     try {

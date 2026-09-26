@@ -141,10 +141,6 @@ public class TcpGateway {
         return connected.get();
     }
 
-    public boolean isConnected(Long mechanicUserId) {
-        return sessions.containsKey(mechanicUserId);
-    }
-
     private void acceptLoop() {
         while (running) {
             try {
