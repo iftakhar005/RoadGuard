@@ -9,6 +9,7 @@ import com.roadguard.domain.enums.AcceptOutcome;
 import com.roadguard.domain.MechanicProfile;
 import com.roadguard.domain.VehicleDiagnosis;
 import com.roadguard.domain.enums.IssueType;
+import com.roadguard.domain.enums.Specialization;
 import com.roadguard.repository.MechanicProfileRepository;
 import com.roadguard.repository.RequestOfferRepository;
 import com.roadguard.repository.VehicleDiagnosisRepository;
@@ -27,6 +28,7 @@ import com.roadguard.web.dto.MechanicCandidateResponse;
 import com.roadguard.web.dto.OfferResponse;
 import com.roadguard.web.dto.ServiceRequestResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.core.io.Resource;
@@ -40,6 +42,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RequestService {
 
     private static final List<RequestStatus> ACTIVE_FOR_MECHANIC = List.of(
@@ -155,7 +158,7 @@ public class RequestService {
                 return ServiceRequestResponse.from(request);
             }
 
-            request.setRequiredSpecialization(result.specialization());
+            request.setRequiredSpecialization(tradeFor(waiting.issueType(), result.specialization()));
             request.setSeverity(result.severity());
             request.setSearchRadiusKm(radiusFor(result.severity()));
             request.setAiFaultCategory(result.faultCategory());
@@ -189,6 +192,30 @@ public class RequestService {
 
             return ServiceRequestResponse.from(request);
         });
+    }
+
+    /**
+     * Decides which trade the job is sent out to.
+     *
+     * <p>The driver picked the fault from a list and is sitting next to the car. The
+     * model is reading one photograph, and a photograph of an open bonnet looks much
+     * the same whether the tank is empty or the engine is boiling. So the driver's
+     * choice decides who gets called, and the model only names the trade when the
+     * driver declined to, which is the one case where there is nothing to overrule.
+     *
+     * <p>What the model thought is not thrown away: it is kept on the diagnosis and
+     * shown to the driver as guidance.
+     */
+    Specialization tradeFor(IssueType chosen, Specialization fromModel) {
+        if (chosen == IssueType.OTHER) {
+            return fromModel != null ? fromModel : Specialization.GENERAL;
+        }
+        Specialization fromDriver = chosen.defaultSpecialization();
+        if (fromModel != null && fromModel != fromDriver) {
+            log.info("The photo suggested {} but the driver reported {}, sending it to {}",
+                    fromModel, chosen, fromDriver);
+        }
+        return fromDriver;
     }
 
     private record WaitingFor(IssueType issueType, String note) {
