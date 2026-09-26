@@ -26,8 +26,6 @@ public class AdminController {
     private final ServiceRequestRepository requests;
     private final com.roadguard.service.DispatchService dispatch;
     private final com.roadguard.service.AssignmentService assignment;
-    private final com.roadguard.tcp.TcpGateway gateway;
-    private final com.roadguard.tcp.TcpProbe probe;
 
     @org.springframework.beans.factory.annotation.Value("${app.demo.allow-unsafe:true}")
     private boolean allowUnsafe;
@@ -107,56 +105,6 @@ public class AdminController {
                 "requestId", id,
                 "revived", revived,
                 "queued", true));
-    }
-
-    @GetMapping("/gateway")
-    public ResponseEntity<GatewayState> gateway() {
-        return ResponseEntity.ok(new GatewayState(
-                gateway.port(),
-                gateway.port() >= 0,
-                gateway.connectedCount(),
-                mechanicChoices()));
-    }
-
-    @org.springframework.web.bind.annotation.PostMapping("/gateway/probe")
-    public ResponseEntity<com.roadguard.tcp.TcpProbe.Transcript> probeGateway(
-            @org.springframework.web.bind.annotation.RequestBody ProbeRequest body) {
-
-        Long mechanicUserId = body.mechanicUserId();
-        if (mechanicUserId == null) {
-            mechanicUserId = mechanicChoices().stream().findFirst()
-                    .map(MechanicChoice::userId)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "There are no mechanics registered, so there is nobody to connect as"));
-        }
-        return ResponseEntity.ok(probe.run(mechanicUserId));
-    }
-
-    /* the user behind a profile is lazy and there is no session open out here, so
-       take the ids off the proxies, which does not load them, and fetch the rows */
-    private List<MechanicChoice> mechanicChoices() {
-        java.util.Map<Long, String> statusByUserId = new java.util.LinkedHashMap<>();
-        mechanics.findAll().stream()
-                .filter(profile -> profile.getUser() != null)
-                .forEach(profile -> statusByUserId.put(
-                        profile.getUser().getId(), profile.getStatus().name()));
-
-        return users.findAllById(statusByUserId.keySet()).stream()
-                .map(user -> new MechanicChoice(
-                        user.getId(),
-                        user.getUsername(),
-                        statusByUserId.get(user.getId())))
-                .toList();
-    }
-
-    public record ProbeRequest(Long mechanicUserId) {
-    }
-
-    public record MechanicChoice(Long userId, String username, String status) {
-    }
-
-    public record GatewayState(int port, boolean listening, int connected,
-                               List<MechanicChoice> mechanics) {
     }
 
     public record SafeModeRequest(boolean enabled) {
