@@ -92,7 +92,7 @@ class AcceptRaceTest {
         });
     }
 
-    @RepeatedTest(25)
+    @RepeatedTest(1000)
     @DisplayName("exactly one mechanic wins when all of them accept at the same instant")
     void exactlyOneWinner() throws Exception {
         Fixture f = seedOfferedRequest(RACERS);
