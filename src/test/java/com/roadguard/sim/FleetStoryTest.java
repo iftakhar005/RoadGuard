@@ -128,6 +128,50 @@ class FleetStoryTest {
     }
 
     @Test
+    @DisplayName("a mechanic who has reached the car stays with it while working")
+    void staysWithTheCarWhileWorking() throws Exception {
+        runner.start(shortFleet(4).withJobTimes(3, 3), new DirectAccountSource(auth));
+
+        for (int i = 0; i < 100 && runner.connectedCount() < 4; i++) {
+            Thread.sleep(100);
+        }
+        assertEquals(4, runner.connectedCount(), "every mechanic should have signed in");
+        Thread.sleep(600);
+
+        AuthUser driver = tx.execute(s -> {
+            int n = UNIQUE.incrementAndGet();
+            return new AuthUser(users.save(
+                    new User("stay_d_" + n, "stay_d_" + n + "@test.com", "x", Role.DRIVER)));
+        });
+        Long requestId = requests.createSos(driver,
+                new CreateSosRequest(IssueType.FLAT_TIRE, HERE_LAT, HERE_LNG, "stay put", false)).id();
+
+        RequestStatus last = null;
+        for (int i = 0; i < 300; i++) {
+            last = reload(requestId).getStatus();
+            if (last == RequestStatus.IN_PROGRESS) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(RequestStatus.IN_PROGRESS, last, "the mechanic should have got to work");
+
+        Long mechanicId = reload(requestId).getAssignedMechanic().getId();
+        MechanicProfile before = tx.execute(s -> mechanics.findByUserId(mechanicId).orElseThrow());
+
+        Thread.sleep(1500);
+
+        assertEquals(RequestStatus.IN_PROGRESS, reload(requestId).getStatus(),
+                "the job should still be in progress, otherwise this proves nothing");
+        MechanicProfile after = tx.execute(s -> mechanics.findByUserId(mechanicId).orElseThrow());
+
+        assertEquals(before.getCurrentLat(), after.getCurrentLat(), 0.0000001,
+                "a mechanic working on a car should not drift away from it");
+        assertEquals(before.getCurrentLng(), after.getCurrentLng(), 0.0000001,
+                "a mechanic working on a car should not drift away from it");
+    }
+
+    @Test
     @DisplayName("the story never contains a mechanic's login token")
     void storyHidesCredentials() throws Exception {
         runner.start(shortFleet(2), new DirectAccountSource(auth));

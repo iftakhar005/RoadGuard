@@ -32,26 +32,26 @@
         }).addTo(map);
 
         const driverIcon = L.divIcon({
-            className: 'driver-marker',
-            html: '<div style="background:#ef4444; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 6px rgba(0,0,0,0.4);"></div>',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11]
+            className: 'pin-driver',
+            html: '<span></span>',
+            iconSize: [26, 26],
+            iconAnchor: [13, 13]
         });
 
         driverMarker = L.marker([originLat, originLng], { icon: driverIcon }).addTo(map);
         driverMarker.bindPopup('<strong>Driver SOS Location</strong>');
 
         const mechIcon = L.divIcon({
-            className: 'mech-marker',
-            html: '<div style="background:#2563eb; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 6px rgba(0,0,0,0.4);"></div>',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11]
+            className: 'pin-mech',
+            html: '<span></span>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
         });
 
         mechanicMarker = L.marker([originLat, originLng], { icon: mechIcon });
 
         routePolyline = L.polyline([], {
-            color: '#2563eb',
+            color: '#2E9E5B',
             weight: 4,
             opacity: 0.85,
             lineJoin: 'round'
@@ -187,9 +187,18 @@
         pause();
         currentIndex = 0;
         renderPoint(0);
-        if (routeCoords.length > 0 && map) {
-            map.setView(routeCoords[0], 14);
-        }
+        fitRoute();
+    }
+
+    /* the map's height comes from the layout, so it has to be measured again before
+       fitting, or the route is fitted to a box of no size and zoomed right in */
+    function fitRoute() {
+        if (!map || !request) return;
+
+        map.invalidateSize();
+        const spots = points.filter(p => p.lat != null && p.lng != null).map(p => [p.lat, p.lng]);
+        spots.push([request.originLat, request.originLng]);
+        map.fitBounds(L.latLngBounds(spots), { padding: [70, 70], maxZoom: 17 });
     }
 
     async function boot() {
@@ -210,12 +219,9 @@
                 el('replay-scrubber').max = points.length - 1;
                 el('time-total').textContent = formatTime(points[points.length - 1].t);
                 renderPoint(0);
-
-                const allLats = points.filter(p => p.lat != null).map(p => [p.lat, p.lng]);
-                allLats.push([request.originLat, request.originLng]);
-                if (allLats.length > 1) {
-                    map.fitBounds(L.latLngBounds(allLats), { padding: [40, 40] });
-                }
+                fitRoute();
+                window.addEventListener('load', fitRoute);
+                window.addEventListener('resize', fitRoute);
             } else {
                 el('event-announcement').textContent = 'No Events';
                 el('event-detail').textContent = 'No replay events found for this request yet.';

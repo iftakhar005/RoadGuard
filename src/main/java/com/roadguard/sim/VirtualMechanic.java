@@ -268,8 +268,10 @@ class VirtualMechanic implements Runnable {
             return;
         }
         if (!driving) {
-            lat += (dice.nextDouble() - 0.5) * options.wanderDegrees();
-            lng += (dice.nextDouble() - 0.5) * options.wanderDegrees();
+            if (!holdingAJob) {
+                lat += (dice.nextDouble() - 0.5) * options.wanderDegrees();
+                lng += (dice.nextDouble() - 0.5) * options.wanderDegrees();
+            }
             say("LOC %.5f %.5f".formatted(lat, lng));
         }
         say("HEARTBEAT");
