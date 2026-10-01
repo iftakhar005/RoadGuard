@@ -274,6 +274,7 @@ function renderRequests(requests, activeRequests) {
             <div class="request-secondary">
                 <span class="status-pill status-${request.status.toLowerCase()}">${formatLabel(request.status)}</span>
                 <span class="request-time">${formatTime(request.createdAt)}</span>
+                <a href="/replay.html?id=${escapeHtml(request.id)}" class="btn-locate" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; border-radius:4px;" title="Watch incident replay">Replay</a>
                 ${canRedispatch(request.status)
                     ? `<button class="redispatch-btn" data-redispatch="${escapeHtml(request.id)}"
                                title="Put this job back in the queue">Re-dispatch</button>`

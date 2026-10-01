@@ -36,6 +36,7 @@ public class RequestController {
 
     private final RequestService requests;
     private final RatingService ratings;
+    private final com.roadguard.service.ReplayService replayService;
     private final com.roadguard.service.ChatService chat;
 
     @PostMapping
@@ -110,6 +111,13 @@ public class RequestController {
             @PathVariable Long id,
             @Valid @RequestBody RatingRequest req) {
         return ResponseEntity.ok(ratings.rate(caller, id, req.stars(), req.comment()));
+    }
+
+    @GetMapping("/{id}/replay")
+    public ResponseEntity<List<com.roadguard.service.ReplayPoint>> replay(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(replayService.getReplay(caller, id));
     }
 
     @GetMapping("/{id}/candidates")

@@ -33,6 +33,7 @@ public class MechanicService {
     private final ServiceRequestRepository requests;
     private final RealtimeNotifier realtime;
     private final OfferTimeoutService timeouts;
+    private final EventRecorder eventRecorder;
 
     @Transactional(readOnly = true)
     public MechanicProfileResponse myProfile(AuthUser caller) {
@@ -100,7 +101,10 @@ public class MechanicService {
 
     public void tellWhoeverIsWaiting(Long mechanicUserId, double lat, double lng) {
         requests.findByAssignedMechanicIdAndStatusIn(mechanicUserId, ON_THE_JOB)
-                .forEach(job -> realtime.mechanicMoved(job.getId(), lat, lng));
+                .forEach(job -> {
+                    realtime.mechanicMoved(job.getId(), lat, lng);
+                    eventRecorder.recordLocation(job.getId(), mechanicUserId, lat, lng);
+                });
     }
 
     @Transactional

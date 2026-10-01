@@ -19,6 +19,7 @@ public class RealtimeNotifier {
     private final SimpMessagingTemplate messaging;
     private final UserRepository users;
     private final org.springframework.context.ApplicationEventPublisher events;
+    private final EventRecorder recorder;
 
     public void offersSent(Long requestId, Collection<Long> mechanicUserIds) {
         Map<String, Object> payload = Map.of(
@@ -31,6 +32,7 @@ public class RealtimeNotifier {
         }
         events.publishEvent(new com.roadguard.tcp.OffersSentEvent(requestId, mechanicUserIds));
         toAdmin("OFFER", requestId);
+        recorder.record(requestId, "OFFER", "{\"count\":" + (mechanicUserIds != null ? mechanicUserIds.size() : 0) + "}");
     }
 
     public void offerClosed(Long requestId, Collection<Long> mechanicUserIds) {
@@ -43,6 +45,7 @@ public class RealtimeNotifier {
             sendToUser(userId, payload);
         }
         events.publishEvent(new com.roadguard.tcp.OfferClosedEvent(requestId, mechanicUserIds));
+        recorder.record(requestId, "OFFER_CLOSED", "{\"count\":" + (mechanicUserIds != null ? mechanicUserIds.size() : 0) + "}");
     }
 
     public void requestChanged(ServiceRequest request) {
@@ -67,6 +70,11 @@ public class RealtimeNotifier {
                     request.getId(), request.getAssignedMechanic().getId()));
         }
         toAdmin("STATUS", request.getId());
+        recorder.record(request.getId(), request.getStatus().name(), "{\"status\":\"" + request.getStatus().name() + "\"}");
+        if (request.getStatus() == com.roadguard.domain.enums.RequestStatus.COMPLETED
+                || request.getStatus() == com.roadguard.domain.enums.RequestStatus.CANCELLED) {
+            recorder.createSnapshot(request.getId());
+        }
     }
 
     public void mechanicMoved(Long requestId, double lat, double lng) {

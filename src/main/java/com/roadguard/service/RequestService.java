@@ -63,6 +63,7 @@ public class RequestService {
     private final VehicleDiagnosisRepository diagnoses;
     private final RatingRepository ratings;
     private final AiTriageService triage;
+    private final EventRecorder eventRecorder;
     private final TransactionTemplate tx;
 
     @Value("${app.uploads.dir:uploads}")
@@ -100,6 +101,7 @@ public class RequestService {
             request.setStatus(RequestStatus.DIAGNOSING);
             request.beginSearchRound();
             requests.save(request);
+            eventRecorder.record(request.getId(), "CREATED", "{\"originLat\":" + request.getOriginLat() + ",\"originLng\":" + request.getOriginLng() + ",\"status\":\"DIAGNOSING\"}");
             return ServiceRequestResponse.from(request);
         }
 
@@ -111,6 +113,7 @@ public class RequestService {
         request.beginSearchRound();
 
         requests.save(request);
+        eventRecorder.record(request.getId(), "CREATED", "{\"originLat\":" + request.getOriginLat() + ",\"originLng\":" + request.getOriginLng() + ",\"status\":\"SEARCHING\"}");
 
         Long id = request.getId();
         Severity severity = request.getSeverity();
