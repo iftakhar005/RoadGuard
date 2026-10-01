@@ -12,10 +12,12 @@ import com.roadguard.repository.MechanicProfileRepository;
 import com.roadguard.repository.ServiceRequestRepository;
 import com.roadguard.repository.UserRepository;
 import com.roadguard.security.JwtService;
+import com.roadguard.service.RealtimeNotifier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -49,6 +51,7 @@ class TcpGatewayTest {
     @Autowired MechanicProfileRepository mechanics;
     @Autowired ServiceRequestRepository requests;
     @Autowired TransactionTemplate tx;
+    @SpyBean RealtimeNotifier realtime;
 
     private record Mechanic(Long userId, String token) {
     }
@@ -348,5 +351,32 @@ class TcpGatewayTest {
 
         assertEquals(null, failure.get(), "no device should have errored");
         assertEquals(1, winners.get(), "exactly one socket should win the job");
+    }
+
+    @Test
+    @DisplayName("a location report over the socket pushes moved to whoever is waiting")
+    void locationOverSocketNotifiesAssignedDriver() throws Exception {
+        Mechanic me = newMechanic();
+        Long requestId = tx.execute(s -> {
+            int n = UNIQUE.incrementAndGet();
+            User driver = users.save(new User("tcp_mov_" + n, "tcp_mov_" + n + "@t.com", "x", Role.DRIVER));
+            User mechUser = users.findById(me.userId()).orElseThrow();
+            ServiceRequest request = new ServiceRequest(
+                    driver, IssueType.FLAT_TIRE, 23.8103, 90.4125, "waiting for movement");
+            request.setSearchRadiusKm(5);
+            request.setAssignedMechanic(mechUser);
+            request.setStatus(RequestStatus.EN_ROUTE);
+            return requests.save(request).getId();
+        });
+
+        try (Device device = connect()) {
+            device.ask("HELLO " + me.userId() + " " + me.token());
+            assertEquals("OK", device.ask("LOC 23.8105 90.4130"));
+
+            org.mockito.Mockito.verify(realtime, org.mockito.Mockito.timeout(2000))
+                    .mechanicMoved(org.mockito.ArgumentMatchers.eq(requestId),
+                            org.mockito.ArgumentMatchers.eq(23.8105),
+                            org.mockito.ArgumentMatchers.eq(90.4130));
+        }
     }
 }

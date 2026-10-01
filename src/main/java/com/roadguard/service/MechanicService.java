@@ -98,7 +98,7 @@ public class MechanicService {
         return MechanicProfileResponse.from(profile);
     }
 
-    private void tellWhoeverIsWaiting(Long mechanicUserId, double lat, double lng) {
+    public void tellWhoeverIsWaiting(Long mechanicUserId, double lat, double lng) {
         requests.findByAssignedMechanicIdAndStatusIn(mechanicUserId, ON_THE_JOB)
                 .forEach(job -> realtime.mechanicMoved(job.getId(), lat, lng));
     }

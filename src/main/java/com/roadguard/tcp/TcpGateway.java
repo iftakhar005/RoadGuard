@@ -11,6 +11,7 @@ import com.roadguard.repository.UserRepository;
 import com.roadguard.security.JwtService;
 import com.roadguard.service.AssignmentService;
 import com.roadguard.service.GeoUtils;
+import com.roadguard.service.MechanicService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,7 @@ public class TcpGateway {
     private final MechanicProfileRepository mechanics;
     private final ServiceRequestRepository requests;
     private final AssignmentService assignment;
+    private final MechanicService mechanicService;
     private final TransactionTemplate tx;
 
     @Value("${app.tcp.enabled:true}")
@@ -276,6 +278,7 @@ public class TcpGateway {
             }
             mechanics.save(profile);
         }));
+        mechanicService.tellWhoeverIsWaiting(id, lat, lng);
         return "OK";
     }
 
