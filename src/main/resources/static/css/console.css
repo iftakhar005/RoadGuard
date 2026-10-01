@@ -1533,3 +1533,62 @@
     border-color: var(--live);
     color: var(--live);
 }
+
+.fleet-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fleet-count-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fleet-count-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+}
+
+.fleet-input {
+    width: 58px;
+    padding: 6px 8px;
+    border-radius: var(--r-sm, 6px);
+    border: 1px solid var(--line-2, #DCE2EC);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.fleet-status-row {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 13px;
+}
+
+.fleet-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #E5E7EB;
+    color: #4B5563;
+}
+
+.fleet-pill.is-running {
+    background: #DEF7EC;
+    color: #03543F;
+}
+
+.fleet-result {
+    font-weight: 600;
+    color: var(--ink-2);
+}

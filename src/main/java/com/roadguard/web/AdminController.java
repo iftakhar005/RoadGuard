@@ -26,6 +26,7 @@ public class AdminController {
     private final ServiceRequestRepository requests;
     private final com.roadguard.service.DispatchService dispatch;
     private final com.roadguard.service.AssignmentService assignment;
+    private final com.roadguard.service.FleetControl fleetControl;
 
     @org.springframework.beans.factory.annotation.Value("${app.demo.allow-unsafe:true}")
     private boolean allowUnsafe;
@@ -105,6 +106,40 @@ public class AdminController {
                 "requestId", id,
                 "revived", revived,
                 "queued", true));
+    }
+
+    @GetMapping("/fleet")
+    public ResponseEntity<com.roadguard.sim.FleetRunner.FleetState> fleetStatus() {
+        return ResponseEntity.ok(fleetControl.status());
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/fleet/start")
+    public ResponseEntity<com.roadguard.sim.FleetRunner.FleetState> startFleet(
+            @org.springframework.web.bind.annotation.RequestBody(required = false) StartFleetRequest body) {
+        int count = body != null ? body.count() : 8;
+        return ResponseEntity.ok(fleetControl.start(count));
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/fleet/stop")
+    public ResponseEntity<com.roadguard.sim.FleetRunner.FleetState> stopFleet() {
+        return ResponseEntity.ok(fleetControl.stop());
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/fleet/race")
+    public ResponseEntity<com.roadguard.sim.FleetRunner.FleetState> setFleetRace(
+            @org.springframework.web.bind.annotation.RequestBody RaceRequest body) {
+        return ResponseEntity.ok(fleetControl.setRace(body.armed()));
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/fleet/drop-winner")
+    public ResponseEntity<com.roadguard.sim.FleetRunner.FleetState> dropFleetWinner() {
+        return ResponseEntity.ok(fleetControl.dropWinner());
+    }
+
+    public record StartFleetRequest(int count) {
+    }
+
+    public record RaceRequest(boolean armed) {
     }
 
     public record SafeModeRequest(boolean enabled) {

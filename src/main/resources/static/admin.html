@@ -113,6 +113,38 @@
         </p>
     </section>
 
+    <section class="card engine-card fleet-card">
+        <div class="engine-head">
+            <div>
+                <p class="section-label">Simulated fleet</p>
+                <p class="engine-sub" id="fleet-sub">
+                    Connects simulated mechanics to the device gateway on loopback (port 9090) over real sockets.
+                </p>
+            </div>
+            <div class="fleet-controls">
+                <div class="fleet-count-group">
+                    <label for="fleet-count" class="fleet-count-label">Count</label>
+                    <input type="number" id="fleet-count" class="fleet-input" min="1" max="25" value="8">
+                </div>
+                <button type="button" class="btn btn-primary" id="fleet-start-btn">Start fleet</button>
+                <button type="button" class="btn btn-decline" id="fleet-stop-btn" disabled>Stop fleet</button>
+                <label class="switch" title="Everyone offered a job accepts at the same instant">
+                    <input type="checkbox" id="fleet-race-toggle">
+                    <span class="switch-track"></span>
+                    <span class="switch-label" id="fleet-race-label">Race off</span>
+                </label>
+                <button type="button" class="btn btn-secondary" id="fleet-drop-btn" disabled>Drop winner</button>
+            </div>
+        </div>
+        <div class="fleet-status-row">
+            <span class="fleet-pill" id="fleet-running-pill">Stopped</span>
+            <span class="fleet-result" id="fleet-result-line">No race run yet.</span>
+        </div>
+        <p class="engine-warning" style="margin-top: 12px;">
+            Notice: While the fleet runs, real driver SOS requests may be offered to simulated mechanics.
+        </p>
+    </section>
+
     <section class="card feed-card">
         <p class="section-label" style="margin-bottom:10px">
             Live activity

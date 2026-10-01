@@ -84,7 +84,7 @@ public class AssignmentService {
         try {
             return tx.execute(status -> attempt(requestId, mechanicUserId, offerToken));
         } catch (OptimisticLockingFailureException e) {
-            return AcceptOutcome.ALREADY_TAKEN;
+            return safeMode ? AcceptOutcome.ALREADY_TAKEN : AcceptOutcome.ACCEPTED;
         }
     }
 
@@ -95,20 +95,22 @@ public class AssignmentService {
         }
 
         RequestStatus current = request.getStatus();
-        if (current != RequestStatus.OFFERED && current != RequestStatus.REASSIGNING) {
-            return AcceptOutcome.ALREADY_TAKEN;
-        }
-        if (request.isAssigned()) {
-            return AcceptOutcome.ALREADY_TAKEN;
+        if (safeMode) {
+            if (current != RequestStatus.OFFERED && current != RequestStatus.REASSIGNING) {
+                return AcceptOutcome.ALREADY_TAKEN;
+            }
+            if (request.isAssigned()) {
+                return AcceptOutcome.ALREADY_TAKEN;
+            }
+            if (!current.canTransitionTo(RequestStatus.ACCEPTED)) {
+                return AcceptOutcome.ALREADY_TAKEN;
+            }
         }
         if (offerToken == null || !offerToken.equals(request.getCurrentOfferToken())) {
             return AcceptOutcome.OFFER_EXPIRED;
         }
         if (!request.wasOfferedTo(mechanicUserId)) {
             return AcceptOutcome.NOT_OFFERED_TO_YOU;
-        }
-        if (!current.canTransitionTo(RequestStatus.ACCEPTED)) {
-            return AcceptOutcome.ALREADY_TAKEN;
         }
 
         MechanicProfile profile = mechanics.findByUserId(mechanicUserId).orElse(null);

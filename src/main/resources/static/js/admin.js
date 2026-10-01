@@ -11,6 +11,7 @@
     setInterval(refresh, 5000);
     watchTheEngine();
     wireSafeMode();
+    wireFleet();
 })();
 
 async function refresh() {
@@ -30,13 +31,17 @@ async function refresh() {
 
         renderRequests(overview.recentRequests || [], overview.activeRequestLocations || []);
         renderMap(overview.activeRequestLocations || [], overview.mechanicLocations || []);
+        await refreshFleet();
     } catch (error) {
         document.getElementById('dashboard-updated').textContent = 'Unable to load live data';
         document.getElementById('admin-request-list').innerHTML = '<div class="empty-state is-error">Could not load the admin overview.</div>';
     }
 }
 
+let currentSafeMode = true;
+
 function paintSafeMode(on) {
+    currentSafeMode = on;
     const toggle = document.getElementById('safe-toggle');
     if (!toggle || toggle.dataset.busy === '1') return;
     toggle.checked = on;
@@ -45,6 +50,135 @@ function paintSafeMode(on) {
     document.getElementById('engine-sub').textContent = on
         ? 'Every accept is taken under a per-request lock, so exactly one mechanic wins.'
         : 'Accepts are going through without the lock.';
+}
+
+async function refreshFleet() {
+    try {
+        const fleet = await api('/api/admin/fleet');
+        paintFleet(fleet);
+    } catch (e) {
+        /* quiet fallback */
+    }
+}
+
+function paintFleet(fleet) {
+    if (!fleet) return;
+    const startBtn = document.getElementById('fleet-start-btn');
+    const stopBtn = document.getElementById('fleet-stop-btn');
+    const dropBtn = document.getElementById('fleet-drop-btn');
+    const countInput = document.getElementById('fleet-count');
+    const raceToggle = document.getElementById('fleet-race-toggle');
+    const raceLabel = document.getElementById('fleet-race-label');
+    const pill = document.getElementById('fleet-running-pill');
+    const resultLine = document.getElementById('fleet-result-line');
+
+    if (startBtn) startBtn.disabled = fleet.running;
+    if (stopBtn) stopBtn.disabled = !fleet.running;
+    if (dropBtn) dropBtn.disabled = !fleet.running;
+    if (countInput) countInput.disabled = fleet.running;
+
+    if (raceToggle && raceToggle.dataset.busy !== '1') {
+        raceToggle.checked = fleet.raceArmed;
+        if (raceLabel) raceLabel.textContent = fleet.raceArmed ? 'Race ON' : 'Race off';
+    }
+
+    if (pill) {
+        if (fleet.running) {
+            pill.textContent = `Running: ${fleet.connected}/${fleet.size} connected`;
+            pill.className = 'fleet-pill is-running';
+        } else {
+            pill.textContent = 'Stopped';
+            pill.className = 'fleet-pill';
+        }
+    }
+
+    if (resultLine) {
+        const outcomes = fleet.outcomes || {};
+        const accepted = outcomes['ACCEPTED'] || 0;
+        if (accepted === 0) {
+            resultLine.textContent = fleet.running ? 'No race run yet.' : 'Fleet idle.';
+        } else if (accepted === 1) {
+            resultLine.textContent = currentSafeMode
+                ? '1 mechanic won the last job (accept lock on).'
+                : '1 mechanic won the last job.';
+        } else {
+            resultLine.textContent = `${accepted} mechanics won the same job! (the accept lock was OFF).`;
+        }
+    }
+}
+
+function wireFleet() {
+    const startBtn = document.getElementById('fleet-start-btn');
+    const stopBtn = document.getElementById('fleet-stop-btn');
+    const dropBtn = document.getElementById('fleet-drop-btn');
+    const countInput = document.getElementById('fleet-count');
+    const raceToggle = document.getElementById('fleet-race-toggle');
+
+    if (startBtn) {
+        startBtn.addEventListener('click', async () => {
+            const count = parseInt(countInput.value, 10) || 8;
+            startBtn.disabled = true;
+            try {
+                const res = await api('/api/admin/fleet/start', {
+                    method: 'POST',
+                    body: JSON.stringify({ count })
+                });
+                paintFleet(res);
+                note(`Started simulated fleet with ${count} mechanics`);
+            } catch (e) {
+                note('Could not start fleet: ' + e.message);
+                startBtn.disabled = false;
+            }
+        });
+    }
+
+    if (stopBtn) {
+        stopBtn.addEventListener('click', async () => {
+            stopBtn.disabled = true;
+            try {
+                const res = await api('/api/admin/fleet/stop', { method: 'POST' });
+                paintFleet(res);
+                note('Stopped simulated fleet');
+            } catch (e) {
+                note('Could not stop fleet: ' + e.message);
+                stopBtn.disabled = false;
+            }
+        });
+    }
+
+    if (raceToggle) {
+        raceToggle.addEventListener('change', async () => {
+            const wanted = raceToggle.checked;
+            raceToggle.dataset.busy = '1';
+            try {
+                const res = await api('/api/admin/fleet/race', {
+                    method: 'POST',
+                    body: JSON.stringify({ armed: wanted })
+                });
+                raceToggle.dataset.busy = '0';
+                paintFleet(res);
+                note(wanted
+                    ? 'Race armed: every offered mechanic accepts at the same instant'
+                    : 'Race disarmed: mechanics think before accepting');
+            } catch (e) {
+                raceToggle.dataset.busy = '0';
+                raceToggle.checked = !wanted;
+                note('Could not change fleet race mode: ' + e.message);
+            }
+        });
+    }
+
+    if (dropBtn) {
+        dropBtn.addEventListener('click', async () => {
+            try {
+                const res = await api('/api/admin/fleet/drop-winner', { method: 'POST' });
+                paintFleet(res);
+                note('Dropped assigned winner - waiting for heartbeat reaper to detect disconnect');
+            } catch (e) {
+                note('Could not drop winner: ' + e.message);
+            }
+        });
+    }
 }
 
 function wireSafeMode() {
