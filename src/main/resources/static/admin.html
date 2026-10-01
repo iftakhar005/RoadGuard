@@ -118,7 +118,10 @@
             <div>
                 <p class="section-label">Simulated fleet</p>
                 <p class="engine-sub" id="fleet-sub">
-                    Connects simulated mechanics to the device gateway on loopback (port 9090) over real sockets.
+                    Pretend mechanics, each holding its own TCP connection to the device gateway on port 9090.
+                    Send an SOS from a driver account and watch it play out below: the offer is pushed down
+                    each connection, the mechanics race to ACCEPT, one wins and drives to the driver, and the
+                    rest are told it is taken.
                 </p>
             </div>
             <div class="fleet-controls">
@@ -140,6 +143,13 @@
             <span class="fleet-pill" id="fleet-running-pill">Stopped</span>
             <span class="fleet-result" id="fleet-result-line">No race run yet.</span>
         </div>
+        <div class="fleet-board" id="fleet-board" hidden></div>
+        <div class="fleet-story" id="fleet-story" hidden></div>
+        <p class="fleet-legend" id="fleet-legend" hidden>
+            <code>&gt;&gt;</code> is a line the mechanic sent to the server, <code>&lt;&lt;</code> is
+            what the server sent back. Those are the raw lines of our protocol, not a framework's.
+            The newest line is at the top, so read upwards.
+        </p>
         <p class="engine-warning" style="margin-top: 12px;">
             Notice: While the fleet runs, real driver SOS requests may be offered to simulated mechanics.
         </p>

@@ -9,6 +9,7 @@
 
     await refresh();
     setInterval(refresh, 5000);
+    setInterval(() => { if (fleetRunning) refreshFleet(); }, 1500);
     watchTheEngine();
     wireSafeMode();
     wireFleet();
@@ -92,6 +93,10 @@ function paintFleet(fleet) {
         }
     }
 
+    paintBoard(fleet);
+    paintStory(fleet);
+    fleetRunning = !!fleet.running;
+
     if (resultLine) {
         const outcomes = fleet.outcomes || {};
         const accepted = outcomes['ACCEPTED'] || 0;
@@ -105,6 +110,42 @@ function paintFleet(fleet) {
             resultLine.textContent = `${accepted} mechanics won the same job! (the accept lock was OFF).`;
         }
     }
+}
+
+let fleetRunning = false;
+
+function paintBoard(fleet) {
+    const board = document.getElementById('fleet-board');
+    if (!board) return;
+
+    const mechanics = fleet.mechanics || [];
+    board.hidden = !fleet.running || !mechanics.length;
+    if (board.hidden) return;
+
+    board.innerHTML = mechanics.map(m => `
+        <div class="fleet-chip is-${escapeHtml(m.state.toLowerCase())}">
+            <span class="chip-name">${escapeHtml(m.name.replace('sim_mech_', 'Mechanic '))}</span>
+            <span class="chip-doing">${escapeHtml(m.doing || '')}</span>
+        </div>`).join('');
+}
+
+function paintStory(fleet) {
+    const story = document.getElementById('fleet-story');
+    const legend = document.getElementById('fleet-legend');
+    if (!story) return;
+
+    const lines = fleet.story || [];
+    const show = lines.length > 0;
+    story.hidden = !show;
+    if (legend) legend.hidden = !show;
+    if (!show) return;
+
+    story.innerHTML = lines.map(line => `
+        <p class="story-line">
+            <time>${escapeHtml(line.at)}</time>
+            <span class="story-text"><b>${escapeHtml(line.who.replace('sim_mech_', 'Mechanic '))}</b> ${escapeHtml(line.text)}</span>
+            ${line.wire ? `<code class="wire">${escapeHtml(line.wire)}</code>` : ''}
+        </p>`).join('');
 }
 
 function wireFleet() {

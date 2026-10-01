@@ -1592,3 +1592,26 @@
     font-weight: 600;
     color: var(--ink-2);
 }
+
+.fleet-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 14px; }
+.fleet-chip {
+    display: flex; flex-direction: column; gap: 2px; padding: 8px 10px;
+    border: 1px solid #e2e6ee; border-left-width: 4px; border-radius: 8px; background: #fff;
+}
+.fleet-chip .chip-name { font-size: .78rem; font-weight: 650; color: #1f2733; }
+.fleet-chip .chip-doing { font-size: .74rem; color: #6b7280; min-height: 1.1em; }
+.fleet-chip.is-online { border-left-color: #10b981; }
+.fleet-chip.is-busy { border-left-color: #f59e0b; }
+.fleet-chip.is-offline { border-left-color: #cbd5e1; opacity: .7; }
+
+.fleet-story {
+    margin-top: 12px; max-height: 280px; overflow-y: auto; padding: 8px 12px;
+    border: 1px solid #e2e6ee; border-radius: 10px; background: #fafbfd;
+}
+.story-line { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin: 0; padding: 5px 0; font-size: .8rem; line-height: 1.45; border-bottom: 1px solid #eef1f6; }
+.story-line:last-child { border-bottom: 0; }
+.story-line time { color: #94a3b8; font-variant-numeric: tabular-nums; font-size: .74rem; }
+.story-text { color: #1f2733; }
+.wire { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .72rem; color: #475569; background: #eef2f7; padding: 1px 7px; border-radius: 6px; }
+.fleet-legend { margin: 8px 0 0; font-size: .76rem; color: #6b7280; line-height: 1.5; }
+.fleet-legend code { font-family: ui-monospace, Menlo, Consolas, monospace; background: #eef2f7; padding: 0 5px; border-radius: 4px; }

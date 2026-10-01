@@ -35,7 +35,7 @@ exists to make that engine visible.
 | 8 | Live tracking and ETA | Moving mechanic pin, dynamic Leaflet route, ETA |
 | 9 | Heartbeat disconnect and auto-reassign | `HeartbeatReaper`, job released 15 s after silence |
 | 10 | Offer timeout and radius escalation | `OfferTimeoutService`: 5 → 10 → 20 → 25 km, then escalated |
-| 11 | Raw TCP device gateway (port 9090) | `TcpGateway`, custom text protocol (`HI`, `LOC`, `ACCEPT`, `DECLINE`, `BYE`) |
+| 11 | Raw TCP device gateway (port 9090) | `TcpGateway`, custom text protocol (`HELLO`, `LOC`, `HEARTBEAT`, `ACCEPT`, `DECLINE`, `STATUS`, `BYE`) |
 | 12 | Virtual fleet simulator | `FleetRunner`, `FleetControl`, concurrent simulated mechanics |
 | 13 | Admin dashboard & unsafe-mode toggle | `admin.html`, `/api/admin/fleet`, concurrency toggle with collision demo |
 | 14 | AI fault triage | `AiTriageService` with Gemini vision & stub fallback, DIAGNOSING state |
@@ -314,8 +314,8 @@ Owns the backend: concurrency, socket programming, persistence, serialization, s
 | Area | Files | Must be able to explain |
 |------|-------|-------------------------|
 | The accept race | `AssignmentService.java` | Why one lock per request; why the transaction commits inside the lock; what version checking catches; what the offer token prevents; safe vs unsafe mode |
-| Raw TCP device gateway | `TcpGateway.java` (port 9090) | Thread-per-connection socket server; custom line protocol (`HI`, `LOC`, `ACCEPT`, `DECLINE`, `BYE`); clean disconnect handling |
-| Fleet simulation engine | `FleetRunner.java`, `FleetControl.java`, `VirtualMechanic.java` | Sockets on loopback; synchronized race barrier; drop-winner simulation |
+| Raw TCP device gateway | `TcpGateway.java` (port 9090) | Thread-per-connection socket server; custom line protocol (`HELLO`, `LOC`, `HEARTBEAT`, `ACCEPT`, `DECLINE`, `STATUS`, `BYE`); 64 worker threads, one per connected device; clean disconnect handling |
+| Fleet simulation engine | `FleetRunner.java`, `FleetControl.java`, `VirtualMechanic.java` | One real socket per mechanic; the winner drives to the driver and completes the job with `STATUS` commands; narrated live feed with the raw protocol lines; synchronized race barrier; drop-winner simulation |
 | Dispatch & Matching | `DispatchService.java`, `MatchingService.java` | Producer and consumer; priority queue ordered by severity; 0.7 distance + 0.3 rating composite scoring |
 | Recovery | `HeartbeatReaper.java`, `OfferTimeoutService.java` | The 5 s and 15 s rule; why offline is set before jobs are read; widening ladder and DIAGNOSING timeout sweep |
 | Secondary storage & serialization | `EventRecorder.java`, `ReplaySnapshot.java`, `ReplayService.java` | Dual-write: JPA table + `logs/request-{id}.jsonl`; `ObjectOutputStream` binary serialization to `replays/request-{id}.ser`; location sampling throttle (2s) |
@@ -358,13 +358,26 @@ parts fit together, that is the answer.
 
 | # | Step | Action | What to say |
 |---|------|--------|-------------|
-| 1 | **Start the fleet** | On `admin.html`, click **Start fleet** with count = 12 | *The server spawns 12 virtual mechanics who connect to our raw TCP device gateway on port 9090. Their pins immediately appear on the map.* |
-| 2 | **Driver SOS & single winner** | Send an SOS from the driver tab. Click **Fire accept race** | *Every nearby mechanic was alerted simultaneously over TCP and WebSocket. Under our per-request lock, exactly one mechanic wins; the other 11 receive TAKEN.* |
-| 3 | **Unsafe-mode race collision** | Toggle **Accept lock OFF** on the admin card. Send a new SOS and click **Fire accept race** | *With the lock disabled, two threads pass the check before either commits. The result line shows multiple winners (e.g. 2 won) — a visible double-assignment collision. We flip the lock back on.* |
+| 1 | **Start the fleet** | On `admin.html`, set Count to 12 and click **Start fleet** | *These are 12 pretend mechanics, each holding its own TCP connection to port 9090, which is a `ServerSocket` we wrote. Their pins appear on the map and the card shows what each one is doing.* |
+| 2 | **Driver SOS and a single winner** | Switch **Race** on, send an SOS from the driver tab, and read the feed on the card from the bottom up | *The server offered the job to the nearest few mechanics and pushed an `OFFER` line down each connection. They all pressed `ACCEPT` at the same instant. Our per-request lock let exactly one through and the others were told `ALREADY_TAKEN`. The winner then drove to the driver and finished the job with `STATUS` commands over the same socket.* |
+| 3 | **Unsafe-mode race collision** | Toggle the accept lock off, send another SOS with Race on | *With the lock off, more than one mechanic passes the check before any of them commits, so each is told `ACCEPTED` for the same job. The result line counts them. Then we turn the lock back on.* |
 | 4 | **Drop the winner (failover)** | Click **Drop winner**. Watch the job status | *The assigned mechanic's TCP connection dropped. After 15 seconds of silence, HeartbeatReaper declares them dead, frees the job, and re-dispatches it to another mechanic.* |
-| 5 | **Complete, rate, and replay** | Walk the job to `COMPLETED` on the mechanic console. Driver rates 5 stars with a comment. Click **View Replay** | *Driver rating recomputes mechanic average score from the database without drift. Replay loads from a Java-serialized ReplaySnapshot (.ser) and animates the vehicle trail on Leaflet at 1x, 4x, or 16x.* |
-| 6 | **CLI standalone simulator** | In terminal 2, run `java -jar ...` or CLI simulator | *Proves that the simulator is a separate external TCP client, not just the server talking to itself.* |
+| 5 | **Complete, rate, and replay** | Walk the job to `COMPLETED` on the mechanic console. Driver rates 5 stars with a comment. Click **Replay** on the request row in the admin list | *Driver rating recomputes mechanic average score from the database without drift. Replay loads from a Java-serialized ReplaySnapshot (.ser) and animates the vehicle trail on Leaflet at 1x, 4x, or 16x.* |
+| 6 | **CLI standalone simulator** | In terminal 2, run the command under the table | *Proves that the simulator is a separate external TCP client, not just the server talking to itself.* |
 | 7 | **Telnet raw socket test** | Run `telnet localhost 9090`, type `SANDWICH please` | *Shows the custom device gateway parser rejecting invalid input with ERR invalid command, proving robust socket parsing.* |
+
+---
+
+**Running the simulator from a terminal** (a separate process, not the server talking to itself). Build the classpath once, then run it:
+
+```
+.\mvnw.cmd -q dependency:build-classpath "-Dmdep.outputFile=target/cp.txt"
+java -cp "target/classes;$(Get-Content target/cp.txt)" com.roadguard.sim.FleetSimulator --count 8
+```
+
+Useful flags: `--race` (everyone answers at once), `--drive 20` (seconds to reach the driver), `--stay` (do not do the job), `--kill` (the winner vanishes), `--help` for the rest. For a wide race, set `app.dispatch.offer-count=10` in `application-local.properties`, because the server only offers a job to that many mechanics.
+
+**The device protocol, one line each.** A device sends `HELLO <id> <token>` and is answered `AUTH_OK` or `AUTH_FAIL`. After that it can send `LOC <lat> <lng>`, `HEARTBEAT`, `ACCEPT <request> <offerToken>`, `DECLINE <request>`, `STATUS <request> <EN_ROUTE|ARRIVED|IN_PROGRESS|COMPLETED>` and `BYE`. The server pushes `OFFER <request> <token> <issue> <severity> <km> <lat> <lng>`, `TAKEN <request>` and `ASSIGNED <request>` down the same open connection without being asked, which is the reason a browser cannot be the client.
 
 ---
 

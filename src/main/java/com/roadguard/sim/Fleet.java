@@ -17,22 +17,36 @@ public record Fleet(
         long raceGraceMs,
         boolean killOneMidJob,
         boolean declineInstead,
-        boolean quiet) {
+        boolean quiet,
+        int driveSeconds,
+        int pauseSeconds) {
 
     public static Fleet defaults(int count, int port) {
         return new Fleet("http://localhost:8080", "localhost", port, count,
                 23.8103, 90.4125, 0.018, 0.0016, 3000, 400, 2500,
-                false, 600, false, false, false);
+                false, 600, false, false, false, 20, 3);
     }
 
     public Fleet withRace(boolean newRace) {
         return new Fleet(api, host, port, count, centreLat, centreLng, spreadDegrees, wanderDegrees,
-                tickMs, minThinkMs, maxThinkMs, newRace, raceGraceMs, killOneMidJob, declineInstead, quiet);
+                tickMs, minThinkMs, maxThinkMs, newRace, raceGraceMs, killOneMidJob, declineInstead, quiet,
+                driveSeconds, pauseSeconds);
     }
 
     public Fleet withCount(int newCount) {
         return new Fleet(api, host, port, newCount, centreLat, centreLng, spreadDegrees, wanderDegrees,
-                tickMs, minThinkMs, maxThinkMs, race, raceGraceMs, killOneMidJob, declineInstead, quiet);
+                tickMs, minThinkMs, maxThinkMs, race, raceGraceMs, killOneMidJob, declineInstead, quiet,
+                driveSeconds, pauseSeconds);
+    }
+
+    public Fleet withJobTimes(int newDriveSeconds, int newPauseSeconds) {
+        return new Fleet(api, host, port, count, centreLat, centreLng, spreadDegrees, wanderDegrees,
+                tickMs, minThinkMs, maxThinkMs, race, raceGraceMs, killOneMidJob, declineInstead, quiet,
+                newDriveSeconds, newPauseSeconds);
+    }
+
+    public boolean doesTheJob() {
+        return driveSeconds > 0;
     }
 
     public static Fleet fromArgs(String[] args) {
@@ -52,6 +66,8 @@ public record Fleet(
         boolean kill = false;
         boolean decline = false;
         boolean quiet = false;
+        int drive = 20;
+        int pause = 3;
 
         for (int i = 0; i < args.length; i++) {
             String flag = args[i];
@@ -60,6 +76,7 @@ public record Fleet(
                 case "--kill" -> kill = true;
                 case "--decline" -> decline = true;
                 case "--quiet" -> quiet = true;
+                case "--stay" -> drive = 0;
                 case "--help", "-h" -> {
                     usage();
                     return null;
@@ -85,6 +102,8 @@ public record Fleet(
                             maxThink = range.length > 1 ? Integer.parseInt(range[1]) : minThink + 1;
                         }
                         case "--grace" -> grace = Long.parseLong(value);
+                        case "--drive" -> drive = Integer.parseInt(value);
+                        case "--pause" -> pause = Integer.parseInt(value);
                         default -> throw new IllegalArgumentException("I do not know the flag " + flag);
                     }
                 }
@@ -92,7 +111,7 @@ public record Fleet(
         }
 
         return new Fleet(api, host, port, count, lat, lng, spread, wander,
-                tick, minThink, maxThink, race, grace, kill, decline, quiet);
+                tick, minThink, maxThink, race, grace, kill, decline, quiet, drive, pause);
     }
 
     static void usage() {
@@ -113,6 +132,9 @@ public record Fleet(
                   --grace MS       how long to gather offers before the race starts
                   --decline        decline instead of accepting, to watch it move on
                   --kill           whoever wins a job then drops off the network
+                  --drive S        seconds the winner takes to reach the driver (default 20)
+                  --pause S        seconds spent at each stage once there (default 3)
+                  --stay           the winner stays put instead of doing the job
                   --quiet          only print the summary
 
                 The race is only as wide as app.dispatch.offer-count lets it be: the
