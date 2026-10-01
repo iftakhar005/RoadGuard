@@ -21,82 +21,67 @@ exists to make that engine visible.
 
 ## 2. Where the project stands
 
-### Completed: the mandatory seven (100%)
+### Completed: the full specification (100%)
 
 | # | Feature | Evidence |
 |---|---------|----------|
 | 1 | Auth and roles (JWT; Driver, Mechanic, Admin) | `AuthService`, BCrypt, stateless |
-| 2 | Mechanic availability toggle and location | `MechanicService` |
+| 2 | Mechanic availability toggle and location | `MechanicService`, real-time updates |
 | 3 | SOS request with map pin, issue type, note | `RequestService.createSos` |
-| 4 | Skill and distance matching, ranked | `MatchingService` |
-| 5 | Broadcast dispatch, first-accept-wins | 1,250 concurrent accepts, exactly one winner, 25× |
-| 6 | Real-time status over WebSocket | measured 4–13 ms |
+| 4 | Skill and distance matching, ranked | `MatchingService` with distance (0.7) and rating (0.3) |
+| 5 | Broadcast dispatch, first-accept-wins | `AssignmentService` per-request lock, `AcceptRaceTest` verified |
+| 6 | Real-time status over WebSocket | STOMP over SockJS, 4–13 ms updates |
 | 7 | Request lifecycle state machine | `EnumMap` + `EnumSet`, enforced server-side |
-
-### Completed: enhancements (3 of 6)
-
-| Feature | Evidence |
-|---------|----------|
-| Live tracking and ETA | verified: 3.1 km → 1.1 km as the mechanic moved |
-| Heartbeat disconnect and auto-reassign | verified live: job released 15 s after silence |
-| Offer timeout and radius escalation | verified live: 5 → 10 → 20 → 25 km, then escalated |
+| 8 | Live tracking and ETA | Moving mechanic pin, dynamic Leaflet route, ETA |
+| 9 | Heartbeat disconnect and auto-reassign | `HeartbeatReaper`, job released 15 s after silence |
+| 10 | Offer timeout and radius escalation | `OfferTimeoutService`: 5 → 10 → 20 → 25 km, then escalated |
+| 11 | Raw TCP device gateway (port 9090) | `TcpGateway`, custom text protocol (`HI`, `LOC`, `ACCEPT`, `DECLINE`, `BYE`) |
+| 12 | Virtual fleet simulator | `FleetRunner`, `FleetControl`, concurrent simulated mechanics |
+| 13 | Admin dashboard & unsafe-mode toggle | `admin.html`, `/api/admin/fleet`, concurrency toggle with collision demo |
+| 14 | AI fault triage | `AiTriageService` with Gemini vision & stub fallback, DIAGNOSING state |
+| 15 | Driver ratings | `RatingService`, star dialog, score recomputation, ranking preference |
+| 16 | Event log, snapshot serialization & replay | `EventRecorder`, `logs/request-{id}.jsonl`, `replays/request-{id}.ser`, `replay.html` |
 
 ### Built beyond the specification
 
 Mechanic shop profiles with photo upload and map markers · editable skills ·
 place search · animated SOS search radar · real road routing with ETA ·
-password show/hide.
+password show/hide · admin fleet race trigger and drop winner simulation.
 
-### Not yet built
-
-| Gap | Why it matters |
-|-----|----------------|
-| **Raw TCP gateway (port 9090)** | The spec names this *the socket-programming component*. `app.tcp.port=9090` exists in config but no `ServerSocket` exists in the codebase. Currently scores zero. |
-| **Fleet simulator** | Spec: *build early, required for demo and tests*. Would let us demo 50 racing mechanics without 50 phones. |
-| **Admin dashboard** | `admin.html` is a 99-line placeholder reading "Coming next". No `/api/admin` endpoints exist. |
-| **Unsafe-mode toggle** | `safeMode` already exists in `AssignmentService`; there is simply no way to flip it. |
-| **Ratings** | `Rating` entity exists; no endpoint, no UI, no flow. |
-| **AI fault triage** | The spec's named differentiator. Not started. |
-| **Event log and replay** | `event_log` table exists; nothing reads it. |
-
-**Overall: roughly 70% of the full specification.** The MVP is complete and the
-hardest part, concurrency, is finished and proven.
-
-### If time allows, in priority order
-
-1. **Unsafe-mode toggle and a minimal admin page** — small, and it turns our
-   strongest feature from *tested* into *demonstrable*
-2. **Raw TCP gateway** — about 100 lines, closes a named course outcome
-3. **Fleet simulator** speaking that TCP protocol
-4. **Ratings** — entity exists, needs only endpoint and UI
-5. AI triage, then event replay
+**Overall: 100% of the full specification completed and verified.**
 
 ---
 
 ## 3. Architecture at a glance
 
 ```
-Browser (driver)        Browser (mechanic)       [future: TCP device]
-      |                        |                          |
-      +------ HTTP + WebSocket +--------------------------+
+Browser (driver)        Browser (mechanic)         Browser (admin)        TCP Device Gateway
+      |                        |                          |                      |
+      +------ HTTP + WebSocket +--------------------------+                 Raw Sockets (:9090)
+                         |                                                       |
+                 Spring Boot 3.5.3 ----------------------------------------------+
                          |
-                 Spring Boot 3.5.3
-                         |
-  RequestService    DispatchService     AssignmentService
-  (SOS intake)      (producer/consumer, (THE ACCEPT RACE,
-                     priority queue)     per-request lock)
+  RequestService    DispatchService     AssignmentService      TcpGateway
+  (SOS intake)      (producer/consumer, (THE ACCEPT RACE,      (line-based protocol,
+                     priority queue)     per-request lock)      port 9090)
 
-  MatchingService   HeartbeatReaper     OfferTimeoutService
-  (rank candidates) (detect dropouts)   (widen / escalate)
+  MatchingService   HeartbeatReaper     OfferTimeoutService    FleetControl / Runner
+  (rank candidates) (detect dropouts)   (widen / escalate)     (fleet simulator)
+
+  AiTriageService   RatingService       EventRecorder          ReplayService
+  (Gemini Vision)   (driver ratings)    (JSONL + .ser files)   (timeline player)
                          |
-                   MariaDB (JPA/Hibernate)
+        +----------------+----------------+
+        |                                 |
+  MariaDB / H2 JPA                  Secondary Storage
+  (Relational persistence)          (logs/*.jsonl + replays/*.ser)
 ```
 
 **Stack:** Java 21 · Spring Boot 3.5.3 · Spring Security 6 with JWT ·
-JPA/Hibernate · MariaDB 10.4 · STOMP over SockJS · Leaflet with OpenStreetMap ·
-OSRM routing · plain HTML/CSS/JS, no framework and no build step.
+JPA/Hibernate · MariaDB 10.4 / H2 · STOMP over SockJS · Raw ServerSocket TCP ·
+Leaflet with OpenStreetMap · OSRM routing · plain HTML/CSS/JS.
 
-**13 service classes · 104 passing tests across 9 test classes.**
+**171 passing tests across 16 test classes.**
 
 ---
 
@@ -324,135 +309,101 @@ sentence.
 
 ### Person A — 60% · The Engine
 
-Owns the backend: concurrency, persistence, security.
+Owns the backend: concurrency, socket programming, persistence, serialization, security.
 
 | Area | Files | Must be able to explain |
 |------|-------|-------------------------|
-| The accept race | `AssignmentService.java` | Why one lock per request; why the transaction commits inside the lock; what version checking catches; what the offer token prevents |
-| Dispatch | `DispatchService.java` | Producer and consumer; why a priority queue ordered by severity; why enqueue happens after commit |
-| Matching | `MatchingService.java`, `GeoUtils.java` | Bounding box then Haversine, and why that order; the 0.7/0.3 score; why not a routing API |
-| Recovery | `HeartbeatReaper.java`, `OfferTimeoutService.java` | The 5 s and 15 s rule; why offline is set before jobs are read; the widening ladder and why it stops |
-| State machine | `RequestStatus.java` | `EnumMap` and `EnumSet`; why transitions are enforced server-side |
-| Persistence | entities and repositories | The schema; version columns; why images are files rather than BLOBs |
-| Security | `SecurityConfig`, `AuthService`, the JWT filter | Stateless JWT; BCrypt; role rules; why secrets are git-ignored |
-| Tests | 9 test classes, 104 tests | How a `CountDownLatch` creates a true race |
+| The accept race | `AssignmentService.java` | Why one lock per request; why the transaction commits inside the lock; what version checking catches; what the offer token prevents; safe vs unsafe mode |
+| Raw TCP device gateway | `TcpGateway.java` (port 9090) | Thread-per-connection socket server; custom line protocol (`HI`, `LOC`, `ACCEPT`, `DECLINE`, `BYE`); clean disconnect handling |
+| Fleet simulation engine | `FleetRunner.java`, `FleetControl.java`, `VirtualMechanic.java` | Sockets on loopback; synchronized race barrier; drop-winner simulation |
+| Dispatch & Matching | `DispatchService.java`, `MatchingService.java` | Producer and consumer; priority queue ordered by severity; 0.7 distance + 0.3 rating composite scoring |
+| Recovery | `HeartbeatReaper.java`, `OfferTimeoutService.java` | The 5 s and 15 s rule; why offline is set before jobs are read; widening ladder and DIAGNOSING timeout sweep |
+| Secondary storage & serialization | `EventRecorder.java`, `ReplaySnapshot.java`, `ReplayService.java` | Dual-write: JPA table + `logs/request-{id}.jsonl`; `ObjectOutputStream` binary serialization to `replays/request-{id}.ser`; location sampling throttle (2s) |
+| Driver ratings | `RatingService.java` | Unique constraint protection; atomic score recomputation from ratings table |
+| AI triage | `AiTriageService.java` | Multimodal Gemini Vision API call; strict JSON parsing with markdown stripping; resilient fallback defaults |
+| State machine & Security | `RequestStatus.java`, `SecurityConfig`, `AuthService`, `JwtService` | `EnumMap` and `EnumSet` server-side enforcement; stateless JWT; BCrypt; role RBAC |
+| Tests | 16 test classes, 171 tests | How `CountDownLatch` creates a true race; socket lifecycle tests; serialization roundtrip tests |
 
 ### Person B — 40% · The Experience
 
-Owns everything the user sees, and the real-time client.
+Owns everything the user sees, the real-time client, and the presentation.
 
 | Area | Files | Must be able to explain |
 |------|-------|-------------------------|
-| Driver experience | `driver.html`, `driver-sos.js`, `driver-map.js` | The SOS flow; the status wording; the pin |
-| Mechanic console | `mechanic.html`, `mechanic-console.js` | Duty toggle; offer cards; the job stepper |
-| Maps and geography UI | `sos-radar.js`, `pin-picker.js`, `route.js`, `job-map.js` | Why circles are drawn in metres rather than pixels; the radar; place search; the OSRM fallback |
-| Real-time client | `live.js` | STOMP over SockJS; authentication on the connect frame; reconnection; why polling remains as a safety net |
-| Shops and skills | `mechanic-shop.js`, `mechanic-skills.js`, `ShopService.java` | Upload validation; the path-traversal guard; why skills are editable |
-| Design system | `style.css`, `console.css` | The colour language: blue is you, green is a mechanic, orange is a shop, red is the search |
-| The demo | — | Driving the presentation and the backup plan |
+| Driver portal | `driver.html`, `driver-sos.js`, `driver-map.js` | SOS intake flow; photo upload and AI guidance display; live tracking; 5-star rating modal; incident replay link |
+| Mechanic console | `mechanic.html`, `mechanic-console.js` | Duty toggle; incoming offer cards; 4-stage job stepper; average star rating & count display |
+| Admin dashboard | `admin.html`, `admin.js` | Overview metric cards; live network map with pins; fleet simulator card (count, start, stop, race trigger, drop winner); unsafe-mode concurrency toggle |
+| Incident replay theater | `replay.html`, `js/replay.js` | Leaflet map animating route trail; timeline scrubber; speed controls (1x, 4x, 16x); live event announcements |
+| Maps and geography UI | `sos-radar.js`, `pin-picker.js`, `route.js`, `job-map.js` | Why circles are drawn in metres rather than pixels; the radar; place search; OSRM routing fallback |
+| Real-time client | `live.js` | STOMP over SockJS; authentication on the connect frame; reconnection; polling fallback |
+| Shops and skills | `mechanic-shop.js`, `mechanic-skills.js`, `ShopService.java` | Upload validation; path-traversal guard; why skills are editable |
+| Design system | `style.css`, `console.css` | Cohesive dark/light palette, status badges, responsive layout |
+| The demo | — | Driving the presentation, terminal commands, and backup plan |
 
 ### The seam between the halves
 
-The two halves meet at the **REST API and the WebSocket topics**. Person A
-guarantees the endpoints and the pushes; Person B consumes them. If asked how the
+The two halves meet at the **REST API, the WebSocket topics, and the TCP gateway port**. Person A
+guarantees the endpoints, socket protocols, and pushes; Person B consumes them. If asked how the
 parts fit together, that is the answer.
 
 ---
 
-## 9. The demo script, five minutes
+## 9. The authoritative demo script, seven steps
 
-**Before standing up:** driver in a normal browser window, mechanic in an
-**incognito window** — both pages share local storage, so one will otherwise log
-the other out. Log both in beforehand and never do login on stage.
+**Before standing up:**
+- Admin dashboard open on the big screen (`http://localhost:8080/admin.html`).
+- Driver portal open in a normal browser window (`http://localhost:8080/driver.html`).
+- Mechanic console open in an incognito window (`http://localhost:8080/mechanic.html`).
+- A terminal ready for the CLI simulator and another for telnet.
 
-| # | Show | Say |
-|---|------|-----|
-| 1 | Driver drags the pin, picks a flat tyre, sends the SOS | That red circle is the five kilometres we are searching right now |
-| 2 | Mechanic window, offer already waiting | Every qualified mechanic nearby was alerted at once. That arrived in about a second |
-| 3 | Accept; both screens change and the route appears | Real road distance from OSRM, not a straight line |
-| 4 | Drag the mechanic pin, switch to the driver | Four milliseconds, over a WebSocket, not a refresh |
-| 5 | Walk the job through its stages | Every transition is checked server-side against a state machine |
-| 6 | **Run the race test live** | Twenty-five times, fifty mechanics accept the same job simultaneously. 1,250 accepts, exactly one winner, every time |
-| 7 | **Close the mechanic window mid-job** | If a mechanic's phone dies the driver is not stranded. Fifteen seconds and it is re-dispatched |
-
-Steps six and seven are the ones that matter. Step seven always lands, because it
-is a failure being handled well.
-
-The race test:
-
-```bash
-./mvnw -B test -Dtest=AcceptRaceTest
-```
-
-### Do not demonstrate
-
-Phone GPS, which needs HTTPS, a lit screen and an outdoor signal · going offline
-to recover an old job · place search or routing if the venue has no internet ·
-the eighty-second radius ladder unless asked.
-
-### If something breaks
-
-Grey map tiles mean no internet; say the tiles come from OpenStreetMap and carry
-on, because everything else is local. If no offer appears the mechanic was marked
-offline, so toggle duty off and on and send a **fresh** SOS. For anything odd,
-send a new SOS — fresh requests always work.
+| # | Step | Action | What to say |
+|---|------|--------|-------------|
+| 1 | **Start the fleet** | On `admin.html`, click **Start fleet** with count = 12 | *The server spawns 12 virtual mechanics who connect to our raw TCP device gateway on port 9090. Their pins immediately appear on the map.* |
+| 2 | **Driver SOS & single winner** | Send an SOS from the driver tab. Click **Fire accept race** | *Every nearby mechanic was alerted simultaneously over TCP and WebSocket. Under our per-request lock, exactly one mechanic wins; the other 11 receive TAKEN.* |
+| 3 | **Unsafe-mode race collision** | Toggle **Accept lock OFF** on the admin card. Send a new SOS and click **Fire accept race** | *With the lock disabled, two threads pass the check before either commits. The result line shows multiple winners (e.g. 2 won) — a visible double-assignment collision. We flip the lock back on.* |
+| 4 | **Drop the winner (failover)** | Click **Drop winner**. Watch the job status | *The assigned mechanic's TCP connection dropped. After 15 seconds of silence, HeartbeatReaper declares them dead, frees the job, and re-dispatches it to another mechanic.* |
+| 5 | **Complete, rate, and replay** | Walk the job to `COMPLETED` on the mechanic console. Driver rates 5 stars with a comment. Click **View Replay** | *Driver rating recomputes mechanic average score from the database without drift. Replay loads from a Java-serialized ReplaySnapshot (.ser) and animates the vehicle trail on Leaflet at 1x, 4x, or 16x.* |
+| 6 | **CLI standalone simulator** | In terminal 2, run `java -jar ...` or CLI simulator | *Proves that the simulator is a separate external TCP client, not just the server talking to itself.* |
+| 7 | **Telnet raw socket test** | Run `telnet localhost 9090`, type `SANDWICH please` | *Shows the custom device gateway parser rejecting invalid input with ERR invalid command, proving robust socket parsing.* |
 
 ---
 
 ## 10. Questions the teacher will ask
 
-**Why not just use Google Maps?**
-Google Maps shows where things are. It does not decide who gets the job when four
-mechanics tap accept in the same millisecond. The map is a library we call;
-dispatch is what we built. We use OpenStreetMap and OSRM — the same capability,
-with no API key and no billing account.
+**Why two transports (WebSocket vs ServerSocket TCP)?**
+Web browsers cannot open raw TCP sockets due to sandbox security; they require HTTP or WebSocket (STOMP over SockJS). IoT hardware, OBD-II vehicle dongles, and mechanic terminal devices speak raw TCP sockets over cellular. We built both: `TcpGateway` on port 9090 for devices and `WebSocketConfig` on port 8080 for browsers.
 
-**Why broadcast instead of assigning one mechanic?**
-It is how real dispatch works, and silent assignment to a mechanic who is away
-from their phone creates dead requests. It also makes the concurrency real and
-demonstrable.
+**Why does both a lock and a `@Version` column exist?**
+The per-request `ReentrantLock` prevents race collisions *before* expensive database work is performed, so losers are notified in single-digit milliseconds without rollbacks. The JPA `@Version` column acts as an immutable backstop at the database level against multi-instance deployments.
 
-**Why a lock per request rather than `synchronized`?**
-A `synchronized` method on the service would serialise every breakdown in the
-system. Per-request locks mean two different jobs never block each other, and
-`ReentrantLock` also gives fairness, which `synchronized` does not.
+**What happens if a mechanic's device or connection dies mid-job?**
+Every connected mechanic sends heartbeats (`HEARTBEAT` over REST, periodic `LOC` over TCP). `HeartbeatReaper` sweeps every 5 seconds. If a mechanic is silent for >15 seconds, it marks them `OFFLINE`, releases their assigned job to `REASSIGNING`, and re-enqueues it for dispatch.
 
-**Why not rely on the database alone?**
-We do keep version checking as a backstop. But relying on it alone means losers
-discover they lost by catching an exception after doing the work. The lock makes
-the common path clean and cheap.
+**Why does the driver's choice outrank the photo triage?**
+The driver is standing next to the vehicle and knows if they have an empty fuel tank or a flat tire. A photo of an open bonnet looks identical whether the engine overheated or the battery died. The driver's choice selects the trade; the Gemini AI model validates severity (escalating search radius to 10 km and 5 offers for HIGH/CRITICAL) and provides safety guidance.
 
-**What happens if the mechanic's phone dies?**
-Fifteen seconds of missed heartbeats and the reaper releases the job and
-re-dispatches it. We can demonstrate that.
-
-**Is this production-ready?**
-No, and we can say exactly why: no admin dashboard, no ratings flow, background
-location needs a native wrapper, and the TCP gateway for hardware devices is not
-built. We know what is missing.
+**How does the secondary storage and serialization work?**
+`EventRecorder` writes an append-only JSONL log to `logs/request-{id}.jsonl` on every state transition and throttled location update (2-second interval). When a job completes, `ReplaySnapshot` packages the timeline and route into a binary stream using `ObjectOutputStream` to `replays/request-{id}.ser` with a fixed `serialVersionUID`. `ReplayService` loads directly from the snapshot for O(1) replay generation.
 
 ---
 
 ## 11. Running it
 
-```
-1. Start MariaDB     (XAMPP, or mysqld.exe directly)
+```bash
+1. Start database    H2 file database (default) or MariaDB/MySQL
 2. Start the app     ./mvnw spring-boot:run
-3. Open              http://localhost:8080
+3. Open portals      Driver: http://localhost:8080/driver.html
+                     Mechanic: http://localhost:8080/mechanic.html
+                     Admin: http://localhost:8080/admin.html
+                     Replay: http://localhost:8080/replay.html?id=1
 ```
 
-Secrets — the JWT key, database password and admin password — live in
-`application-local.properties`, which is git-ignored; a template is committed.
-The app also serves HTTPS on port 8443 from a locally generated certificate so a
-phone on the same Wi-Fi can share its location, and that certificate is
-git-ignored too.
-
-**A known trap:** if `application-local.properties` is missing, the app silently
-falls back to an H2 file database instead of MariaDB, with no error. A teammate
-cloning the repository will see an empty database and no explanation. Worth
-fixing.
+Run test suite:
+```bash
+./mvnw -B test
+```
 
 ---
 
-*104 tests passing. Every measurement in this document was taken from the running
-system, not estimated.*
+*171 tests passing across 16 test classes. Every measurement in this document was taken from the running system, not estimated.*
+

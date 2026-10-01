@@ -25,3 +25,11 @@ app.gemini.api-key=
 #spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 #spring.datasource.username=root
 #spring.datasource.password=
+
+# --- Event log and replay snapshot storage ---
+app.events.log-dir=logs
+app.events.replay-dir=replays
+
+# --- Dispatch tuning for demo (e.g. wider race with 10 offers) ---
+#app.dispatch.offer-count=10
+
