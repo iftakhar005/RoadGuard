@@ -1,6 +1,7 @@
 package com.roadguard.service;
 
 import com.roadguard.domain.ServiceRequest;
+import com.roadguard.domain.enums.RequestStatus;
 import com.roadguard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,8 +67,10 @@ public class RealtimeNotifier {
 
         if (request.getAssignedMechanic() != null) {
             sendToUser(request.getAssignedMechanic().getId(), payload);
-            events.publishEvent(new com.roadguard.tcp.RequestAssignedEvent(
-                    request.getId(), request.getAssignedMechanic().getId()));
+            if (request.getStatus() == RequestStatus.ACCEPTED) {
+                events.publishEvent(new com.roadguard.tcp.RequestAssignedEvent(
+                        request.getId(), request.getAssignedMechanic().getId()));
+            }
         }
         toAdmin("STATUS", request.getId());
         recorder.record(request.getId(), request.getStatus().name(), "{\"status\":\"" + request.getStatus().name() + "\"}");

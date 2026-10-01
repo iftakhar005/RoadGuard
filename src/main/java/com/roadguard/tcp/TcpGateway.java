@@ -5,6 +5,7 @@ import com.roadguard.domain.ServiceRequest;
 import com.roadguard.domain.User;
 import com.roadguard.domain.enums.AcceptOutcome;
 import com.roadguard.domain.enums.AvailabilityStatus;
+import com.roadguard.domain.enums.RequestStatus;
 import com.roadguard.repository.MechanicProfileRepository;
 import com.roadguard.repository.ServiceRequestRepository;
 import com.roadguard.repository.UserRepository;
@@ -62,7 +63,7 @@ public class TcpGateway {
     @Value("${app.tcp.port:9090}")
     private int configuredPort;
 
-    @Value("${app.tcp.workers:8}")
+    @Value("${app.tcp.workers:64}")
     private int workers;
 
     private ServerSocket door;
@@ -214,6 +215,7 @@ public class TcpGateway {
             case "LOC" -> location(session, parts);
             case "HEARTBEAT" -> beat(session.mechanicUserId);
             case "ACCEPT" -> accept(session.mechanicUserId, parts);
+            case "STATUS" -> status(session.mechanicUserId, parts);
             case "DECLINE" -> decline(session.mechanicUserId, parts);
             default -> "ERR unknown command " + command;
         };
@@ -308,6 +310,30 @@ public class TcpGateway {
         return outcome.name() + " " + requestId;
     }
 
+    private String status(Long mechanicUserId, String[] parts) {
+        if (parts.length < 3) {
+            return "ERR usage: STATUS <requestId> <EN_ROUTE|ARRIVED|IN_PROGRESS|COMPLETED>";
+        }
+        Long requestId;
+        RequestStatus target;
+        try {
+            requestId = Long.valueOf(parts[1]);
+        } catch (NumberFormatException e) {
+            return "ERR that is not a request id";
+        }
+        try {
+            target = RequestStatus.valueOf(parts[2].toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return "ERR that is not a status";
+        }
+
+        AssignmentService.StatusChange change = assignment.advanceStatus(requestId, mechanicUserId, target);
+        if (change == AssignmentService.StatusChange.OK) {
+            return "STATUS_OK " + requestId + " " + target;
+        }
+        return "STATUS_REFUSED " + requestId + " " + change;
+    }
+
     private String decline(Long mechanicUserId, String[] parts) {
         if (parts.length < 2) {
             return "ERR usage: DECLINE <requestId> [offerToken]";
@@ -373,12 +399,14 @@ public class TcpGateway {
             if (session == null) {
                 continue;
             }
-            session.say("OFFER %d %s %s %s %.2f".formatted(
+            session.say("OFFER %d %s %s %s %.2f %.5f %.5f".formatted(
                     request.getId(),
                     request.getCurrentOfferToken(),
                     request.getIssueType(),
                     request.getSeverity(),
-                    distanceTo(request, mechanicUserId)));
+                    distanceTo(request, mechanicUserId),
+                    request.getOriginLat(),
+                    request.getOriginLng()));
         }
     }
 

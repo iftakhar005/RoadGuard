@@ -121,6 +121,22 @@ class TcpGatewayTest {
             return null;
         }
 
+        /** Reads past pushes such as ASSIGNED until the answer to a STATUS command arrives. */
+        private String askForStatus(String line) throws IOException {
+            out.println(line);
+            out.flush();
+            for (int i = 0; i < 10; i++) {
+                String reply = in.readLine();
+                if (reply == null) {
+                    return null;
+                }
+                if (reply.startsWith("STATUS_") || reply.startsWith("ERR")) {
+                    return reply;
+                }
+            }
+            return null;
+        }
+
         @Override
         public void close() throws IOException {
             socket.close();
@@ -233,6 +249,8 @@ class TcpGatewayTest {
             String[] parts = pushed.split("\\s+");
             assertEquals("FLAT_TIRE", parts[3]);
             assertTrue(Double.parseDouble(parts[5]) > 0, "a real distance should be quoted");
+            assertEquals(23.7806, Double.parseDouble(parts[6]), 0.00001, "the offer should say where the driver is");
+            assertEquals(90.4193, Double.parseDouble(parts[7]), 0.00001, "the offer should say where the driver is");
         }
     }
 
@@ -377,6 +395,94 @@ class TcpGatewayTest {
                     .mechanicMoved(org.mockito.ArgumentMatchers.eq(requestId),
                             org.mockito.ArgumentMatchers.eq(23.8105),
                             org.mockito.ArgumentMatchers.eq(90.4130));
+        }
+    }
+
+    private record Job(Long requestId, String token) {
+    }
+
+    private Job jobOfferedTo(Mechanic... who) {
+        return tx.execute(s -> {
+            int n = UNIQUE.incrementAndGet();
+            User driver = users.save(new User("tcp_j_" + n, "tcp_j_" + n + "@t.com", "x", Role.DRIVER));
+            ServiceRequest request = new ServiceRequest(
+                    driver, IssueType.FLAT_TIRE, 23.8103, 90.4125, "status over the wire");
+            request.setSearchRadiusKm(25);
+            Set<Long> everyone = new HashSet<>();
+            for (Mechanic m : who) {
+                everyone.add(m.userId());
+            }
+            request.startNewOfferRound(everyone);
+            request.setStatus(RequestStatus.OFFERED);
+            ServiceRequest saved = requests.save(request);
+            return new Job(saved.getId(), saved.getCurrentOfferToken());
+        });
+    }
+
+    private Device signedInAndWinning(Mechanic me, Job job) throws Exception {
+        Device device = connect();
+        device.ask("HELLO " + me.userId() + " " + me.token());
+        device.ask("LOC 23.8103 90.4125");
+        String outcome = device.askForOutcome("ACCEPT " + job.requestId() + " " + job.token());
+        assertTrue(outcome.startsWith("ACCEPTED"), "the mechanic should have won the job, got " + outcome);
+        return device;
+    }
+
+    @Test
+    @DisplayName("a mechanic can carry a job from accepted to completed over the socket")
+    void wholeJobOverTheSocket() throws Exception {
+        Mechanic me = newMechanic();
+        Job job = jobOfferedTo(me);
+
+        try (Device device = signedInAndWinning(me, job)) {
+            for (String stage : new String[]{"EN_ROUTE", "ARRIVED", "IN_PROGRESS", "COMPLETED"}) {
+                assertEquals("STATUS_OK " + job.requestId() + " " + stage,
+                        device.askForStatus("STATUS " + job.requestId() + " " + stage));
+            }
+        }
+
+        ServiceRequest after = tx.execute(s -> requests.findById(job.requestId()).orElseThrow());
+        assertEquals(RequestStatus.COMPLETED, after.getStatus(), "the job should be finished in the database");
+        assertNotNull(after.getCompletedAt(), "completion should be timestamped");
+    }
+
+    @Test
+    @DisplayName("a stage cannot be skipped over the socket")
+    void skippingAStageIsRefused() throws Exception {
+        Mechanic me = newMechanic();
+        Job job = jobOfferedTo(me);
+
+        try (Device device = signedInAndWinning(me, job)) {
+            assertEquals("STATUS_REFUSED " + job.requestId() + " NOT_ALLOWED",
+                    device.askForStatus("STATUS " + job.requestId() + " ARRIVED"));
+        }
+    }
+
+    @Test
+    @DisplayName("a mechanic cannot move somebody else's job along")
+    void anotherMechanicsJobIsRefused() throws Exception {
+        Mechanic winner = newMechanic();
+        Mechanic bystander = newMechanic();
+        Job job = jobOfferedTo(winner, bystander);
+
+        try (Device first = signedInAndWinning(winner, job);
+             Device second = connect()) {
+            second.ask("HELLO " + bystander.userId() + " " + bystander.token());
+            assertEquals("STATUS_REFUSED " + job.requestId() + " NOT_YOURS",
+                    second.askForStatus("STATUS " + job.requestId() + " EN_ROUTE"));
+        }
+    }
+
+    @Test
+    @DisplayName("a status needs hello first and a real stage name")
+    void statusIsCheckedLikeEverythingElse() throws Exception {
+        Mechanic me = newMechanic();
+        try (Device device = connect()) {
+            assertTrue(device.ask("STATUS 1 EN_ROUTE").startsWith("ERR say HELLO first"));
+            device.ask("HELLO " + me.userId() + " " + me.token());
+            assertTrue(device.ask("STATUS 1 SNORING").startsWith("ERR that is not a status"));
+            assertTrue(device.ask("STATUS banana EN_ROUTE").startsWith("ERR that is not a request id"));
+            assertTrue(device.ask("STATUS 1").startsWith("ERR usage"));
         }
     }
 }
