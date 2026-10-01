@@ -1,6 +1,7 @@
 package com.roadguard.web.dto;
 
 import com.roadguard.domain.MechanicProfile;
+import com.roadguard.domain.Rating;
 import com.roadguard.domain.ServiceRequest;
 import com.roadguard.domain.enums.IssueType;
 import com.roadguard.domain.enums.RequestStatus;
@@ -25,16 +26,21 @@ public record ServiceRequestResponse(
         Double mechanicLng,
         String aiFaultCategory,
         String aiGuidance,
+        boolean rated,
+        Integer ratingStars,
         Instant createdAt,
         Instant acceptedAt,
         Instant completedAt
 ) {
     public static ServiceRequestResponse from(ServiceRequest req) {
-        return from(req, null);
+        return from(req, null, null);
     }
 
     public static ServiceRequestResponse from(ServiceRequest req, MechanicProfile mechanic) {
+        return from(req, mechanic, null);
+    }
 
+    public static ServiceRequestResponse from(ServiceRequest req, MechanicProfile mechanic, Rating rating) {
         boolean share = mechanic != null
                 && req.getStatus().isAssignedToMechanic()
                 && mechanic.hasLocation();
@@ -55,6 +61,8 @@ public record ServiceRequestResponse(
                 share ? mechanic.getCurrentLng() : null,
                 req.getAiFaultCategory(),
                 req.getAiGuidance(),
+                rating != null,
+                rating != null ? rating.getStars() : null,
                 req.getCreatedAt(),
                 req.getAcceptedAt(),
                 req.getCompletedAt());

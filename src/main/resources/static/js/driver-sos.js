@@ -34,6 +34,7 @@ const LIVE = ['CREATED', 'DIAGNOSING', 'SEARCHING', 'OFFERED', 'ACCEPTED',
 const sosEl = (id) => document.getElementById(id);
 let activeRequest = null;
 let pollTimer = null;
+let selectedStars = 0;
 
 function sosToast(message, kind) {
     const stack = sosEl('toasts');
@@ -159,6 +160,28 @@ function showStatus(req) {
             <div class="job-cell"><dt>Needs</dt><dd>${esc(req.requiredSpecialization || '—')}</dd></div>
             <div class="job-cell"><dt>Search radius</dt><dd>${req.searchRadiusKm} km</dd></div>
         </dl>
+
+        ${req.status === 'COMPLETED' ? (req.rated ? `
+        <div class="rating-display" style="margin-top:14px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="font-size:0.85rem; color:#64748b; margin-bottom:4px;">Your rating</div>
+            <div style="color:#f59e0b; font-size:1.25rem; letter-spacing:2px;">
+                ${'★'.repeat(req.ratingStars || 0)}${'☆'.repeat(Math.max(0, 5 - (req.ratingStars || 0)))}
+            </div>
+        </div>` : `
+        <div class="rating-box" id="rating-box" style="margin-top:14px; padding:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+            <strong style="display:block; font-size:0.95rem; margin-bottom:4px; color:#1e293b;">Rate your mechanic</strong>
+            <p style="font-size:0.82rem; color:#64748b; margin-bottom:10px;">How was the service provided by ${esc(assigned || 'your mechanic')}?</p>
+            <div class="star-rating" id="star-picker" style="display:flex; gap:8px; font-size:1.6rem; color:#cbd5e1; cursor:pointer; margin-bottom:10px;">
+                <span class="star-btn" data-v="1" style="transition:color 0.15s;">★</span>
+                <span class="star-btn" data-v="2" style="transition:color 0.15s;">★</span>
+                <span class="star-btn" data-v="3" style="transition:color 0.15s;">★</span>
+                <span class="star-btn" data-v="4" style="transition:color 0.15s;">★</span>
+                <span class="star-btn" data-v="5" style="transition:color 0.15s;">★</span>
+            </div>
+            <input type="text" id="rating-comment" placeholder="Leave a comment (optional)" maxlength="500"
+                   style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; margin-bottom:10px;">
+            <button class="btn btn-primary" id="btn-submit-rating" type="button" style="width:100%;" disabled>Submit Rating</button>
+        </div>`) : ''}
 
         <div class="map-panel-actions">
             ${finished
@@ -349,10 +372,53 @@ document.addEventListener('click', (e) => {
     else if (e.target.closest('#sos-cancel')) cancelSos();
     else if (e.target.closest('#sos-new')) {
         activeRequest = null;
+        selectedStars = 0;
         stopPolling();
         showForm();
+    } else if (e.target.closest('#btn-submit-rating')) {
+        submitRating();
+    } else {
+        const starBtn = e.target.closest('.star-btn');
+        if (starBtn) {
+            selectedStars = parseInt(starBtn.dataset.v, 10);
+            const picker = sosEl('star-picker');
+            if (picker) {
+                picker.querySelectorAll('.star-btn').forEach((btn) => {
+                    const val = parseInt(btn.dataset.v, 10);
+                    btn.style.color = val <= selectedStars ? '#f59e0b' : '#cbd5e1';
+                });
+            }
+            const submitBtn = sosEl('btn-submit-rating');
+            if (submitBtn) submitBtn.disabled = selectedStars < 1;
+        }
     }
 });
+
+async function submitRating() {
+    if (!activeRequest || selectedStars < 1) return;
+    const btn = sosEl('btn-submit-rating');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+    }
+    const commentEl = sosEl('rating-comment');
+    const comment = commentEl ? commentEl.value.trim() : '';
+    try {
+        await api(`/api/requests/${activeRequest.id}/rating`, {
+            method: 'POST',
+            body: JSON.stringify({ stars: selectedStars, comment: comment || null })
+        });
+        sosToast('Thank you for your rating!', 'win');
+        selectedStars = 0;
+        await poll();
+    } catch (err) {
+        sosToast(err.message, 'bad');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Submit Rating';
+        }
+    }
+}
 
 function goLive(requestId) {
     Live.subscribeTopic('/topic/request/' + requestId);

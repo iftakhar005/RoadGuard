@@ -3,10 +3,13 @@ package com.roadguard.web;
 import com.roadguard.domain.enums.AcceptOutcome;
 import com.roadguard.security.AuthUser;
 import com.roadguard.service.AssignmentService;
+import com.roadguard.service.RatingService;
 import com.roadguard.service.RequestService;
 import com.roadguard.web.dto.AcceptOfferRequest;
 import com.roadguard.web.dto.CreateSosRequest;
 import com.roadguard.web.dto.MechanicCandidateResponse;
+import com.roadguard.web.dto.RatingRequest;
+import com.roadguard.web.dto.RatingResponse;
 import com.roadguard.web.dto.ServiceRequestResponse;
 import com.roadguard.web.dto.StatusUpdateRequest;
 import jakarta.validation.Valid;
@@ -32,6 +35,7 @@ import java.util.Map;
 public class RequestController {
 
     private final RequestService requests;
+    private final RatingService ratings;
     private final com.roadguard.service.ChatService chat;
 
     @PostMapping
@@ -98,6 +102,14 @@ public class RequestController {
             @AuthenticationPrincipal AuthUser caller,
             @PathVariable Long id) {
         return ResponseEntity.ok(requests.getById(caller, id));
+    }
+
+    @PostMapping("/{id}/rating")
+    public ResponseEntity<RatingResponse> rate(
+            @AuthenticationPrincipal AuthUser caller,
+            @PathVariable Long id,
+            @Valid @RequestBody RatingRequest req) {
+        return ResponseEntity.ok(ratings.rate(caller, id, req.stars(), req.comment()));
     }
 
     @GetMapping("/{id}/candidates")

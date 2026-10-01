@@ -10,6 +10,8 @@ import com.roadguard.domain.MechanicProfile;
 import com.roadguard.domain.VehicleDiagnosis;
 import com.roadguard.domain.enums.IssueType;
 import com.roadguard.domain.enums.Specialization;
+import com.roadguard.domain.Rating;
+import com.roadguard.repository.RatingRepository;
 import com.roadguard.repository.MechanicProfileRepository;
 import com.roadguard.repository.RequestOfferRepository;
 import com.roadguard.repository.VehicleDiagnosisRepository;
@@ -59,6 +61,7 @@ public class RequestService {
     private final RequestOfferRepository offerRows;
     private final MechanicProfileRepository mechanics;
     private final VehicleDiagnosisRepository diagnoses;
+    private final RatingRepository ratings;
     private final AiTriageService triage;
     private final TransactionTemplate tx;
 
@@ -248,7 +251,10 @@ public class RequestService {
         if (!canView(caller, request)) {
             throw new AccessDeniedException("This request is not yours");
         }
-        return ServiceRequestResponse.from(request, assignedProfile(request));
+        Rating rating = request.getStatus() == RequestStatus.COMPLETED
+                ? ratings.findByRequestId(id).orElse(null)
+                : null;
+        return ServiceRequestResponse.from(request, assignedProfile(request), rating);
     }
 
     private MechanicProfile assignedProfile(ServiceRequest request) {
@@ -372,7 +378,12 @@ public class RequestService {
     public List<ServiceRequestResponse> myRequests(AuthUser caller) {
         return requests.findByDriverIdOrderByCreatedAtDesc(caller.getId())
                 .stream()
-                .map(r -> ServiceRequestResponse.from(r, assignedProfile(r)))
+                .map(r -> {
+                    Rating rating = r.getStatus() == RequestStatus.COMPLETED
+                            ? ratings.findByRequestId(r.getId()).orElse(null)
+                            : null;
+                    return ServiceRequestResponse.from(r, assignedProfile(r), rating);
+                })
                 .toList();
     }
 
