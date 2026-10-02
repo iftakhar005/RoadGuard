@@ -3,544 +3,247 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sakib: Frontend Technical Reference</title>
+<title>Sakib: My Part of RoadGuard</title>
 <style>
   :root {
     --bg: #f6f7f9; --card: #ffffff; --ink: #1b2330; --muted: #5b6678; --line: #e1e5ec;
-    --accent: #0f8a5f; --accent-soft: #e3f5ee; --blue: #1f5fd1; --blue-soft: #e8f0fd;
-    --warn: #b45309; --warn-soft: #fff4e0; --red: #c0392b; --red-soft: #fdecea; --code: #eef1f5;
+    --accent: #0f8a5f; --accent-soft: #e3f5ee; --warn: #b45309; --warn-soft: #fff4e0; --code: #eef1f5;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #12161d; --card: #1a202a; --ink: #e8ecf2; --muted: #9aa5b8; --line: #2a3342;
-      --accent: #4fd1a0; --accent-soft: #14302a; --blue: #6ea0ff; --blue-soft: #1b2a45;
-      --warn: #f6ad55; --warn-soft: #3a2b12; --red: #ff8a7a; --red-soft: #3a1c18; --code: #232b38;
+      --accent: #4fd1a0; --accent-soft: #14302a; --warn: #f6ad55; --warn-soft: #3a2b12; --code: #232b38;
     }
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 1020px; margin: 0 auto; padding: 24px 16px 80px; }
+    font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
   h1 { font-size: 2rem; margin: 0 0 4px; }
-  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-top: 8px; border-top: 2px solid var(--line); }
-  h3 { font-size: 1.05rem; margin: 22px 0 6px; }
+  h2 { font-size: 1.3rem; margin: 44px 0 10px; padding-top: 8px; border-top: 2px solid var(--line); }
   p { margin: 8px 0; }
-  ul, ol { margin: 6px 0 6px 22px; padding: 0; }
+  ul { margin: 6px 0 6px 22px; padding: 0; }
   li { margin: 4px 0; }
-  .sub { color: var(--muted); margin: 0 0 18px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
   .small { font-size: .88rem; color: var(--muted); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; margin: 12px 0; }
-  .hero { border-left: 5px solid var(--accent); }
-  code { font: .86em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code);
+  code { font: .85em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code);
     padding: 1px 6px; border-radius: 4px; word-break: break-word; }
-  pre { background: var(--code); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: .82rem; line-height: 1.5; margin: 8px 0; }
-  pre code { background: none; padding: 0; word-break: normal; }
-  .ref { display: block; font-size: .78rem; color: var(--muted); margin: 10px 0 -2px; }
-  .term { font-weight: 700; color: var(--accent); }
 
   nav { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
     margin: 0 -16px 8px; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
-  nav a { color: var(--accent); text-decoration: none; font-size: .84rem; font-weight: 600;
+  nav a { color: var(--accent); text-decoration: none; font-size: .85rem; font-weight: 600;
     padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); }
 
-  .tablewrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: .9rem; background: var(--card);
+  .say { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--accent);
+    border-radius: 12px; padding: 14px 20px; margin: 12px 0; }
+  .say::before { content: "SAY THIS"; display: block; font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+    color: var(--accent); margin-bottom: 4px; }
+  .say p { margin: 6px 0; }
+
+  .note { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .note strong { color: var(--warn); }
+
+  .tablewrap { overflow-x: auto; margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .93rem; background: var(--card);
     border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  th, td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
   th { background: var(--bg); font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
   tr:last-child td { border-bottom: 0; }
-
-  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .twocol > * { min-width: 0; }
-  @media (max-width: 720px) { .twocol { grid-template-columns: 1fr; } }
-
-  .note, .bad, .ok { border-radius: 10px; padding: 12px 16px; margin: 12px 0; border: 1px solid; }
-  .note { background: var(--warn-soft); border-color: var(--warn); } .note strong { color: var(--warn); }
-  .bad { background: var(--red-soft); border-color: var(--red); } .bad strong { color: var(--red); }
-  .ok { background: var(--accent-soft); border-color: var(--accent); } .ok strong { color: var(--accent); }
-
-  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin: 8px 0; }
-  summary { cursor: pointer; font-weight: 600; color: var(--accent); }
-  details[open] summary { margin-bottom: 6px; }
+  td.n, th.n { white-space: nowrap; color: var(--muted); text-align: right; }
 
   @media print {
-    body { background: #fff; color: #000; font-size: 10.5pt; }
+    body { background: #fff; color: #000; font-size: 11pt; }
     nav { display: none; }
-    .card, table, details, pre { break-inside: avoid; }
-    details > * { display: block; }
+    .say, table { break-inside: avoid; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <h1>Sakib: Frontend Technical Reference</h1>
-  <p class="sub">RoadGuard &middot; client-side architecture, browser APIs, libraries and techniques used &middot; about 40% of the project, plus the live demo</p>
+  <h1>Sakib: My Part of RoadGuard</h1>
+  <p class="sub">Taken from section 8 of <code>docs/DOCUMENTATION.md</code> (&ldquo;Sakib &middot; The Experience&rdquo;) &middot; about 40% of the project, plus the live demo</p>
 
   <nav>
-    <a href="#stack">Stack</a>
-    <a href="#arch">Architecture</a>
-    <a href="#net">Networking &amp; auth</a>
-    <a href="#rt">Real-time</a>
-    <a href="#geo">Geolocation</a>
-    <a href="#map">Leaflet</a>
-    <a href="#route">Routing</a>
-    <a href="#anim">Animation</a>
-    <a href="#upload">Upload</a>
-    <a href="#css">CSS</a>
-    <a href="#sec">Security</a>
-    <a href="#files">Files</a>
-    <a href="#contract">API contract</a>
-    <a href="#qa">Viva Q&amp;A</a>
-    <a href="#debt">Limitations</a>
+    <a href="#intro">Opening</a>
+    <a href="#driver">Driver</a>
+    <a href="#mechanic">Mechanic</a>
+    <a href="#maps">Maps</a>
+    <a href="#live">Live</a>
+    <a href="#shops">Shops &amp; skills</a>
+    <a href="#ai">Photo</a>
+    <a href="#design">Design</a>
+    <a href="#other">Other pages</a>
+    <a href="#api">API</a>
+    <a href="#demo">Demo</a>
+    <a href="#close">Closing</a>
   </nav>
 
-  <div class="card hero">
-    <strong>One-line summary.</strong> The frontend is a <span class="term">multi-page application (MPA)</span> written in
-    <span class="term">vanilla JavaScript (ES2017+)</span>, HTML5 and CSS3, with <span class="term">Leaflet</span> for maps and
-    <span class="term">STOMP over SockJS</span> for server push. It has no framework, no bundler and no npm dependencies. Spring Boot serves the files
-    from <code>src/main/resources/static/</code>, and the browser talks to the backend through a <span class="term">REST/JSON API</span>
-    plus a <span class="term">WebSocket</span>.
+  <h2 id="intro" style="border-top:0">1. How I start</h2>
+  <div class="say">
+    <p>Sir, in RoadGuard I did the part of <strong>everything the user sees</strong>. That is the driver&rsquo;s screen, the mechanic&rsquo;s screen,
+      the maps, the live connection that keeps those screens up to date, and the shop and skills pages. I also worked on the photo step of the AI fault check,
+      and I will run the live demo.</p>
+    <p>My friend Ifty did the backend: the dispatch engine, the matching, the rule that only one mechanic can win a job, the security and the tests.
+      Our two parts meet at the <strong>REST API</strong> and the <strong>WebSocket</strong>. He provides the endpoints, and my pages call them.</p>
+    <p>I will now go through my part area by area, and say what each file is for.</p>
   </div>
 
-  <!-- ===================================================== -->
-  <h2 id="stack">1. Technology stack</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Layer</th><th>What is used</th><th>Where / version</th></tr></thead>
-    <tbody>
-      <tr><td>Markup</td><td>HTML5, semantic page shells, <code>data-*</code> attributes (<code>data-role</code>, <code>data-photo-url</code>, <code>data-live-label</code>)</td><td><code>index.html</code>, <code>driver.html</code>, <code>mechanic.html</code>, <code>admin.html</code></td></tr>
-      <tr><td>Styling</td><td>CSS3: custom properties (design tokens), Flexbox, Grid, <code>@keyframes</code>, <code>@media</code>, <code>backdrop-filter</code></td><td><code>style.css</code> 2091 lines, <code>console.css</code> 1330, <code>forms.css</code> 45</td></tr>
-      <tr><td>Language</td><td>JavaScript, no transpiler: <code>async/await</code>, arrow functions, template literals, destructuring, spread, optional <code>catch</code> binding</td><td>14 files in <code>js/</code>, loaded as classic <code>&lt;script&gt;</code> tags</td></tr>
-      <tr><td>Maps</td><td>Leaflet</td><td>1.9.4 from <code>cdn.jsdelivr.net</code></td></tr>
-      <tr><td>Push transport</td><td>SockJS client + STOMP.js</td><td>sockjs-client 1.6.1, stomp.js 2.3.3 from <code>cdnjs.cloudflare.com</code></td></tr>
-      <tr><td>Map tiles</td><td>OpenStreetMap raster tiles (XYZ / &ldquo;slippy map&rdquo; scheme)</td><td><code>tile.openstreetmap.org/{z}/{x}/{y}.png</code>, <code>maxZoom: 19</code></td></tr>
-      <tr><td>Routing</td><td>OSRM public HTTP API</td><td><code>router.project-osrm.org/route/v1/driving/</code></td></tr>
-      <tr><td>Geocoding</td><td>Nominatim search API</td><td><code>nominatim.openstreetmap.org/search</code></td></tr>
-      <tr><td>Font</td><td>Inter via Google Fonts</td><td>weights 400/500/600/650</td></tr>
-    </tbody>
-  </table></div>
+  <div class="note"><strong>About the API.</strong> The docs give Sakib the browser side, the shop service on the server (<code>ShopService.java</code>) and the use of the API.
+    The API controllers themselves are listed under Ifty&rsquo;s backend. So say &ldquo;my pages use the API&rdquo;, not &ldquo;I wrote the API&rdquo;, unless you really did write the controllers.
+    If you did, tell me and I will add them.</div>
 
-  <h3>Browser APIs used</h3>
-  <p>Fetch API &middot; Geolocation API (<code>getCurrentPosition</code>, <code>watchPosition</code>, <code>clearWatch</code>) &middot; Web Storage (<code>localStorage</code>) &middot;
-    FormData &middot; File API / <code>FileReader</code> &middot; Blob and <code>URL.createObjectURL</code> &middot; <code>AbortController</code> &middot;
-    <code>requestAnimationFrame</code> / <code>cancelAnimationFrame</code> &middot; <code>performance.now()</code> &middot; <code>ResizeObserver</code> &middot;
-    <code>window.isSecureContext</code> &middot; DOM APIs (<code>querySelector</code>, <code>closest</code>, <code>classList</code>, <code>dataset</code>, <code>replaceWith</code>).</p>
-
-  <!-- ===================================================== -->
-  <h2 id="arch">2. Client-side architecture</h2>
-
-  <h3>2.1 Multi-page application, not an SPA</h3>
-  <p>Each role has its own HTML document (<code>driver.html</code>, <code>mechanic.html</code>, <code>admin.html</code>) and navigation is a full page load
-    through <code>window.location.href</code>. There is no client-side router and no virtual DOM. Each page loads only the scripts it needs, in a fixed order, because
-    classic scripts share one global scope:</p>
-  <span class="ref">driver.html lines 91&ndash;100</span>
-<pre><code>leaflet.js → sockjs.min.js → stomp.min.js → api.js → live.js → home.js
-→ route.js → driver-map.js → sos-radar.js → driver-sos.js</code></pre>
-  <p class="small">Order matters: <code>sos-radar.js</code> ends with <code>SosRadar.attach(map)</code> and uses the <code>map</code> created in <code>driver-map.js</code>; <code>driver-sos.js</code> calls <code>Live</code> and <code>api</code>.</p>
-
-  <h3>2.2 Module pattern (IIFE) and a global namespace</h3>
-  <p>Without ES modules, encapsulation is done with an <span class="term">IIFE returning a public API</span> (the <em>revealing module pattern</em>). Private state lives in the closure.</p>
-  <span class="ref">live.js lines 1&ndash;8 and 77&ndash;89 (shape only)</span>
-<pre><code>const Live = (function () {
-    let client = null;          // private
-    let connected = false;      // private
-    const handlers = [];        // private
-    /* ... */
-    return { connect, onMessage(handler) { handlers.push(handler); }, isConnected() {...}, subscribeTopic(topic) {...} };
-})();</code></pre>
-  <p>Modules built this way: <code>Live</code>, <code>Route</code>, <code>SosRadar</code>, <code>JobMap</code>, <code>PinPicker</code>, <code>Shop</code>, <code>Skills</code>.
-    <code>driver-map.js</code> instead exposes an object literal on <code>window.RoadGuardMap</code> with <code>setOrigin</code>, <code>showHelper</code>, <code>hideHelper</code>, <code>pinPosition</code>,
-    <code>lockPin</code>, <code>showMechanics</code>, <code>fitHelper</code>. <code>driver-sos.js</code> checks <code>if (window.RoadGuardMap)</code> before calling it, i.e. a defensive dependency check.</p>
-
-  <h3>2.3 Rendering: template literals into <code>innerHTML</code></h3>
-  <p>A panel is rebuilt as an HTML string and assigned to <code>innerHTML</code> on every state change (<code>showForm()</code>, <code>showStatus(req)</code>, <code>renderOffers()</code>,
-    <code>renderJob()</code>, <code>renderDuty()</code>). This is <span class="term">full re-render, no diffing</span>. It is simple and predictable at this size, and it is why the page needs event delegation (next section).
-    All server-supplied text goes through an escape function before interpolation (see <a href="#sec">Security</a>).</p>
-
-  <h3>2.4 Event delegation</h3>
-  <p>Because the panel&rsquo;s children are destroyed and recreated by <code>innerHTML</code>, listeners attached to them would be lost. A single listener on <code>document</code> catches bubbling
-    events and uses <code>Element.closest()</code> to identify the target.</p>
-  <span class="ref">driver-sos.js lines 334&ndash;347</span>
-<pre><code>document.addEventListener('click', (e) =&gt; {
-    if (e.target.closest('#helper-fit')) { window.RoadGuardMap.fitHelper(); return; }
-    if (e.target.closest('#sos-send')) sendSos();
-    else if (e.target.closest('#sos-cancel')) cancelSos();
-    else if (e.target.closest('#sos-new')) { activeRequest = null; stopPolling(); showForm(); }
-});</code></pre>
-
-  <h3>2.5 State management</h3>
-  <p>There is no store library. Each page keeps a small module-level state object, and the <span class="term">server is the source of truth</span>:</p>
-  <ul>
-    <li>Driver: <code>activeRequest</code> (the last <code>ServiceRequestResponse</code>), <code>pollTimer</code>.</li>
-    <li>Mechanic: <code>state = { profile, offers, job, lastPosition, busy }</code> in <code>mechanic-console.js</code> (lines 25&ndash;31; <code>state.pin</code> is assigned later when the map is set up). <code>refresh()</code> refetches profile, current job and offers, then calls <code>renderDuty()</code>, <code>renderJob()</code>, <code>renderOffers()</code>.</li>
-  </ul>
-  <p>Every WebSocket message of kind <code>STATUS</code> simply triggers a refetch (<code>poll()</code> / <code>refresh()</code>), so the UI never has to merge partial updates.</p>
-
-  <h3>2.6 Re-entrancy guards (preventing double submit and overlapping fetches)</h3>
-  <table>
-    <thead><tr><th>Flag</th><th>File</th><th>Prevents</th></tr></thead>
-    <tbody>
-      <tr><td><code>state.busy</code> + <code>button.disabled</code></td><td>mechanic-console.js <code>onAccept</code></td><td>Double-tap on Accept sending two requests</td></tr>
-      <tr><td><code>helperBusy</code></td><td>driver-map.js <code>drawHelper</code></td><td>Overlapping OSRM calls for the driver&rsquo;s route</td></tr>
-      <tr><td><code>pending</code></td><td>job-map.js <code>draw</code></td><td>Overlapping OSRM calls on the mechanic&rsquo;s map</td></tr>
-      <tr><td><code>inFlight</code> (AbortController)</td><td>pin-picker.js <code>search</code></td><td>A stale place search finishing after a newer one</td></tr>
-    </tbody>
-  </table>
-
-  <!-- ===================================================== -->
-  <h2 id="net">3. Networking and authentication</h2>
-
-  <h3>3.1 The <code>api()</code> wrapper over the Fetch API</h3>
-  <span class="ref">api.js lines 36&ndash;62</span>
-<pre><code>async function api(path, options = {}) {
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    const token = Auth.token();
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-
-    const res = await fetch(path, { ...options, headers });
-    if (res.status === 204) return null;            // No Content
-
-    let body = null;
-    const text = await res.text();
-    if (text) { try { body = JSON.parse(text); } catch { body = { message: text }; } }
-
-    if (!res.ok) throw new Error((body &amp;&amp; body.message) || `Request failed (${res.status})`);
-    return body;
-}</code></pre>
-  <ul>
-    <li>Attaches the <span class="term">JWT as a Bearer token</span> in the <code>Authorization</code> header.</li>
-    <li>Handles <code>204 No Content</code> explicitly, reads the body as text first and then parses, so a non-JSON error body does not crash <code>res.json()</code>.</li>
-    <li><span class="term">Normalises errors</span>: a non-2xx response becomes a thrown <code>Error(message)</code> using the server&rsquo;s <code>message</code> field, so callers use a single <code>try/catch</code>.</li>
-  </ul>
-
-  <h3>3.2 Token storage and route guard</h3>
-  <ul>
-    <li>Token and user (<code>userId</code>, <code>username</code>, <code>role</code>) are stored in <code>localStorage</code> under <code>roadguard.token</code> and <code>roadguard.user</code>.</li>
-    <li><code>requireLogin(expectedRole)</code> calls <code>GET /api/auth/me</code>; on 401 or a role mismatch it clears storage or redirects with <code>Auth.homePage(role)</code>.</li>
-    <li>This guard is a <span class="term">usability redirect, not security</span>. Authorisation is enforced by the server (Spring Security with a JWT filter).</li>
-  </ul>
-  <div class="note"><strong>Trade-off to state.</strong> A token in <code>localStorage</code> is readable by any script on the page, so an XSS bug could steal it. An <code>HttpOnly</code> cookie avoids that but
-    needs CSRF protection. This project chose <code>localStorage</code> with a stateless JWT. If asked, say you know the trade-off.</div>
-
-  <h3>3.3 Why photo upload bypasses <code>api()</code></h3>
-  <p><code>api()</code> forces <code>Content-Type: application/json</code>. A multipart upload must <em>not</em> set that header manually, because the browser has to generate the
-    <code>multipart/form-data; boundary=...</code> value itself. So <code>sendPhoto()</code> calls <code>fetch</code> directly with a <code>FormData</code> body and only the <code>Authorization</code> header
-    (<code>sendPhoto</code>, driver-sos.js from line 191).</p>
-
-  <h3>3.4 Fetching a protected image: <code>fetch</code> &rarr; <code>Blob</code> &rarr; object URL</h3>
-  <p>An <code>&lt;img src&gt;</code> cannot send an <code>Authorization</code> header, and the SOS photo is private. So the page fetches the bytes with the header, converts the response to a <code>Blob</code> and gives the
-    image an object URL. <code>Promise.all</code> loads all offer photos concurrently.</p>
-  <span class="ref">mechanic-console.js lines 245&ndash;266</span>
-<pre><code>const response = await fetch(placeholder.dataset.photoUrl, { headers: { Authorization: 'Bearer ' + token } });
-if (!response.ok) throw new Error('Photo request failed');
-const image = document.createElement('img');
-image.src = URL.createObjectURL(await response.blob());
-placeholder.replaceWith(image);</code></pre>
-
-  <h3>3.5 Cross-origin requests</h3>
-  <p><code>route.js</code> and <code>pin-picker.js</code> call OSRM and Nominatim directly from the browser, so these are <span class="term">cross-origin (CORS) fetches</span> to third-party servers; they work because those services
-    allow it. They carry <em>no</em> JWT (the code does not add one), which is correct for third-party hosts.</p>
-
-  <!-- ===================================================== -->
-  <h2 id="rt">4. Real-time client: STOMP over SockJS</h2>
-  <p><code>live.js</code> (89 lines) implements a <span class="term">publish/subscribe client</span> on top of WebSocket, with SockJS as the transport that falls back to HTTP streaming or long polling if a WebSocket is blocked.</p>
-
-  <span class="ref">live.js lines 38&ndash;62</span>
-<pre><code>client = Stomp.over(new SockJS('/ws'));
-client.debug = null;
-client.connect({ Authorization: 'Bearer ' + token },     // STOMP CONNECT frame headers
-    () =&gt; {
-        markStatus(true);
-        subscriptions.push(client.subscribe('/user/queue/updates', (frame) =&gt; fire(JSON.parse(frame.body))));
-        wanted.forEach((t) =&gt; subscriptions.push(client.subscribe(t, (frame) =&gt; fire(JSON.parse(frame.body)))));
-    },
-    () =&gt; { markStatus(false); scheduleRetry(); });</code></pre>
-
-  <div class="tablewrap"><table>
-    <thead><tr><th>Concept</th><th>In this project</th></tr></thead>
-    <tbody>
-      <tr><td>Endpoint</td><td><code>/ws</code> (registered with <code>.withSockJS()</code> in <code>WebSocketConfig</code>)</td></tr>
-      <tr><td>Authentication</td><td>JWT in the STOMP <code>CONNECT</code> frame native header <code>Authorization: Bearer ...</code>. The server&rsquo;s <code>ChannelInterceptor</code> rejects a CONNECT without a valid token and sets the user principal.</td></tr>
-      <tr><td>User destination</td><td><code>/user/queue/updates</code>: Spring maps <code>/user/...</code> to a per-session queue, so only that user receives it.</td></tr>
-      <tr><td>Topic destination</td><td><code>/topic/request/{id}</code>: broadcast to anyone subscribed. <code>Live.subscribeTopic()</code> adds it after a request is created, and also remembers it in <code>wanted</code> so a reconnect re-subscribes.</td></tr>
-      <tr><td>Message types (from <code>RealtimeNotifier</code>)</td><td><code>STATUS</code> (<code>requestId</code>, <code>status</code>, <code>at</code>) and <code>MOVED</code> (<code>requestId</code>, <code>lat</code>, <code>lng</code>, <code>at</code>)</td></tr>
-      <tr><td>Handler fan-out</td><td><code>fire()</code> calls every registered handler inside <code>try/catch</code>, so one faulty handler cannot stop the others (observer pattern)</td></tr>
-      <tr><td>Connection status</td><td><code>markStatus(ok)</code> toggles the <code>.live-status-dot</code> colour and the text in <code>[data-live-label]</code> between <em>Live</em> and <em>Reconnecting</em></td></tr>
-      <tr><td>Reconnect</td><td><code>scheduleRetry()</code>: a single <code>setTimeout</code> of a fixed <strong>3000 ms</strong> (not exponential back-off), guarded so only one retry is pending</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Message handling on the driver page</h3>
-<pre><code>Live.onMessage((msg) =&gt; {
-    if (msg &amp;&amp; msg.type === 'MOVED') {                 // apply the payload directly, no HTTP round trip
-        activeRequest.mechanicLat = msg.lat;
-        activeRequest.mechanicLng = msg.lng;
-        window.RoadGuardMap.showHelper(msg.lat, msg.lng, activeRequest.originLat, activeRequest.originLng, true);
-        return;
-    }
-    poll();                                              // anything else: refetch GET /api/requests/{id}
-});</code></pre>
-
-  <h3>Push plus polling (hybrid)</h3>
-  <p>The server uses Spring&rsquo;s <span class="term">simple in-memory broker</span> (<code>enableSimpleBroker("/topic", "/queue")</code>). It does not store or replay messages, so a client that was disconnected misses them.
-    That is why the pages also poll: it gives <span class="term">eventual consistency</span> even if a push is lost.</p>
-  <table>
-    <thead><tr><th>Poll</th><th>Interval</th><th>Constant</th></tr></thead>
-    <tbody>
-      <tr><td>Driver: request status</td><td>15 s</td><td><code>SOS_POLL_MS = 15000</code></td></tr>
-      <tr><td>Mechanic: profile, job, offers</td><td>15 s</td><td><code>POLL_MS = 15000</code></td></tr>
-      <tr><td>Driver map: shop markers</td><td>30 s</td><td><code>setInterval(loadShops, 30000)</code></td></tr>
-      <tr><td>Mechanic: heartbeat / location upload</td><td>5 s</td><td><code>HEARTBEAT_MS = 5000</code></td></tr>
-    </tbody>
-  </table>
-
-  <!-- ===================================================== -->
-  <h2 id="geo">5. Geolocation API</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Call</th><th>Used for</th><th>Options</th></tr></thead>
-    <tbody>
-      <tr><td><code>getCurrentPosition</code> (one-shot)</td><td>Driver&rsquo;s initial pin (<code>locate()</code>), &ldquo;use my location&rdquo; button, mechanic&rsquo;s first fix</td><td><code>enableHighAccuracy: true</code>, <code>timeout: 6000</code> or <code>8000</code></td></tr>
-      <tr><td><code>watchPosition</code> (continuous)</td><td>Mechanic while on duty</td><td><code>enableHighAccuracy: true</code>, <code>maximumAge: 2000</code>, <code>timeout: 20000</code></td></tr>
-      <tr><td><code>clearWatch</code></td><td>Stopping when going off duty</td><td>&mdash;</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Filtering raw fixes (mechanic-console.js lines 62&ndash;108 (<code>onFix</code> starts at 79))</h3>
-<pre><code>const WORST_ACCURACY_M = 120;   // coords.accuracy is in metres
-const JITTER_KM = 0.015;        // 15 m
-
-function onFix(pos) {
-    const accuracy = pos.coords.accuracy;
-    if (accuracy &gt; WORST_ACCURACY_M) { /* show "Weak signal", keep last position */ return; }
-    const moved = state.lastPosition ? Route.haversineKm(state.lastPosition, next) : Infinity;
-    if (moved &lt; JITTER_KM) { return; }                 // below the noise floor: do not update or upload
-    state.lastPosition = next;
-    saveMyLocation(next.lat, next.lng);                  // POST /api/mechanic/location
-}</code></pre>
-  <ul>
-    <li><span class="term">Accuracy gate</span> (&gt; 120 m rejected) plus a <span class="term">dead-band / distance threshold</span> (&lt; 15 m ignored) so a stationary phone does not generate a stream of tiny movements.</li>
-    <li>Error handling: <code>err.code === 1</code> is <code>PERMISSION_DENIED</code> and the page tells the mechanic to place the pin by hand; other errors say there is no fix yet.</li>
-    <li><span class="term">Secure context</span>: <code>window.isSecureContext</code> is checked because browsers expose geolocation only on HTTPS or <code>localhost</code>.</li>
-    <li>Distance uses the <span class="term">Haversine formula</span> with Earth radius <code>R = 6371.0088</code> km (<code>route.js</code>, using <code>Math.sin</code>, <code>Math.cos</code>, <code>Math.asin</code>). The same formula also exists in Java as <code>GeoUtils</code> on the server.</li>
-  </ul>
-
-  <!-- ===================================================== -->
-  <h2 id="map">6. Leaflet usage</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Leaflet API</th><th>Purpose in RoadGuard</th></tr></thead>
-    <tbody>
-      <tr><td><code>L.map(id).setView([lat,lng], zoom)</code></td><td>Map instance (driver: <code>#map</code>, mechanic job: <code>#job-map</code>). Fallback centre <code>[23.8103, 90.4125]</code>.</td></tr>
-      <tr><td><code>L.tileLayer(url, {maxZoom: 19, attribution})</code></td><td>OSM raster tiles over the XYZ scheme; attribution is required by OSM&rsquo;s tile usage policy</td></tr>
-      <tr><td><code>L.marker(..., {draggable: true})</code></td><td>Driver pin, mechanic pin, shop pin. Events: <code>drag</code> (live coordinate readout) and <code>dragend</code> (commit position)</td></tr>
-      <tr><td><code>L.divIcon({className, html, iconSize, iconAnchor})</code></td><td>Markers are <strong>HTML/CSS elements</strong> (<code>pin-driver</code>, <code>pin-mech</code>, <code>pin-shop</code>, <code>pin-helper</code>) so they can be styled and animated with CSS and need no image files</td></tr>
-      <tr><td><code>L.layerGroup()</code></td><td>Groups markers so they can be cleared at once: <code>shopLayer.clearLayers()</code>, <code>mechLayer</code>, <code>helperLayer</code></td></tr>
-      <tr><td><code>L.polyline(latlngs, {...})</code></td><td>The route. <code>setLatLngs()</code> swaps geometry; <code>setStyle({dashArray: '9 10'})</code> dashes it when it is only a straight line</td></tr>
-      <tr><td><code>L.circle(centre, {radius})</code></td><td>Search radius. The radius is in <strong>metres</strong> (geodesic), so it keeps true ground size at every zoom. <code>L.circleMarker</code> would be a fixed <em>pixel</em> radius, which would be wrong here.</td></tr>
-      <tr><td><code>map.fitBounds(L.latLngBounds(pts).pad(0.18))</code></td><td>Fit the view to the route with padding</td></tr>
-      <tr><td><code>map.invalidateSize()</code></td><td>Recalculate the container size. Needed when the map&rsquo;s element was hidden or resized (the mechanic job card is shown later; the panel layout changes). Called from a <code>ResizeObserver</code>, on <code>window load</code>, and after <code>map.whenReady</code>.</td></tr>
-      <tr><td><code>bindTooltip</code> / <code>bindPopup</code></td><td>Labels on markers; shop popup shows name, open/busy/closed, skills, rating</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="note"><strong>Coordinate-order gotcha (good to mention).</strong> OSRM and GeoJSON use <code>[longitude, latitude]</code>; Leaflet uses <code>[latitude, longitude]</code>. <code>route.js</code> builds the OSRM URL as
-    <code>from.lng + ',' + from.lat</code> and converts the returned geometry with <code>coordinates.map((c) =&gt; [c[1], c[0]])</code>.</div>
-
-  <h3>Responsive fit around the floating panel</h3>
-  <p><code>SosRadar.fit()</code> reads <code>.map-panel.getBoundingClientRect()</code> and passes <code>paddingTopLeft</code> / <code>paddingBottomRight</code> to <code>fitBounds</code>, so the circle is not hidden behind the UI. If the panel is wider than 70% of the viewport
-    (phone layout) it pads the bottom by the panel height; otherwise it pads the left by the panel&rsquo;s right edge.</p>
-
-  <!-- ===================================================== -->
-  <h2 id="route">7. Routing client and graceful degradation</h2>
-  <span class="ref">route.js lines 1&ndash;53</span>
-<pre><code>const url = OSRM + from.lng + ',' + from.lat + ';' + to.lng + ',' + to.lat
-          + '?overview=full&amp;geometries=geojson&amp;alternatives=false&amp;steps=false';
-const data = await (await fetch(url, { headers: { Accept: 'application/json' } })).json();
-const best = data.routes[0];
-return { line: best.geometry.coordinates.map((c) =&gt; [c[1], c[0]]),
-         km: best.distance / 1000, minutes: best.duration / 60, onRoads: true };
-/* catch: */ return straightLine(from, to);   // Haversine distance, minutes = km / 22 * 60, onRoads: false</code></pre>
-  <ul>
-    <li>OSRM returns <code>distance</code> in metres and <code>duration</code> in seconds; the code converts to km and minutes.</li>
-    <li><code>overview=full&amp;geometries=geojson</code> asks for the complete route as GeoJSON coordinates.</li>
-    <li><span class="term">Graceful degradation</span>: any failure (network, non-2xx, empty route) falls back to a straight line with <code>CITY_KMH = 22</code>. The UI reads <code>onRoads</code> to dash the line and change the label (<em>&ldquo;direct line&rdquo;</em>) so it never presents an estimate as a road route.</li>
-  </ul>
-
-  <h3>Request throttling (rate limiting the router)</h3>
-  <table>
-    <thead><tr><th>Where</th><th>Refetch route when</th></tr></thead>
-    <tbody>
-      <tr><td>Driver map <code>showHelper()</code> (driver-map.js)</td><td><code>refreshRoute</code> flag, <strong>or</strong> moved &gt; <strong>0.08 km (80 m)</strong>, <strong>or</strong> older than <strong>25 000 ms</strong></td></tr>
-      <tr><td>Mechanic <code>JobMap.show()</code> (job-map.js)</td><td>new job, <strong>or</strong> moved &gt; <code>MOVED_KM = 0.15</code> (<strong>150 m</strong>), <strong>or</strong> older than <code>REFETCH_MS = 25000</code></td></tr>
-    </tbody>
-  </table>
-  <div class="note"><strong>Correction to the older docs.</strong> The project docs say 150 m for both. In the code the <em>driver</em> side uses 80 m and the <em>mechanic</em> side uses 150 m. Say it the way the code has it.</div>
-
-  <h3>Place search (Nominatim) in <code>pin-picker.js</code></h3>
-  <ul>
-    <li><span class="term">Client-side rate limiting</span>: at least <strong>1100 ms</strong> between searches (<code>lastSearchAt</code>), to stay within the public server&rsquo;s request-rate limit (check the current Nominatim usage policy before quoting a figure).</li>
-    <li><span class="term">Request cancellation</span>: <code>AbortController</code> aborts the previous in-flight search; the <code>AbortError</code> branch returns silently.</li>
-    <li>Input validation: at least 3 characters; query passed through <code>encodeURIComponent</code>; <code>limit=6</code>.</li>
-    <li><code>viewbox=88.0,26.7,92.7,20.5</code> biases results toward Bangladesh (a bias, because <code>bounded=1</code> is not set).</li>
-    <li>Fallback: on failure the UI asks the user to type coordinates; <code>applyTyped()</code> parses them with <code>parseFloat</code>.</li>
-  </ul>
-
-  <!-- ===================================================== -->
-  <h2 id="anim">8. Animation techniques</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Effect</th><th>Technique</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td>Mechanic marker glide (driver map)</td><td><code>requestAnimationFrame</code> with <code>performance.now()</code></td>
-        <td>1200 ms, <span class="term">ease-in-out quadratic</span>: <code>t &lt; .5 ? 2*t*t : -1 + (4 - 2*t)*t</code>. Linear interpolation of lat/lng by the eased value. <code>cancelAnimationFrame</code> stops an old glide before starting a new one; jumps over 1 km snap instantly.</td></tr>
-      <tr><td>Search radar</td><td><code>setInterval</code> every 33 ms (~30 fps) driving Leaflet circles</td>
-        <td><span class="term">Exponential smoothing</span> toward the target radius: <code>shown += (target - shown) * 0.06</code>. Three ping rings with phase <code>((elapsed / 2600) + i / 3) % 1</code>, radius <code>shown * (0.06 + 0.94 * phase)</code>, opacity <code>0.55 * (1 - phase)</code>.</td></tr>
-      <tr><td>UI motion (cards, toasts, spinners, countdown)</td><td>CSS <code>@keyframes</code> and <code>transition</code></td>
-        <td>37 <code>@keyframes</code> blocks in the stylesheets; <code>.is-going</code> class added before removal to play an exit animation, then <code>setTimeout</code> removes the node (220 ms)</td></tr>
-      <tr><td>Reduced motion</td><td><code>@media (prefers-reduced-motion: reduce)</code></td><td>Disables animation and transitions for users who request it (<code>style.css</code> ~line 2083, <code>console.css</code> ~line 690)</td></tr>
-    </tbody>
-  </table></div>
-
-  <!-- ===================================================== -->
-  <h2 id="upload">9. Client-side file handling (SOS photo and shop image)</h2>
-  <ol>
-    <li><code>&lt;input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden&gt;</code>. <code>accept</code> filters the picker; <code>capture="environment"</code> asks phones for the rear camera.</li>
-    <li>On <code>change</code>: validate <code>file.size &gt; 5 * 1024 * 1024</code>, show a toast and reset <code>e.target.value = ''</code> if too large.</li>
-    <li>Preview with <code>FileReader.readAsDataURL</code>, assigned to <code>style.backgroundImage</code> of a preview element (base64 data URL).</li>
-    <li>Upload with <code>FormData.append('file', photo)</code> and <code>fetch(..., { method: 'POST', body: form })</code>.</li>
-    <li>Failure path: a non-OK response shows a toast and the page reloads the request with <code>GET /api/requests/{id}</code>, so the SOS continues without the photo.</li>
-  </ol>
-  <p class="small">Two-step protocol: <code>POST /api/requests</code> with <code>hasPhoto: true</code> first (server sets <code>DIAGNOSING</code>), then <code>POST /api/requests/{id}/photo</code>. The driver&rsquo;s status panel renders the returned diagnosis
-    (<code>aiFaultCategory</code>, <code>severity</code>, <code>aiGuidance</code>) in a &ldquo;Photo check&rdquo; block when present.</p>
-
-  <!-- ===================================================== -->
-  <h2 id="css">10. CSS architecture</h2>
-  <ul>
-    <li><span class="term">Design tokens as CSS custom properties</span> on <code>:root</code> in <code>style.css</code>: colours (<code>--red</code>, <code>--green</code>, <code>--live</code>, <code>--amber</code>, <code>--ink</code>, <code>--line</code>, <code>--surface</code>, <code>--bg</code>), radii (<code>--r-sm</code>, <code>--r-md</code>), referenced about 206 times via <code>var(--...)</code>.</li>
-    <li>Layout: Flexbox (40 declarations) and CSS Grid (23 declarations, 12 <code>grid-template</code> rules).</li>
-    <li>Responsive: 10 <code>@media</code> blocks, <code>max-width</code> breakpoints (420, 620, 640, 720, 760, 860, 900 px), i.e. a desktop-first approach; <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code> on each page.</li>
-    <li>Effects: <code>backdrop-filter</code> (frosted-glass surfaces such as the top bar), <code>clamp()</code> for fluid sizing, <code>position: sticky</code>.</li>
-    <li>Component-style class naming (<code>.map-panel</code>, <code>.offer</code>, <code>.job-grid</code>, <code>.toast</code>, <code>.shop-image-drop</code>), plus state classes toggled from JS (<code>is-active</code>, <code>is-going</code>, <code>is-waiting</code>, <code>has-image</code>).</li>
-    <li>Not present: no dark mode (<code>prefers-color-scheme</code> count is 0 in the stylesheets), no CSS preprocessor.</li>
-  </ul>
-
-  <!-- ===================================================== -->
-  <h2 id="sec">11. Frontend security measures</h2>
-  <table>
-    <thead><tr><th>Concern</th><th>What the code does</th><th>Limit</th></tr></thead>
-    <tbody>
-      <tr><td><span class="term">XSS</span> (cross-site scripting)</td><td>Escapes <code>&amp; &lt; &gt; " '</code> to HTML entities before putting server text into <code>innerHTML</code> via <code>esc()</code> (driver-sos.js), <code>escapeHtml()</code> (mechanic-console.js) and <code>safe()</code> (driver-map.js). Uses <code>textContent</code> where plain text is enough (48 uses).</td><td>Same function is copied three times; the mechanic job header inserts <code>ISSUE_LABEL[job.issueType] || job.issueType</code> without escaping (value is a server enum, but it is still an unescaped insertion)</td></tr>
-      <tr><td>Token handling</td><td>JWT in <code>localStorage</code>, sent as a Bearer header; cleared on <code>logout()</code> and on a failed <code>/api/auth/me</code></td><td>Readable by scripts (see 3.2)</td></tr>
-      <tr><td>Role routing</td><td><code>requireLogin(role)</code> redirects wrong-role users</td><td>Convenience only; server enforces access</td></tr>
-      <tr><td>Upload checks</td><td>5 MB and type checked before upload</td><td>Can be bypassed by a crafted request; server re-checks (<code>UploadRules</code>)</td></tr>
-      <tr><td>Query-string injection</td><td>Search text passed through <code>encodeURIComponent</code></td><td>&mdash;</td></tr>
-    </tbody>
-  </table>
-
-  <!-- ===================================================== -->
-  <h2 id="files">12. File-by-file: what technique each one demonstrates</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>File</th><th>Lines</th><th>Key techniques</th></tr></thead>
-    <tbody>
-      <tr><td><code>api.js</code></td><td>86</td><td><code>Auth</code> object, <code>api()</code> fetch wrapper, <code>requireLogin</code>, <code>logout</code></td></tr>
-      <tr><td><code>live.js</code></td><td>89</td><td>IIFE module, STOMP/SockJS, pub/sub fan-out, retry timer</td></tr>
-      <tr><td><code>route.js</code></td><td>67</td><td>OSRM fetch, GeoJSON axis swap, Haversine, fallback</td></tr>
-      <tr><td><code>driver-sos.js</code></td><td>381</td><td>Template-literal rendering, event delegation, <code>FormData</code>, <code>FileReader</code>, polling, status-to-copy map (12 states)</td></tr>
-      <tr><td><code>driver-map.js</code></td><td>294</td><td>Leaflet map, draggable marker, <code>layerGroup</code>, <code>requestAnimationFrame</code> glide, <code>ResizeObserver</code>, Geolocation</td></tr>
-      <tr><td><code>sos-radar.js</code></td><td>138</td><td>Animated <code>L.circle</code> layers, exponential smoothing, <code>fitBounds</code> with panel-aware padding</td></tr>
-      <tr><td><code>mechanic-console.js</code></td><td>576</td><td><code>watchPosition</code> + filtering, heartbeat <code>setInterval</code>, offers, <code>Promise.all</code> photo loading, job stepper, <code>state</code> object</td></tr>
-      <tr><td><code>job-map.js</code></td><td>139</td><td>Leaflet, throttled routing, single-flight <code>pending</code> flag, <code>dragend</code></td></tr>
-      <tr><td><code>pin-picker.js</code></td><td>270</td><td>Nominatim, <code>AbortController</code>, rate limiting, multi-marker selection</td></tr>
-      <tr><td><code>mechanic-shop.js</code> / <code>mechanic-skills.js</code></td><td>164 / 105</td><td>Form handling, file preview, <code>POST</code> JSON, state-aware button labels</td></tr>
-      <tr><td><code>auth-page.js</code> / <code>password-toggle.js</code></td><td>453 / 61</td><td>Tabbed forms, multi-step reset flow, show/hide password using inline SVG</td></tr>
-      <tr><td><code>admin.html</code></td><td>99</td><td>Placeholder only, not implemented</td></tr>
-    </tbody>
-  </table></div>
-
-  <!-- ===================================================== -->
-  <h2 id="contract">13. The contract with the backend</h2>
-  <div class="twocol">
-    <div class="card"><h3 style="margin-top:0">REST (JSON unless noted)</h3>
-<pre><code>POST /api/auth/login | register
-GET  /api/auth/me
-POST /api/auth/forgot-password
-POST /api/auth/reset-password
-
-POST /api/requests
-GET  /api/requests/mine
-GET  /api/requests/{id}
-POST /api/requests/{id}/cancel
-POST /api/requests/{id}/photo      multipart
-GET  /api/requests/{id}/photo      image bytes
-POST /api/requests/{id}/accept     {offerToken}
-POST /api/requests/{id}/decline    {offerToken}
-POST /api/requests/{id}/status
-GET  /api/requests/mine-assigned
-GET  /api/shops</code></pre></div>
-    <div class="card"><h3 style="margin-top:0">Mechanic and WebSocket</h3>
-<pre><code>GET  /api/mechanic/me
-GET  /api/mechanic/offers
-POST /api/mechanic/status
-POST /api/mechanic/location  {lat,lng}
-POST /api/mechanic/heartbeat
-POST /api/mechanic/skills    {specializations}
-GET|POST /api/mechanic/shop
-POST /api/mechanic/shop/image   multipart
-
-STOMP endpoint  /ws  (SockJS)
-SUBSCRIBE /user/queue/updates
-SUBSCRIBE /topic/request/{id}
-payloads  STATUS | MOVED</code></pre></div>
+  <h2 id="driver">2. The driver experience</h2>
+  <div class="say">
+    <p>First, the driver side. A driver opens one page, sees a map, drops a pin where they are, says what the problem is, and presses <em>Send SOS</em>.
+      After that the same panel shows the live status of the request until it is finished.</p>
   </div>
-  <p class="small">Compiled from <code>api(</code> and <code>fetch(</code> calls in the JavaScript and <code>RealtimeNotifier.java</code>. Role restrictions per route belong to the backend half, so confirm with Ifty before claiming them.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>driver.html</code></td><td class="n">102</td><td>The driver&rsquo;s page. It holds the top bar (&ldquo;Driver Portal&rdquo;), the map and the side panel, and loads all the scripts the driver needs.</td></tr>
+      <tr><td><code>driver-sos.js</code></td><td class="n">381</td><td>The SOS panel. First it shows the form: your location, the problem (ten choices such as flat tyre, dead battery, engine, brakes, towing), an optional note and an optional photo, then the <em>Send SOS</em> button. After sending, it shows the request number, a plain-language status (&ldquo;Looking for a mechanic&rdquo;, &ldquo;On the way to you&rdquo;, &ldquo;All done&rdquo;), the assigned mechanic, the search radius and a <em>Cancel request</em> button. If the driver refreshes the page, it picks the open request back up.</td></tr>
+      <tr><td><code>driver-map.js</code></td><td class="n">294</td><td>The driver&rsquo;s map. It shows the driver&rsquo;s draggable pin, finds the driver&rsquo;s position from the device, shows nearby repair shops as markers, and once a mechanic accepts, shows the mechanic moving towards the driver with the distance and time.</td></tr>
+    </tbody>
+  </table></div>
 
-  <!-- ===================================================== -->
-  <h2 id="qa">14. Viva questions, answered in technical terms</h2>
-  <details><summary>Why polling <em>and</em> WebSocket?</summary>
-    <p>WebSocket push gives low latency, but the broker is Spring&rsquo;s in-memory simple broker with no replay, so a disconnected client misses messages. The 15 s poll guarantees <span class="term">eventual consistency</span>. Push is the fast path, polling is the correctness path.</p></details>
-  <details><summary>Why one <code>document</code> click listener instead of per-button listeners?</summary>
-    <p><span class="term">Event delegation.</span> The panel is regenerated through <code>innerHTML</code>, which destroys child nodes and their listeners. A delegated listener on <code>document</code> survives re-renders, and <code>closest()</code> resolves which button was clicked.</p></details>
-  <details><summary>Why no React or other framework?</summary>
-    <p>Scope: a handful of screens with simple state, so template literals plus <code>innerHTML</code> are enough and there is no build step. The cost is manual DOM updates, full re-render on change, and duplicated helpers. For a bigger product a component framework would be justified.</p></details>
-  <details><summary>Why <code>L.circle</code> and not <code>L.circleMarker</code>?</summary>
-    <p><code>L.circle</code> takes its radius in metres and is projected geodesically, so a 5 km search area is 5 km on the ground at any zoom. <code>circleMarker</code> has a pixel radius that does not scale with zoom.</p></details>
-  <details><summary>Why <code>divIcon</code> markers?</summary>
-    <p>They render as HTML/CSS, so colour, size and animation (the pulsing mechanic marker) come from the stylesheet and no image assets are needed.</p></details>
-  <details><summary>What is the longitude/latitude order problem?</summary>
-    <p>GeoJSON and OSRM use <code>[lng, lat]</code>, Leaflet uses <code>[lat, lng]</code>. <code>route.js</code> swaps at both boundaries: building the URL and mapping the returned geometry.</p></details>
-  <details><summary>Throttling versus debouncing: which did you use?</summary>
-    <p>Throttling (time/distance based): the route is refetched at most every 25 s or after 80/150 m of movement. Place search uses a minimum-interval <span class="term">rate limit</span> (1.1 s) plus <code>AbortController</code> cancellation. It is not a debounce, because the search is triggered by an explicit action, not by keystrokes.</p></details>
-  <details><summary>How do you stop a double click on Accept?</summary>
-    <p>A <code>state.busy</code> guard returns early, and the button is disabled and replaced with a spinner while the request is in flight. The server also decides the winner, so even a duplicate would not create two assignments.</p></details>
-  <details><summary>Why fetch the photo as a Blob?</summary>
-    <p>An <code>&lt;img&gt;</code> request cannot carry an <code>Authorization</code> header and the photo is private. <code>fetch</code> with the header, then <code>response.blob()</code> and <code>URL.createObjectURL</code>.</p></details>
-  <details><summary>Why does multipart upload not use your <code>api()</code> helper?</summary>
-    <p>The helper sets <code>Content-Type: application/json</code>. For <code>FormData</code> the browser must set <code>multipart/form-data</code> with its own boundary, so the header must be left unset.</p></details>
-  <details><summary>How does the GPS filter work?</summary>
-    <p>Accuracy gate (reject fixes with <code>coords.accuracy</code> over 120 m) plus a 15 m dead-band using Haversine distance from the last accepted fix. Only accepted fixes update the map and are POSTed.</p></details>
-  <details><summary>What happens if OSRM is down?</summary>
-    <p>The <code>try/catch</code> in <code>Route.between</code> returns <code>straightLine()</code> with <code>onRoads: false</code>; the polyline is dashed and the label says &ldquo;direct line&rdquo;.</p></details>
-  <details><summary>Is storing the JWT in localStorage safe?</summary>
-    <p>It is exposed to any injected script, so it relies on XSS prevention (escaping). The alternative is an <code>HttpOnly</code>, <code>SameSite</code> cookie plus CSRF protection. State the trade-off and that the choice was made for a stateless API.</p></details>
-  <details><summary>Can a user bypass the client-side role check?</summary>
-    <p>Yes, the redirect is only convenience. The backend (Spring Security + JWT filter, Ifty&rsquo;s part) rejects unauthorised calls.</p></details>
+  <h2 id="mechanic">3. The mechanic console</h2>
+  <div class="say">
+    <p>Second, the mechanic side. A mechanic goes on duty, receives job offers as cards, accepts one, and then moves the job forward step by step until it is done.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>mechanic.html</code></td><td class="n">265</td><td>The mechanic&rsquo;s page, built from cards: the duty switch (Off duty / On duty), a map for the mechanic&rsquo;s own location, <em>What I can fix</em> (skills), <em>My shop</em>, the current job with its map, and the list of offers.</td></tr>
+      <tr><td><code>mechanic-console.js</code></td><td class="n">576</td><td>The behaviour of that page. It turns duty on and off, follows the mechanic&rsquo;s location from the device and keeps telling the server the mechanic is still there, shows each offer as a card with <em>Accept</em> and <em>Decline</em>, says whether the mechanic got the job or &ldquo;someone got there first&rdquo;, and shows the job steps: <em>On my way</em>, <em>Arrived</em>, <em>Working</em>, <em>Done</em>.</td></tr>
+    </tbody>
+  </table></div>
 
-  <!-- ===================================================== -->
-  <h2 id="debt">15. Known limitations (say these before they are found)</h2>
+  <h2 id="maps">4. Maps and location</h2>
+  <div class="say">
+    <p>Third, the maps. All maps use Leaflet with OpenStreetMap, so we do not need a paid map key. I wrote four small files for the map features.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>sos-radar.js</code></td><td class="n">138</td><td>The red pulsing circle that shows how far we are searching. When the search widens, the circle grows.</td></tr>
+      <tr><td><code>pin-picker.js</code></td><td class="n">270</td><td>Lets the mechanic set a location by dragging a pin, searching a place name, using the device location or typing coordinates. Used for the mechanic&rsquo;s own position and for the shop position.</td></tr>
+      <tr><td><code>route.js</code></td><td class="n">67</td><td>Gets the road route, distance and time between two points from OSRM. If that service is not reachable, it draws a straight line instead and says so.</td></tr>
+      <tr><td><code>job-map.js</code></td><td class="n">139</td><td>The mechanic&rsquo;s map for the current job: the mechanic, the breakdown location, the route and the time to get there.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="live">5. The live connection</h2>
+  <div class="say">
+    <p>Fourth, the live connection. Screens should change without the user pressing refresh, so I wrote a small file that listens to the server and tells the page when something changes.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>live.js</code></td><td class="n">89</td><td>Opens the WebSocket connection to the server, logs in with the user&rsquo;s token, listens to that user&rsquo;s updates and to the updates of one request, and passes each message to the page. It shows a small <em>Live</em> or <em>Reconnecting</em> indicator and tries to reconnect by itself. The pages also check the server every 15 seconds as a backup.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="shops">6. Shops and skills</h2>
+  <div class="say">
+    <p>Fifth, shops and skills. A mechanic can say what jobs they can do and register a shop with a name, a type, a phone number, an address, a location on the map and a photo.
+      Drivers then see these shops on their map.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>mechanic-shop.js</code></td><td class="n">164</td><td>The <em>My shop</em> form on the mechanic page: shop details, a pin for the shop location, and the shop photo with a preview. It stops files over 5 MB before sending.</td></tr>
+      <tr><td><code>mechanic-skills.js</code></td><td class="n">105</td><td>The <em>What I can fix</em> picker. The mechanic ticks skills and presses <em>Save skills</em>. These skills decide which jobs the mechanic is offered.</td></tr>
+      <tr><td><code>ShopService.java</code></td><td class="n">189</td><td>The server side of shops. It saves and reads a mechanic&rsquo;s shop details, returns the list of all shops for the driver&rsquo;s map, and stores and returns the shop photo. It accepts only JPG, PNG or WEBP, deletes the old photo when a new one is uploaded, and keeps the file inside the uploads folder.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="ai">7. The photo step of the AI check (my side)</h2>
+  <div class="say">
+    <p>Sixth, the photo step. On the SOS form the driver can add a photo. My page sends the photo to the server, which asks the AI to work out the fault.
+      The driver then sees the result, the fault type, how serious it is and a safety tip, and the mechanic sees the photo on the offer card.
+      The AI itself, and what happens if it fails, is Ifty&rsquo;s part.</p>
+  </div>
+  <p>Files: <code>driver-sos.js</code> (photo option, preview, upload, result block on the status panel) and <code>mechanic-console.js</code> (loading the photo on the offer card).</p>
+
+  <h2 id="design">8. The design</h2>
+  <div class="say">
+    <p>Seventh, the look of the site. I made the styling so that all pages look like one product.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>style.css</code></td><td class="n">2091</td><td>The main stylesheet: colours, fonts, buttons, the top bar, the sign-in page and the shared look of all pages. It defines the shared colours and spacing once and every page reuses them.</td></tr>
+      <tr><td><code>console.css</code></td><td class="n">1330</td><td>The styling for the driver and mechanic pages: the map panel, offer cards, the job steps, toasts (small pop-up messages), the radar and the shop form.</td></tr>
+      <tr><td><code>forms.css</code></td><td class="n">45</td><td>The show/hide password button on the password fields.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><strong>Check before you say the colours.</strong> The docs say blue is you, green is a mechanic, orange is a shop and red is the search.
+    In the code I could confirm red for the search circle, green for the driver&rsquo;s route line and blue for the mechanic&rsquo;s route line.
+    Open the app and look at the markers before you describe a colour for each one.</div>
+
+  <h2 id="other">9. The other pages and shared files</h2>
+  <div class="say">
+    <p>I also did the sign-in page and the small shared files that every page uses.</p>
+  </div>
+  <p class="small">The docs do not list these under a name. They are part of the browser side, so they fit with the rest of my part.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>index.html</code></td><td class="n">479</td><td>The first page: sign in, create an account (as a driver or a mechanic), and forgot password. It also has a side story panel with the message &ldquo;Broken down? Help is already moving.&rdquo;</td></tr>
+      <tr><td><code>auth-page.js</code></td><td class="n">453</td><td>Makes the sign-in page work: login, register, the two-step password reset with a six-digit recovery code, and the story panel animation. After login it sends you to the right page for your role.</td></tr>
+      <tr><td><code>password-toggle.js</code></td><td class="n">61</td><td>Adds the eye icon that shows or hides a password.</td></tr>
+      <tr><td><code>api.js</code></td><td class="n">86</td><td>The shared helper. It remembers who is logged in, sends requests to the server with the login token, sends you back to the sign-in page if you are not logged in, and handles logout.</td></tr>
+      <tr><td><code>home.js</code></td><td class="n">18</td><td>Fills in the user&rsquo;s initial and name in the top bar and connects the logout button.</td></tr>
+      <tr><td><code>admin.html</code></td><td class="n">99</td><td>The admin page. It only shows the session details and &ldquo;Coming next&rdquo;. It is a placeholder, not a finished dashboard.</td></tr>
+      <tr><td><code>video/hero_story.mp4</code></td><td class="n">&mdash;</td><td>The video file used on the landing side (about 4 MB).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="api">10. The API my pages use</h2>
+  <div class="say">
+    <p>My pages talk to the server through the REST API. They ask the server for data and send actions, for example <em>create a request</em>, <em>accept an offer</em> or <em>save my shop</em>.
+      Updates that arrive on their own come through the WebSocket.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>What my pages do</th><th>Calls</th></tr></thead>
+    <tbody>
+      <tr><td>Sign in, register, who am I, reset password</td><td><code>/api/auth/login</code>, <code>register</code>, <code>me</code>, <code>forgot-password</code>, <code>reset-password</code></td></tr>
+      <tr><td>Driver sends and follows an SOS</td><td><code>/api/requests</code> (create), <code>/api/requests/mine</code>, <code>/api/requests/{id}</code>, <code>/cancel</code>, <code>/photo</code></td></tr>
+      <tr><td>Driver sees shops</td><td><code>/api/shops</code></td></tr>
+      <tr><td>Mechanic on duty, location, skills</td><td><code>/api/mechanic/me</code>, <code>status</code>, <code>location</code>, <code>heartbeat</code>, <code>skills</code></td></tr>
+      <tr><td>Mechanic shop and shop photo</td><td><code>/api/mechanic/shop</code>, <code>/api/mechanic/shop/image</code></td></tr>
+      <tr><td>Mechanic offers and jobs</td><td><code>/api/mechanic/offers</code>, <code>/api/requests/{id}/accept</code>, <code>/decline</code>, <code>/status</code>, <code>/api/requests/mine-assigned</code></td></tr>
+      <tr><td>Live updates</td><td>WebSocket <code>/ws</code>, listening to <code>/user/queue/updates</code> and <code>/topic/request/{id}</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">This list comes from the calls found in the JavaScript files. The server code behind each call is Ifty&rsquo;s part.</p>
+
+  <h2 id="demo">11. The demo I will run</h2>
+  <div class="say">
+    <p>Finally, I will run the live demo. A driver sends an SOS, the mechanic receives the offer and accepts it, the driver sees the mechanic coming on the map,
+      and the mechanic moves the job through the steps. Then Ifty will show the test that proves only one mechanic can win a job.</p>
+  </div>
   <ul>
-    <li><strong>Memory:</strong> <code>URL.createObjectURL</code> is never paired with <code>revokeObjectURL</code> (0 uses), so each loaded photo keeps its blob until the page unloads.</li>
-    <li><strong>Reconnect:</strong> fixed 3 s retry, no exponential back-off or jitter.</li>
-    <li><strong>No build pipeline:</strong> no bundling, minification, ES modules or linting; global scope shared across scripts.</li>
-    <li><strong>No automated frontend tests:</strong> <code>src/test</code> contains only Java tests.</li>
-    <li><strong>Duplication:</strong> three copies of an HTML-escape helper, two Haversine implementations (JS and Java), and inconsistent route-refetch thresholds (80 m vs 150 m).</li>
-    <li><strong>Accessibility:</strong> <code>aria-*</code> attributes are absent from <code>driver.html</code> and <code>mechanic.html</code> (0 occurrences); not audited with a screen reader.</li>
-    <li><strong>No dark mode</strong> in the stylesheets.</li>
-    <li><strong>Network dependency:</strong> Leaflet, SockJS, STOMP and fonts load from CDNs and tiles from OSM. With no internet the map and the live connection do not load at all.</li>
-    <li><strong>Browser limit:</strong> no background geolocation; the page only reports position while it is open and active.</li>
-    <li><strong>Admin UI</strong> is a placeholder.</li>
+    <li>Driver in a normal browser window, mechanic in a <strong>private (incognito) window</strong>. Both pages share the same browser storage, so using one window would log the other out.</li>
+    <li>Log in and put the mechanic on duty before you start.</li>
+    <li>The pages need the internet: Leaflet, the live-connection libraries and the fonts load from the web, and the map tiles come from OpenStreetMap. Without internet the maps and live updates will not load, so keep a recording as a backup.</li>
+    <li>If no offer appears, the mechanic is probably off duty. Switch duty off and on, then send a <strong>new</strong> SOS.</li>
   </ul>
-  <div class="note"><strong>How this page was produced.</strong> Every technical statement above was taken from reading the files in <code>src/main/resources/static</code>, <code>WebSocketConfig.java</code> and <code>RealtimeNotifier.java</code>, and counts came from <code>grep</code> and <code>wc</code>. I did not run the app in a browser, so confirm visual details (colours, layout) by clicking through each screen before you present.</div>
 
-  <p class="small" style="margin-top:24px">Companion pages: <code>team-split.html</code> (who presents what) and <code>docs/DOCUMENTATION.md</code> (full project documentation).</p>
+  <h2 id="close">12. What is not built, and how I finish</h2>
+  <div class="say">
+    <p>Some things are not finished. The admin dashboard is only a placeholder, there is no ratings screen yet, and phone location stops when the phone screen is locked,
+      which is a browser limit. The parts I described are built, and I will show them working in the demo. Ifty will now explain the backend engine. Thank you, sir.</p>
+  </div>
+
+  <div class="note"><strong>One thing to check before the presentation.</strong> In the Git history of this repository, all commits are under the author names &ldquo;Ifty&rdquo; and &ldquo;Iftakhar Majumder&rdquo;,
+    including the frontend files. If your teacher checks GitHub, be ready to explain this, for example that you both worked from one account or one computer.
+    I cannot see who actually wrote each file, so only say what is true.</div>
+
+  <p class="small" style="margin-top:24px">Line counts from <code>wc -l</code> on the files in <code>src/main/resources/static</code> and <code>ShopService.java</code>.
+    The descriptions come from reading the code. I did not run the app in a browser, so click through each screen once before you present.</p>
 </div>
 </body>
 </html>
