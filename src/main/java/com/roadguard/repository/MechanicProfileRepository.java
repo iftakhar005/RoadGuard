@@ -41,6 +41,21 @@ public interface MechanicProfileRepository extends JpaRepository<MechanicProfile
                                               @Param("minLng") double minLng,
                                               @Param("maxLng") double maxLng);
 
+    @EntityGraph(attributePaths = "user")
+    @Query("""
+            SELECT m FROM MechanicProfile m
+            WHERE m.status = :status
+              AND m.currentLat IS NOT NULL
+              AND m.currentLng IS NOT NULL
+              AND m.currentLat BETWEEN :minLat AND :maxLat
+              AND m.currentLng BETWEEN :minLng AND :maxLng
+            """)
+    List<MechanicProfile> findInBox(@Param("status") AvailabilityStatus status,
+                                    @Param("minLat") double minLat,
+                                    @Param("maxLat") double maxLat,
+                                    @Param("minLng") double minLng,
+                                    @Param("maxLng") double maxLng);
+
     List<MechanicProfile> findByStatusInAndLastHeartbeatBefore(Collection<AvailabilityStatus> statuses,
                                                                Instant cutoff);
 

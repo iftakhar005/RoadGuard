@@ -1617,3 +1617,9 @@
 .fleet-legend code { font-family: ui-monospace, Menlo, Consolas, monospace; background: #eef2f7; padding: 0 5px; border-radius: 4px; }
 
 .map-unlocated { margin: 10px 2px 0; font-size: .8rem; line-height: 1.5; color: #6b7280; }
+
+.pin-shop.is-closed span {
+    opacity: .5;
+    filter: grayscale(.7);
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, .25), 0 2px 5px rgba(0, 0, 0, .2);
+}

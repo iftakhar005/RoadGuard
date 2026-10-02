@@ -82,6 +82,13 @@ const shopIcon = L.divIcon({
     iconAnchor: [15, 15]
 });
 
+const shopClosedIcon = L.divIcon({
+    className: 'pin-shop is-closed',
+    html: '<span></span>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+});
+
 function shopPopup(shop) {
     const open = shop.status === 'ONLINE';
     const busy = shop.status === 'BUSY';
@@ -115,7 +122,7 @@ async function loadShops() {
         shopLayer.clearLayers();
         (shops || []).forEach((shop) => {
             if (shop.shopLat == null || shop.shopLng == null) return;
-            L.marker([shop.shopLat, shop.shopLng], { icon: shopIcon })
+            L.marker([shop.shopLat, shop.shopLng], { icon: shop.status === 'ONLINE' ? shopIcon : shopClosedIcon })
                 .addTo(shopLayer)
                 .bindTooltip(shop.shopName, { direction: 'top', offset: [0, -16] })
                 .bindPopup(shopPopup(shop), { maxWidth: 260 });
@@ -276,7 +283,7 @@ window.RoadGuardMap = {
         (points || []).forEach((m) => {
             L.marker([m.lat, m.lng], { icon: mechanicIcon })
                 .addTo(mechLayer)
-                .bindTooltip(m.name || 'mechanic', { direction: 'top', offset: [0, -12] });
+                .bindTooltip(m.label || m.name || 'mechanic', { direction: 'top', offset: [0, -12] });
         });
     }
 };
@@ -288,7 +295,43 @@ if (window.ResizeObserver) {
 window.addEventListener('load', () => map.invalidateSize());
 map.whenReady(() => setTimeout(() => map.invalidateSize(), 100));
 
+function nearbyLabel(m) {
+    const skills = (m.skills || []).map((k) => k.charAt(0) + k.slice(1).toLowerCase()).join(', ');
+    const rating = m.ratingCount > 0 ? ` · ${m.avgRating.toFixed(1)}★` : '';
+    return `${m.name} · ${m.distanceKm.toFixed(1)} km${rating}${skills ? ' · ' + skills : ''}`;
+}
+
+function showNearbyCount(count) {
+    const legend = document.getElementById('legend-mech');
+    if (!legend) return;
+    legend.textContent = count > 0 ? `mechanic · ${count} online nearby` : 'mechanic · none online nearby';
+}
+
+let nearbyBusy = false;
+
+async function loadNearbyMechanics() {
+    if (nearbyBusy) return;
+    nearbyBusy = true;
+    try {
+        const here = driverPin.getLatLng();
+        const list = await api(`/api/mechanics/nearby?lat=${here.lat}&lng=${here.lng}&radiusKm=15`);
+        window.RoadGuardMap.showMechanics((list || []).map((m) => ({
+            lat: m.lat, lng: m.lng, label: nearbyLabel(m)
+        })));
+        showNearbyCount((list || []).length);
+    } catch (e) {
+        /* the pins are a convenience on this screen, a failed poll just leaves the last ones */
+    } finally {
+        nearbyBusy = false;
+    }
+}
+
+driverPin.on('dragend', loadNearbyMechanics);
+
 locate();
 
 loadShops();
 setInterval(loadShops, 30000);
+
+loadNearbyMechanics();
+setInterval(loadNearbyMechanics, 6000);
