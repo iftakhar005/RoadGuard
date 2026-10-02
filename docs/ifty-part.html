@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ifty: My Part of RoadGuard (The Engine)</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #1b2330; --muted: #5b6678; --line: #e1e5ec;
+    --accent: #1f5fd1; --accent-soft: #e8f0fd; --warn: #b45309; --warn-soft: #fff4e0;
+    --red: #c0392b; --red-soft: #fdecea; --code: #eef1f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161d; --card: #1a202a; --ink: #e8ecf2; --muted: #9aa5b8; --line: #2a3342;
+      --accent: #6ea0ff; --accent-soft: #1b2a45; --warn: #f6ad55; --warn-soft: #3a2b12;
+      --red: #ff8a7a; --red-soft: #3a1c18; --code: #232b38;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 2rem; margin: 0 0 4px; }
+  h2 { font-size: 1.3rem; margin: 46px 0 10px; padding-top: 8px; border-top: 2px solid var(--line); }
+  h3 { font-size: 1.04rem; margin: 24px 0 6px; color: var(--accent); }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 6px 22px; padding: 0; }
+  li { margin: 4px 0; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .small { font-size: .88rem; color: var(--muted); }
+  .term { font-weight: 700; color: var(--accent); }
+  code { font: .85em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code);
+    padding: 1px 6px; border-radius: 4px; word-break: break-word; }
+  pre { background: var(--code); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: .8rem; line-height: 1.5; margin: 8px 0; }
+  pre code { background: none; padding: 0; word-break: normal; }
+  .ref { display: block; font-size: .78rem; color: var(--muted); margin: 10px 0 -2px; }
+
+  nav { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+    margin: 0 -16px 8px; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
+  nav a { color: var(--accent); text-decoration: none; font-size: .82rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); }
+
+  .say { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--accent);
+    border-radius: 12px; padding: 14px 20px; margin: 12px 0; }
+  .say::before { content: "SAY THIS"; display: block; font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+    color: var(--accent); margin-bottom: 4px; }
+  .say p { margin: 6px 0; }
+
+  .note, .risk { border-radius: 10px; padding: 12px 16px; margin: 14px 0; border: 1px solid; }
+  .note { background: var(--warn-soft); border-color: var(--warn); } .note strong { color: var(--warn); }
+  .risk { background: var(--red-soft); border-color: var(--red); } .risk strong { color: var(--red); }
+
+  .tablewrap { overflow-x: auto; margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  th { background: var(--bg); font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  td.n, th.n { white-space: nowrap; color: var(--muted); text-align: right; }
+  td:first-child { min-width: 9.5rem; }
+  td:first-child code { word-break: normal; overflow-wrap: anywhere; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .stat b { display: block; font-size: 1.45rem; color: var(--accent); line-height: 1.2; }
+  .stat span { font-size: .85rem; color: var(--muted); }
+
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  details[open] summary { margin-bottom: 6px; color: var(--accent); }
+  details p { margin: 6px 0; }
+  .hand { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; padding: 1px 8px; border-radius: 999px;
+    background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn); margin-left: 6px; vertical-align: middle; }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 10.5pt; }
+    nav { display: none; }
+    .say, table, details, pre { break-inside: avoid; }
+    details > * { display: block; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Ifty: My Part of RoadGuard</h1>
+  <p class="sub">Taken from section 8 of <code>docs/DOCUMENTATION.md</code> (&ldquo;Ifty &middot; The Engine&rdquo;) &middot; backend: concurrency, persistence, security, real-time push, recovery, tests</p>
+
+  <nav>
+    <a href="#intro">Opening</a>
+    <a href="#stack">Stack</a>
+    <a href="#layers">Layers</a>
+    <a href="#lifecycle">Lifecycle</a>
+    <a href="#dispatch">Dispatch</a>
+    <a href="#matching">Matching</a>
+    <a href="#race">Accept race</a>
+    <a href="#recovery">Recovery</a>
+    <a href="#push">Real-time</a>
+    <a href="#data">Persistence</a>
+    <a href="#security">Security</a>
+    <a href="#ai">AI triage</a>
+    <a href="#api">API</a>
+    <a href="#tests">Tests</a>
+    <a href="#config">Config</a>
+    <a href="#weak">Weak points</a>
+    <a href="#close">Closing</a>
+    <a href="#qna">Q&amp;A</a>
+  </nav>
+
+  <!-- ============================================================ -->
+  <h2 id="intro" style="border-top:0">1. How I start</h2>
+  <div class="say">
+    <p>Sir, in RoadGuard I did the <strong>backend engine</strong>. That is the part that decides what happens after a driver presses SOS:
+      how the request is queued and dispatched, how mechanics are matched by skill and distance, how <strong>exactly one mechanic</strong> wins a job when many accept
+      at the same instant, how the system recovers when a mechanic disappears or nobody accepts, how data is stored, how users are authenticated and authorised,
+      how live updates are pushed, and how the AI photo check is called. I also wrote the REST API and the automated tests.</p>
+    <p>My friend Sakib did the frontend, which is everything the user sees. Our two parts meet at the <strong>REST API</strong> and the <strong>WebSocket</strong>.
+      I provide the endpoints and the pushes, and his pages call them.</p>
+    <p>I will now go through my part area by area, and say what each file is for.</p>
+  </div>
+  <div class="say">
+    <p>Short version: Sir, I built the backend of RoadGuard in <strong>Java 21 with Spring Boot</strong>: the dispatch queue and worker pool, the matching and ranking,
+      the <strong>per-request lock and database transaction</strong> that make the accept race safe, the heartbeat and timeout recovery jobs, the JPA persistence layer,
+      <strong>JWT security with BCrypt</strong>, the WebSocket push, the AI triage service, the REST API and <strong>122 automated tests</strong>.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>~4,800</b><span>lines of main Java in <code>src/main/java</code></span></div>
+    <div class="stat"><b>~1,900</b><span>lines of test Java</span></div>
+    <div class="stat"><b>122</b><span>tests, 12 test classes, 0 failures (run on 2 Oct 2026)</span></div>
+    <div class="stat"><b>9</b><span>entities plus 9 enums</span></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="stack">2. Technology stack</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Concern</th><th>What is used</th></tr></thead>
+    <tbody>
+      <tr><td>Language and framework</td><td>Java 21, Spring Boot 3.5.3 (<code>spring-boot-starter-parent</code>), Maven with the Maven Wrapper</td></tr>
+      <tr><td>Web</td><td>Spring Web MVC (<code>@RestController</code>), Bean Validation (Jakarta), Jackson</td></tr>
+      <tr><td>Persistence</td><td>Spring Data JPA with Hibernate. H2 (file mode) by default; MySQL and MariaDB drivers are on the classpath. <code>ddl-auto=update</code>, <code>open-in-view=false</code></td></tr>
+      <tr><td>Security</td><td>Spring Security 6, stateless JWT with JJWT 0.12.6, BCrypt password hashing</td></tr>
+      <tr><td>Real-time</td><td>Spring WebSocket with STOMP, SockJS fallback, the in-memory <em>simple broker</em></td></tr>
+      <tr><td>Scheduling</td><td><code>@EnableScheduling</code>, <code>@Scheduled(fixedDelay)</code></td></tr>
+      <tr><td>Concurrency</td><td><code>PriorityBlockingQueue</code>, fixed thread pool (<code>ExecutorService</code>), <code>ReentrantLock</code> (fair), <code>ConcurrentHashMap</code>, <code>AtomicLong</code></td></tr>
+      <tr><td>Transactions</td><td><code>TransactionTemplate</code> (programmatic) and <code>@Transactional</code> (declarative), <code>TransactionSynchronization.afterCommit</code></td></tr>
+      <tr><td>Email</td><td>Spring Mail with an automatic fallback to console logging when SMTP is not configured</td></tr>
+      <tr><td>AI</td><td>Google Gemini REST API called with <code>java.net.http.HttpClient</code></td></tr>
+      <tr><td>Boilerplate</td><td>Lombok (<code>@RequiredArgsConstructor</code>, <code>@Getter</code>, <code>@Slf4j</code>), Java records for DTOs</td></tr>
+      <tr><td>Testing</td><td>JUnit 5, Spring Boot Test (<code>@SpringBootTest</code>), <code>@RepeatedTest</code>, <code>CountDownLatch</code>, H2 in-memory (<code>create-drop</code>)</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============================================================ -->
+  <h2 id="layers">3. Layers and packages</h2>
+  <div class="say">
+    <p>The backend is a classic <strong>layered architecture</strong>: controllers at the top take HTTP and validate input, services hold the business rules and transactions,
+      repositories talk to the database through Spring Data JPA, and entities model the data. Security and configuration sit beside them.</p>
+  </div>
+<pre><code>HTTP / WebSocket
+   web/            @RestController + DTO records + ApiExceptionHandler     (validate, map status codes)
+   service/        business rules, concurrency, transactions, schedulers
+   repository/     Spring Data JPA interfaces (derived queries + JPQL)
+   domain/         JPA entities and enums
+   security/       JWT filter, JwtService, SecurityConfig
+   config/         WebSocketConfig, HttpsConnector, AdminSeeder</code></pre>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Package</th><th>Files</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>web</code></td><td>4 controllers, 1 exception handler, 17 DTO records</td><td>The REST API: <code>AuthController</code> (59 lines), <code>MechanicController</code> (92), <code>RequestController</code> (137), <code>ShopController</code> (46), <code>ApiExceptionHandler</code> (53)</td></tr>
+      <tr><td><code>service</code></td><td>15 classes</td><td>All business logic (details below)</td></tr>
+      <tr><td><code>repository</code></td><td>9 interfaces</td><td>Spring Data JPA repositories</td></tr>
+      <tr><td><code>domain</code></td><td>9 entities, 9 enums</td><td>The data model and the state machine</td></tr>
+      <tr><td><code>security</code></td><td>5 classes</td><td>Authentication filter, token service, URL rules</td></tr>
+      <tr><td><code>config</code></td><td>3 classes</td><td>WebSocket, HTTPS, admin seeding</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============================================================ -->
+  <h2 id="lifecycle">4. The request lifecycle (state machine)</h2>
+  <div class="say">
+    <p>Every request moves through a <strong>finite state machine</strong>. The legal moves are stored in an <code>EnumMap&lt;RequestStatus, Set&lt;RequestStatus&gt;&gt;</code> of <code>EnumSet</code>s
+      in <code>RequestStatus.java</code>. Every service method asks <code>canTransitionTo()</code> before it changes a status, so a tampered client cannot move a job
+      from searching straight to completed. The rules are enforced on the server.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>From</th><th>Allowed next states</th></tr></thead>
+    <tbody>
+      <tr><td><code>CREATED</code></td><td>DIAGNOSING, SEARCHING, CANCELLED</td></tr>
+      <tr><td><code>DIAGNOSING</code></td><td>SEARCHING, CANCELLED</td></tr>
+      <tr><td><code>SEARCHING</code></td><td>OFFERED, ESCALATED, CANCELLED</td></tr>
+      <tr><td><code>OFFERED</code></td><td>ACCEPTED, SEARCHING, ESCALATED, CANCELLED</td></tr>
+      <tr><td><code>ACCEPTED</code></td><td>EN_ROUTE, REASSIGNING, CANCELLED</td></tr>
+      <tr><td><code>EN_ROUTE</code></td><td>ARRIVED, REASSIGNING, CANCELLED</td></tr>
+      <tr><td><code>ARRIVED</code></td><td>IN_PROGRESS, REASSIGNING, CANCELLED</td></tr>
+      <tr><td><code>IN_PROGRESS</code></td><td>COMPLETED, REASSIGNING, CANCELLED</td></tr>
+      <tr><td><code>REASSIGNING</code></td><td>SEARCHING, OFFERED, ACCEPTED, CANCELLED</td></tr>
+      <tr><td><code>ESCALATED</code></td><td>SEARCHING, CANCELLED (revived when a mechanic comes back)</td></tr>
+      <tr><td><code>COMPLETED</code>, <code>CANCELLED</code></td><td>none (terminal states)</td></tr>
+    </tbody>
+  </table></div>
+  <p>A mechanic can only push a job to <code>EN_ROUTE</code>, <code>ARRIVED</code>, <code>IN_PROGRESS</code> or <code>COMPLETED</code> (<code>HANDLED_BY_MECHANIC</code>), and only if they are the assigned mechanic.
+    Other moves (offering, accepting, escalating, reassigning) are done by the engine itself. <code>AssignmentService.advanceStatus</code> returns
+    <code>OK</code>, <code>NOT_FOUND</code>, <code>NOT_YOURS</code> or <code>NOT_ALLOWED</code>, which the controller maps to HTTP 200, 404, 403 and 409.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="dispatch">5. Dispatch: queue and worker pool</h2>
+  <div class="say">
+    <p>First, dispatch. When a request is created, its id goes onto an in-memory <strong>priority queue</strong>, and a pool of <strong>worker threads</strong> takes requests off the queue and
+      broadcasts offers to mechanics. This is a <strong>producer&ndash;consumer</strong> design: the HTTP thread is the producer and returns immediately, and the workers are the consumers,
+      so a slow dispatch never blocks the driver&rsquo;s request.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>DispatchService.java</code></td><td class="n">220</td><td>The dispatcher. A <code>PriorityBlockingQueue&lt;DispatchTask&gt;</code> and a fixed pool of 4 daemon worker threads (<code>app.dispatch.worker-threads</code>) started in <code>@PostConstruct</code> and stopped in <code>@PreDestroy</code>.
+        Each worker loops on <code>queue.poll(500 ms)</code>. <code>DispatchTask</code> is a record implementing <code>Comparable</code>: it orders by <code>Severity.priority()</code> (CRITICAL 0, HIGH 1, MEDIUM 2, LOW 3), then by an <code>AtomicLong</code> sequence number, so equal severities are served in first-in first-out order.
+        <code>broadcast(requestId)</code> runs under the per-request lock inside one transaction: it loads the request, requires status <code>SEARCHING</code> or <code>REASSIGNING</code>, asks <code>MatchingService</code> for candidates, takes the top 3 (5 if the severity is urgent), creates a new <strong>offer token</strong>, sets <code>OFFERED</code>, saves one <code>RequestOffer</code> row per mechanic, and after the transaction pushes an <code>OFFER</code> message to each mechanic.</td></tr>
+      <tr><td><code>RequestService.java</code></td><td class="n">362</td><td>SOS intake and the read side. <code>createSos</code> saves the request as <code>SEARCHING</code> (or <code>DIAGNOSING</code> if a photo is coming) and registers a <code>TransactionSynchronization.afterCommit()</code> callback that calls <code>dispatch.enqueue</code>.
+        Enqueueing <em>after commit</em> matters: a worker could otherwise pick up the id before the row is visible to other transactions.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><span class="term">Offer token.</span> <code>ServiceRequest.startNewOfferRound()</code> generates a random <code>UUID</code> and stores it with the set of mechanic ids offered to. A mechanic must send the current token to accept; a token from an earlier round is rejected with <code>OFFER_EXPIRED</code>.</li>
+    <li><span class="term">Offer audit.</span> Every offer is a <code>RequestOffer</code> row with an <code>OfferOutcome</code> (<code>ACCEPTED</code>, <code>DECLINED</code>, <code>TAKEN</code>, <code>TIMEOUT</code>), so the history of each race is kept.</li>
+    <li><span class="term">Urgent jobs.</span> HIGH or CRITICAL severity gets 5 offers (<code>app.dispatch.urgent-offer-count</code>) instead of 3, and a 10 km start radius (<code>app.dispatch.urgent-radius-km</code>) instead of 5 km.</li>
+  </ul>
+
+  <!-- ============================================================ -->
+  <h2 id="matching">6. Matching and ranking</h2>
+  <div class="say">
+    <p>Second, matching. I choose candidates in <strong>two stages</strong>. Stage one is a cheap database query using a <strong>bounding box</strong>. Stage two computes the exact distance with the
+      <strong>Haversine formula</strong> in Java. Then I rank the survivors with a weighted score.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>MatchingService.java</code></td><td class="n">96</td><td><code>findCandidates</code> (read-only transaction) builds the box, runs the query, and calls <code>rank()</code>. <code>rank()</code> drops mechanics with no location, not <code>ONLINE</code>, or farther than the radius by Haversine, splits them into <em>specialists</em> (have the required skill, and the skill is not GENERAL) and <em>generalists</em>, and uses the generalists only if there are no specialists.
+        Score = <code>0.7 &times; (distance / radius) + 0.3 &times; (1 &minus; stars / 5)</code>, lower is better. A mechanic with no ratings counts as a neutral 3.5 stars. Ties are broken by profile id so the order is deterministic.</td></tr>
+      <tr><td><code>GeoUtils.java</code></td><td class="n">45</td><td><code>haversineKm</code> (great-circle distance, Earth radius 6371 km, using <code>atan2</code>) and <code>boundingBox</code>: latitude half-width = <code>radius / 111.195</code> km per degree; longitude half-width = <code>radius / (111.195 &times; cos(lat))</code>, widened to 180&deg; near the pole to avoid division by zero; latitude is clamped to [&minus;90, 90].</td></tr>
+      <tr><td><code>MechanicProfileRepository.java</code></td><td class="n">46</td><td>The JPQL query <code>findCandidatesInBox</code>: status = ONLINE, location not null, latitude and longitude <code>BETWEEN</code> the box, and the mechanic has the skill (<code>:skill MEMBER OF m.specializations</code>) or GENERAL. Also <code>findByStatusInAndLastHeartbeatBefore</code> for the reaper.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><span class="term">Why two stages.</span> The box is a square and the radius is a circle, so the SQL pass is a cheap pre-filter and the Haversine pass removes the corners. This avoids computing trigonometry for every mechanic in the table.</li>
+    <li><span class="term">Why not a routing API.</span> A network call per candidate inside the dispatch path would be slow and may cost money. Cheap maths ranks everyone; a real road route is fetched only in the browser for the one mechanic who accepts.</li>
+    <li><span class="term">Complexity.</span> Ranking is O(n log n) in the number of candidates inside the box, which is small.</li>
+  </ul>
+
+  <!-- ============================================================ -->
+  <h2 id="race">7. The accept race (concurrency control)</h2>
+  <div class="say">
+    <p>Third, the part I consider the core of the project: the <strong>accept race</strong>. Several mechanics receive the same offer. If they all press Accept at the same millisecond, exactly one must win,
+      and the others must be told cleanly. I solved it with <strong>two layers</strong>: a <strong>per-request fair lock</strong> held around a <strong>database transaction that commits inside the lock</strong>, and
+      <strong>optimistic locking</strong> with a version column as a backstop.</p>
+  </div>
+  <span class="ref">AssignmentService.accept (simplified)</span>
+<pre><code>ReentrantLock lock = locks.computeIfAbsent(requestId, id -&gt; new ReentrantLock(true));   // one fair lock per request
+lock.lock();
+try {
+    AcceptOutcome outcome = runAccept(requestId, mechanicUserId, offerToken);              // tx.execute(...) commits here
+    if (outcome == AcceptOutcome.ACCEPTED) { pushRequest(requestId); realtime.mechanicChanged(mechanicUserId); }
+    return outcome;
+} finally {
+    lock.unlock();
+}
+/* runAccept: tx.execute(status -&gt; attempt(...)), and OptimisticLockingFailureException -&gt; ALREADY_TAKEN */</code></pre>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>AssignmentService.java</code></td><td class="n">458</td><td>The biggest and most important class. It owns every state change of a request that must not race: <code>accept</code>, <code>decline</code>, <code>advanceStatus</code>, <code>cancel</code>, <code>releaseFromMechanic</code>, <code>expireRound</code>, <code>expireSearch</code>, <code>giveUpOnDiagnosing</code> and <code>reviveEscalated</code>.
+        All of them use the same <code>withLock(requestId, ...)</code> helper, so every mutation of one request is serialised, while two different requests never block each other.</td></tr>
+      <tr><td><code>AcceptOutcome.java</code></td><td class="n">20</td><td>The result enum: <code>ACCEPTED</code>, <code>ALREADY_TAKEN</code>, <code>OFFER_EXPIRED</code>, <code>NOT_OFFERED_TO_YOU</code>, <code>MECHANIC_NOT_AVAILABLE</code>, <code>REQUEST_NOT_FOUND</code>; <code>isWin()</code> is true only for <code>ACCEPTED</code>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Why each design choice</h3>
+  <ul>
+    <li><span class="term">One lock per request, not one global lock.</span> A global lock (or a <code>synchronized</code> method) would serialise every breakdown in the system. The locks live in a <code>ConcurrentHashMap&lt;Long, ReentrantLock&gt;</code> created with <code>computeIfAbsent</code>, which is atomic.</li>
+    <li><span class="term">Fair lock</span> (<code>new ReentrantLock(true)</code>): waiting threads get the lock in arrival order instead of arbitrarily, so the first to arrive is the first served.</li>
+    <li><span class="term">Commit inside the lock.</span> I use <code>TransactionTemplate</code>, not <code>@Transactional</code>. With <code>@Transactional</code> on the method, the lock would be released <em>before</em> Spring commits (the commit happens when the proxy returns), leaving a window where the next thread reads stale data.
+      With <code>tx.execute(...)</code> the transaction has already committed when the lock is released.</li>
+    <li><span class="term">Optimistic locking backstop.</span> <code>ServiceRequest</code> and <code>MechanicProfile</code> have a <code>@Version</code> column. If the lock were ever bypassed, a second concurrent update would fail with <code>OptimisticLockingFailureException</code>, which I catch and turn into <code>ALREADY_TAKEN</code>.</li>
+    <li><span class="term">Offer token.</span> Stops a mechanic whose screen is stale from accepting a job that has already moved to a new offer round.</li>
+  </ul>
+
+  <h3>The guards inside one accept attempt (in order)</h3>
+  <ol>
+    <li>Request exists, else <code>REQUEST_NOT_FOUND</code></li>
+    <li>Status is <code>OFFERED</code> or <code>REASSIGNING</code>, else <code>ALREADY_TAKEN</code></li>
+    <li>No mechanic is assigned yet, else <code>ALREADY_TAKEN</code></li>
+    <li>The offer token equals the current token, else <code>OFFER_EXPIRED</code></li>
+    <li>This mechanic was in the offered set, else <code>NOT_OFFERED_TO_YOU</code></li>
+    <li>The state machine allows <code>ACCEPTED</code>, else <code>ALREADY_TAKEN</code></li>
+    <li>The mechanic profile is <code>ONLINE</code>, else <code>MECHANIC_NOT_AVAILABLE</code></li>
+  </ol>
+  <p>On success, in the same transaction: set the assigned mechanic and <code>ACCEPTED</code> with a timestamp, set the mechanic&rsquo;s profile to <code>BUSY</code>, and <code>resolveOffers</code> marks the winner&rsquo;s offer row <code>ACCEPTED</code> and every other unanswered offer in the round <code>TAKEN</code>.
+    The controller returns HTTP 200 for the winner and <strong>409 Conflict</strong> with <code>won: false</code> for a loser.</p>
+
+  <div class="note"><strong>What the race test proves, and what it does not.</strong> <code>AcceptRaceTest</code> starts 50 threads, holds them on a <code>CountDownLatch</code> and releases them together, 25 times (<code>@RepeatedTest(25)</code>), asserting exactly one <code>ACCEPTED</code>, 49 <code>ALREADY_TAKEN</code> and one accepted offer row.
+    It calls <code>AssignmentService.accept</code> directly on an in-memory H2 database, not through HTTP and not on MariaDB. A <code>ReentrantLock</code> only protects one JVM, so with several server instances the version column would be the only protection (see weak points).</div>
+
+  <!-- ============================================================ -->
+  <h2 id="recovery">8. Recovery: heartbeats, timeouts, escalation</h2>
+  <div class="say">
+    <p>Fourth, recovery. Real systems fail, so I built three independent safety nets as <strong>scheduled background jobs</strong>. If a mechanic disappears, the job is released. If nobody accepts, the search radius widens.
+      If nobody is in range, it widens too, and if everything fails the request is <strong>escalated</strong>.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>HeartbeatReaper.java</code></td><td class="n">120</td><td><code>@Scheduled</code> every 5 seconds. Finds mechanics whose status is <code>ONLINE</code> or <code>BUSY</code> and whose <code>lastHeartbeat</code> is older than 15 seconds (<code>app.heartbeat.timeout-sec</code>). For each one it <strong>first marks the mechanic <code>OFFLINE</code></strong> (its own small transaction), <strong>then</strong> reads the jobs they were holding (<code>ACCEPTED</code>, <code>EN_ROUTE</code>, <code>ARRIVED</code>, <code>IN_PROGRESS</code>) and calls <code>releaseFromMechanic</code> and <code>dispatch.enqueue</code>.
+        The order matters: reversing it would leave a window where a job is attached to a mechanic already known to be gone.</td></tr>
+      <tr><td><code>OfferTimeoutService.java</code></td><td class="n">188</td><td><code>@Scheduled</code> every 20 seconds. <code>sweepOnce()</code> does three things. (1) Requests still <code>OFFERED</code> past the timeout call <code>expireRound</code>: unanswered offers become <code>TIMEOUT</code>, the radius doubles up to a 25 km ceiling, and the request goes back to <code>SEARCHING</code> and is re-queued; after more than 3 attempts it becomes <code>ESCALATED</code>.
+        (2) <code>giveUpOnDiagnosing</code> moves a request whose photo never arrived (30 s) to <code>SEARCHING</code> using the issue type. (3) <code>retryStranded</code> handles <code>SEARCHING</code> or <code>REASSIGNING</code> requests that found <em>nobody in range</em> (they never reached <code>OFFERED</code>), widening them with <code>expireSearch</code> and re-queueing. Separately, <code>reviveEscalated()</code> (not part of the sweep) is called from <code>MechanicService</code> when a mechanic comes back online.</td></tr>
+      <tr><td><code>MechanicService.java</code></td><td class="n">126</td><td>Mechanic profile operations: <code>setStatus</code> (rejects <code>BUSY</code>, requires a location before going online, refuses to go online while a job is active), <code>updateLocation</code> (stores position, refreshes the heartbeat, and pushes a <code>MOVED</code> message for every active job of that mechanic), <code>heartbeat</code> and <code>updateSkills</code> (an empty list falls back to <code>GENERAL</code>).
+        When a mechanic comes online, an <code>afterCommit</code> hook calls <code>reviveEscalated()</code> and <code>requeueActiveSearches()</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The widening ladder with the default settings, starting at 5 km, attempts limit 3: timeout 1 &rarr; 10 km, timeout 2 &rarr; 20 km, timeout 3 &rarr; 25 km (capped), timeout 4 &rarr; <code>ESCALATED</code>.
+    A revived request keeps its widened radius, resets its attempts to zero and is only revived if it was created within the last 30 minutes (<code>app.dispatch.revive-within-sec=1800</code>).</p>
+  <p>Because the dispatch queue is in memory, a server restart empties it. The 20-second sweep re-enqueues every <code>SEARCHING</code> or <code>REASSIGNING</code> request, and <code>OFFERED</code> requests are found by a database query, so nothing is permanently stranded.
+    Duplicate queue entries are harmless: <code>broadcast</code> skips any request that is not in a dispatchable state.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="push">9. Real-time push (server side)</h2>
+  <div class="say">
+    <p>Fifth, the live updates. The server pushes messages with <strong>STOMP over WebSocket</strong> and Spring&rsquo;s <strong>simple in-memory broker</strong>, so a driver sees status changes and the mechanic moving without refreshing.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>WebSocketConfig.java</code></td><td class="n">66</td><td><code>@EnableWebSocketMessageBroker</code>. Endpoint <code>/ws</code> with SockJS. The simple broker serves <code>/topic</code> and <code>/queue</code>, application prefix <code>/app</code>, user-destination prefix <code>/user</code>.
+        A <code>ChannelInterceptor</code> on the inbound channel inspects the STOMP <code>CONNECT</code> frame, reads the <code>Authorization: Bearer ...</code> native header, validates the JWT through <code>JwtService</code>, and sets the user <code>Principal</code> to the username; a missing or invalid token throws <code>MessageDeliveryException</code> and the connection is refused.</td></tr>
+      <tr><td><code>RealtimeNotifier.java</code></td><td class="n">111</td><td>Wraps <code>SimpMessagingTemplate</code>. Message types: <code>OFFER</code> and <code>OFFER_CLOSED</code> (to specific mechanics via <code>convertAndSendToUser(username, "/queue/updates", ...)</code>), <code>STATUS</code> (to <code>/topic/request/{id}</code> and to the assigned mechanic), <code>MOVED</code> (mechanic position, to <code>/topic/request/{id}</code>), <code>MECHANIC</code> (to the mechanic) and a copy of events to <code>/topic/admin</code>.
+        Every send is wrapped in <code>try/catch</code> and logged at debug level, so a failed push never breaks the business transaction.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The simple broker does not store or replay messages, so a client that was disconnected misses them. That is why the frontend also polls every 15 seconds.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="data">10. Persistence: entities and repositories</h2>
+  <div class="say">
+    <p>Sixth, persistence. All state is in the database through <strong>JPA and Hibernate</strong>, so a server restart loses nothing important. The database is the single source of truth.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Entity (table)</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>User</code> (<code>users</code>)</td><td class="n">54</td><td>Account: unique username and email, BCrypt hash, <code>Role</code> (DRIVER, MECHANIC, ADMIN), phone.</td></tr>
+      <tr><td><code>MechanicProfile</code> (<code>mechanic_profiles</code>)</td><td class="n">113</td><td>One-to-one with a mechanic user: status (OFFLINE, ONLINE, BUSY), current latitude and longitude, last heartbeat, rating average and count, shop fields, <code>@Version</code>. Skills are an <code>@ElementCollection</code> (<code>mechanic_specializations</code>).</td></tr>
+      <tr><td><code>ServiceRequest</code> (<code>service_requests</code>)</td><td class="n">135</td><td>The heart of the system: driver, issue type, origin, status, required specialization, severity, assigned mechanic, current offer token, offered-to set (<code>request_offered_to</code>), search radius, attempts, timestamps, AI fault category and guidance, and <code>@Version</code>.</td></tr>
+      <tr><td><code>RequestOffer</code> (<code>request_offers</code>)</td><td class="n">55</td><td>One row per offer sent: request, mechanic, token, sent time, outcome. The audit trail of every race.</td></tr>
+      <tr><td><code>VehicleDiagnosis</code> (<code>vehicle_diagnoses</code>)</td><td class="n">70</td><td>The AI result per request (one-to-one): image path, fault category, specialization, severity, confidence, guidance, likely parts, and a <code>fallback</code> flag.</td></tr>
+      <tr><td><code>PasswordResetToken</code></td><td class="n">52</td><td>Email, 6-digit code, expiry, used flag, with an index on email.</td></tr>
+      <tr><td><code>Rating</code>, <code>EventLog</code>, <code>LocationUpdate</code></td><td class="n">58 / 44 / 52</td><td>Entities that exist but have no service or endpoint using them yet (ratings flow, event replay, location history).</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><span class="term">Mappings.</span> <code>@GeneratedValue(IDENTITY)</code> ids, <code>@Enumerated(EnumType.STRING)</code> for readable and reorder-safe enums, <code>FetchType.LAZY</code> on associations, <code>EAGER</code> only on the two small element collections.</li>
+    <li><span class="term">Lazy loading and sessions.</span> <code>spring.jpa.open-in-view=false</code>, so lazy associations can only be read inside a transaction. That is why services use <code>@Transactional</code> or <code>TransactionTemplate</code> and DTO <code>from(...)</code> methods run inside them.</li>
+    <li><span class="term">Repositories.</span> 9 Spring Data interfaces using derived queries (<code>findByStatusAndOfferedAtBefore</code>, <code>findByAssignedMechanicIdAndStatusIn</code>) and one JPQL query. A <code>findByIdForUpdate</code> method with <code>@Lock(PESSIMISTIC_WRITE)</code> exists but is not used anywhere.</li>
+    <li><span class="term">Schema management.</span> <code>spring.jpa.hibernate.ddl-auto=update</code> (Hibernate updates the schema); there are no migration scripts.</li>
+    <li><span class="term">Images are files, not BLOBs.</span> The database stores only a filename in a <code>varchar(255)</code>; the file is under <code>uploads/</code>. This keeps backups and the buffer pool small. The cost is that a file and its row can drift, so the old file is deleted when a photo is replaced.</li>
+  </ul>
+
+  <!-- ============================================================ -->
+  <h2 id="security">11. Security</h2>
+  <div class="say">
+    <p>Seventh, security. The API is <strong>stateless</strong>. A user logs in and receives a <strong>JWT</strong>. Every later request carries it in the <code>Authorization: Bearer</code> header, and a filter turns it into an authenticated user.
+      Passwords are hashed with <strong>BCrypt</strong>. Access is controlled twice: by URL rules, and again inside the services by role and ownership checks.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>SecurityConfig.java</code></td><td class="n">61</td><td><code>SecurityFilterChain</code>: CSRF disabled (the API uses a Bearer token and no cookies), <code>SessionCreationPolicy.STATELESS</code>, <code>BCryptPasswordEncoder</code>, and URL rules: <code>/api/auth/**</code>, static files, <code>/ws/**</code> and shop images are public; <code>/api/mechanic/**</code> requires <code>ROLE_MECHANIC</code>; <code>/api/admin/**</code> requires <code>ROLE_ADMIN</code>; everything else requires authentication. A missing or bad token returns plain 401 through <code>HttpStatusEntryPoint</code>.</td></tr>
+      <tr><td><code>JwtService.java</code></td><td class="n">61</td><td>Issues and parses tokens with JJWT: subject = username, claims <code>uid</code> and <code>role</code>, issued-at, expiry (24 hours by default), signed with an HMAC key built from <code>app.jwt.secret</code>. <code>parse()</code> returns an <code>Optional</code> and swallows <code>JwtException</code>.</td></tr>
+      <tr><td><code>JwtAuthenticationFilter.java</code></td><td class="n">59</td><td>A <code>OncePerRequestFilter</code> registered before <code>UsernamePasswordAuthenticationFilter</code>. Reads <code>Authorization: Bearer</code>, validates the token, loads the <code>AuthUser</code> from the database through <code>AppUserDetailsService</code>, and sets the <code>SecurityContext</code>. So the role is read from the database on every request, not trusted from the token.</td></tr>
+      <tr><td><code>AuthUser.java</code>, <code>AppUserDetailsService.java</code></td><td class="n">69 / 21</td><td>The <code>UserDetails</code> adapter (authority = <code>ROLE_</code> + role) and the lookup by username.</td></tr>
+      <tr><td><code>AuthService.java</code></td><td class="n">90</td><td><code>register</code>: refuses the ADMIN role, checks username and email uniqueness, hashes the password, and for a mechanic also creates a <code>MechanicProfile</code> (default skill GENERAL, status OFFLINE). <code>login</code>: finds the user by email or username (case-insensitive) and returns the <em>same</em> &ldquo;Wrong email or password&rdquo; message for both failures, so it does not reveal which one was wrong.</td></tr>
+      <tr><td><code>PasswordResetService.java</code>, <code>EmailService.java</code></td><td class="n">93 / 68</td><td>Two-step reset: a 6-digit code from <code>SecureRandom</code>, valid 15 minutes, single use, older unused codes invalidated. The email is sent through SMTP if configured; otherwise the code is written to the server log.</td></tr>
+      <tr><td><code>AdminSeeder.java</code></td><td class="n">54</td><td>Nobody can register as admin, so an <code>ApplicationRunner</code> creates the first admin at startup from <code>app.admin.*</code> in <code>application-local.properties</code>, if it does not already exist.</td></tr>
+      <tr><td><code>HttpsConnector.java</code></td><td class="n">60</td><td>Adds a second Tomcat connector on port 8443 using a PKCS12 keystore, only if the keystore file exists. Needed because phones only share location on HTTPS.</td></tr>
+    </tbody>
+  </table></div>
+  <p><span class="term">Authorisation in the services.</span> Beyond URL rules, <code>RequestService</code> checks the role (only a driver can send an SOS, only a mechanic can accept) and ownership (<code>canView</code>: the driver, the assigned mechanic or an admin).
+    A mechanic can read a request&rsquo;s photo only if they own an open offer for it. Secrets (JWT key, admin password, database password) live in <code>application-local.properties</code>, which is git-ignored; a template with placeholders is committed.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="ai">12. AI fault triage (server side)</h2>
+  <div class="say">
+    <p>Eighth, the AI triage. When a driver attaches a photo, the server sends it to a vision model and uses the answer to choose the <strong>specialization</strong> and <strong>severity</strong>.
+      The most important design rule is that the AI is <strong>advisory</strong>: any failure falls back to a safe default, so the AI can never block a rescue.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>AiTriageService.java</code></td><td class="n">251</td><td>Provider switch <code>app.ai.provider</code> (<code>stub</code> or <code>gemini</code>); it is live only when the provider is <code>gemini</code> and an API key is set. It posts the image (Base64 <code>inline_data</code>) and the note to the Gemini <code>generateContent</code> REST endpoint with <code>java.net.http.HttpClient</code>, asking for <strong>strict JSON</strong>: fault category, specialization, severity, confidence, guidance, likely parts.
+        <code>sendWithRetries</code> retries on HTTP 429 and 5xx up to 3 times with a growing delay (800 ms &times; attempt). <code>parse</code> strips markdown code fences and surrounding chatter (<code>unfence</code>), reads into a record with <code>@JsonIgnoreProperties(ignoreUnknown = true)</code>, and falls back field by field when an enum value is unknown (<code>readEnum</code>). Any exception returns <code>fallbackFor(issueType)</code>: specialization from the issue type, severity MEDIUM, confidence 0, generic safety guidance, <code>fallback = true</code>.</td></tr>
+      <tr><td><code>RequestService.attachPhoto</code></td><td class="n">(in 362)</td><td>Runs in <strong>three phases</strong> so no database connection is held during the slow network call: (1) a short transaction validates ownership and that the request is still <code>DIAGNOSING</code>; (2) the photo is stored and the AI is called <em>outside</em> any transaction; (3) a second transaction writes the <code>VehicleDiagnosis</code>, sets specialization, severity and radius, moves to <code>SEARCHING</code>, and enqueues dispatch after commit.</td></tr>
+      <tr><td><code>UploadRules.java</code></td><td class="n">62</td><td>Shared upload checks: maximum 5 MB, only JPG, PNG or WEBP, and <code>within(directory, name)</code>, a <strong>path-traversal guard</strong> that normalises the path and rejects anything outside the uploads folder.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Severity is only ever set by the AI step. A request without a photo keeps the default <code>MEDIUM</code>.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="api">13. The REST API</h2>
+  <div class="say">
+    <p>Ninth, the REST API. The controllers are deliberately thin: they validate the input with <strong>Bean Validation</strong>, call a service, and map the result to an HTTP status code. Request and response bodies are Java <strong>records</strong> (DTOs),
+      so the entities are never exposed directly.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th class="n">Lines</th><th>What it is about</th></tr></thead>
+    <tbody>
+      <tr><td><code>AuthController</code></td><td class="n">58</td><td><code>POST /api/auth/register</code>, <code>/login</code>, <code>/forgot-password</code>, <code>/reset-password</code>; <code>GET /api/auth/me</code></td></tr>
+      <tr><td><code>RequestController</code></td><td class="n">137</td><td><code>POST /api/requests</code>; <code>GET /mine</code>, <code>/mine-assigned</code>, <code>/{id}</code>, <code>/{id}/candidates</code>, <code>/{id}/photo</code>; <code>POST /{id}/photo</code> (multipart), <code>/accept</code>, <code>/decline</code>, <code>/status</code>, <code>/cancel</code>. A lost accept returns <strong>409 Conflict</strong> with <code>won: false</code>.</td></tr>
+      <tr><td><code>MechanicController</code></td><td class="n">92</td><td><code>GET /api/mechanic/me</code>, <code>/offers</code>, <code>/shop</code>; <code>POST /status</code>, <code>/location</code>, <code>/skills</code>, <code>/heartbeat</code>, <code>/shop</code>, <code>/shop/image</code> (multipart)</td></tr>
+      <tr><td><code>ShopController</code></td><td class="n">46</td><td><code>GET /api/shops</code>, <code>/api/shops/{id}</code>, <code>/api/shops/{id}/image</code> (cached for 5 minutes)</td></tr>
+      <tr><td><code>ApiExceptionHandler</code></td><td class="n">53</td><td><code>@RestControllerAdvice</code> with one JSON error shape <code>{status, error, message}</code>: <code>IllegalArgumentException</code> &rarr; 400, <code>IllegalStateException</code> &rarr; 409, <code>BadCredentialsException</code> &rarr; 401, <code>AccessDeniedException</code> &rarr; 403, validation failure &rarr; 400 with the first field error.</td></tr>
+      <tr><td>17 DTO records in <code>web/dto</code></td><td class="n">~10&ndash;60 each</td><td>Requests carry Bean Validation annotations, for example <code>CreateSosRequest</code> (<code>@NotNull</code> issue type, latitude in [&minus;90, 90], longitude in [&minus;180, 180], note up to 500 characters), <code>RegisterRequest</code> (username 3&ndash;50, <code>@Email</code>, password 6&ndash;100), <code>ShopRequest</code> (<code>@Pattern</code> on the phone number).
+        Responses such as <code>ServiceRequestResponse</code>, <code>OfferResponse</code>, <code>MechanicProfileResponse</code> and <code>ShopResponse</code> have static <code>from(entity)</code> factories. <code>ServiceRequestResponse</code> shares the mechanic&rsquo;s coordinates only while a mechanic is assigned.</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============================================================ -->
+  <h2 id="tests">14. Automated tests</h2>
+  <div class="say">
+    <p>Tenth, testing. I wrote <strong>122 automated tests in 12 test classes</strong>, and all of them pass. They are integration tests that start the real Spring context with an in-memory H2 database, so they exercise the real services, transactions and locks.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Test class</th><th class="n">Tests</th><th>What it proves</th></tr></thead>
+    <tbody>
+      <tr><td><code>AcceptRaceTest</code></td><td class="n">29</td><td>50 threads released together by a <code>CountDownLatch</code>, repeated 25 times: exactly one winner, 49 told <code>ALREADY_TAKEN</code>, one accepted offer row; the winner becomes busy; a stale token loses; a mechanic never offered the job cannot take it; accepting twice does not reassign.</td></tr>
+      <tr><td><code>HeartbeatReaperTest</code></td><td class="n">21</td><td>Silent mechanics go offline; healthy ones are untouched; a dropped job is released and can be accepted by someone else; the reaper and an accept on the same request never both win.</td></tr>
+      <tr><td><code>AiTriageTest</code></td><td class="n">11</td><td>Parsing plain JSON, fenced JSON, JSON with chatter, truncated and empty answers; unknown enum values; missing guidance; no network call when no key is set.</td></tr>
+      <tr><td><code>MatchingServiceTest</code></td><td class="n">8</td><td>Closer wins at equal rating; out-of-radius and offline mechanics excluded; generalists only as a fallback; unrated is neutral, not zero; stable ordering.</td></tr>
+      <tr><td><code>OfferTimeoutTest</code></td><td class="n">8</td><td>Radius doubling, ceiling at the maximum, escalation after the attempts, timed-out offer rows, stale token cannot expire the current round.</td></tr>
+      <tr><td><code>StrandedSearchTest</code></td><td class="n">8</td><td>A request that found nobody widens, stops at the ceiling, escalates only when both limits are reached, and a taken request is never widened.</td></tr>
+      <tr><td><code>EscalatedRevivalTest</code></td><td class="n">8</td><td>Escalated requests revive when a mechanic returns; attempts reset; widened radius kept; cancelled or completed requests never revive; reviving twice is a no-op.</td></tr>
+      <tr><td><code>MechanicSkillsTest</code></td><td class="n">8</td><td>Adding and removing skills, persistence across reload, empty list falls back to GENERAL, skill changes affect matching but not an accepted job.</td></tr>
+      <tr><td><code>JobLifecycleTest</code></td><td class="n">7</td><td>Walking a job to completion, steps cannot be skipped, another mechanic cannot move it, a driver can cancel and free the mechanic, finished jobs cannot be changed.</td></tr>
+      <tr><td><code>TriageDispatchTest</code></td><td class="n">7</td><td>A photo request waits in <code>DIAGNOSING</code>; a plain one goes straight out; a missing photo is swept after the timeout; urgent jobs get more offers.</td></tr>
+      <tr><td><code>GeoUtilsTest</code></td><td class="n">6</td><td>Distance symmetry and zero distance, 1&deg; of latitude &asymp; 111.19 km, longitude shrinking with cos(lat), box contains the circle, no failure at the pole.</td></tr>
+      <tr><td><code>RoadguardApplicationTests</code></td><td class="n">1</td><td>The context loads.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Test configuration is <code>src/test/resources/application-test.properties</code>: in-memory H2 with <code>create-drop</code>, a test-only JWT secret, 2 dispatch workers. There are no HTTP-level tests (no <code>MockMvc</code>), no security tests and no WebSocket tests.</p>
+
+  <!-- ============================================================ -->
+  <h2 id="config">15. Configuration (application.properties)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Key</th><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>app.dispatch.default-radius-km</code></td><td>5</td><td>Starting search radius</td></tr>
+      <tr><td><code>app.dispatch.max-radius-km</code></td><td>25</td><td>Widening ceiling</td></tr>
+      <tr><td><code>app.dispatch.offer-count</code></td><td>3</td><td>Mechanics offered a normal job (5 for urgent)</td></tr>
+      <tr><td><code>app.dispatch.offer-timeout-sec</code></td><td>20</td><td>How long an offer round waits; also the sweep interval</td></tr>
+      <tr><td><code>app.dispatch.max-attempts</code></td><td>3</td><td>Attempts before escalation</td></tr>
+      <tr><td><code>app.dispatch.worker-threads</code></td><td>4</td><td>Dispatch worker pool size</td></tr>
+      <tr><td><code>app.heartbeat.interval-sec</code> / <code>timeout-sec</code></td><td>5 / 15</td><td>Reaper sweep interval and silence timeout</td></tr>
+      <tr><td><code>app.ai.provider</code></td><td>stub</td><td>Switch to <code>gemini</code> and set <code>app.gemini.api-key</code> for the live model</td></tr>
+      <tr><td><code>app.jwt.secret</code>, <code>app.jwt.expiry-hours</code></td><td>local file, 24</td><td>Signing key (git-ignored) and token lifetime</td></tr>
+      <tr><td><code>app.tcp.port</code></td><td>9090</td><td>Reserved, but no TCP server exists in the code</td></tr>
+      <tr><td><code>spring.datasource.url</code></td><td>H2 file</td><td>Default database. MySQL or MariaDB is selected by overriding in <code>application-local.properties</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============================================================ -->
+  <h2 id="weak">16. Know these before sir asks</h2>
+  <p class="small">I found these by reading the code. I did not exploit or run any of them, so treat the security ones as &ldquo;confirmed in the code, not demonstrated&rdquo;.</p>
+
+  <div class="risk"><strong>1. The password-reset response contains the code.</strong> <code>PasswordResetService.initiateReset</code> puts the 6-digit code in the response as <code>codeHint</code> (the comment says &ldquo;for immediate testing and presentation&rdquo;).
+    Anyone who knows an account&rsquo;s email can request a reset, read the code from the response and set a new password. The email step is then pointless. Remove <code>codeHint</code> before any real use. Related: the same service says &ldquo;No account found with that email address&rdquo; (reveals which emails exist), has no limit on wrong-code attempts (a 6-digit code has 1,000,000 possibilities) and stores the code in plain text.</div>
+  <div class="risk"><strong>2. STOMP subscriptions are not authorised.</strong> The interceptor checks the token on <code>CONNECT</code> only. Any logged-in user can subscribe to <code>/topic/request/{id}</code> and receive that request&rsquo;s status and the mechanic&rsquo;s live coordinates, and ids are sequential (<code>IDENTITY</code>). <code>/topic/admin</code> is also open to any connected user.</div>
+  <div class="risk"><strong>3. The H2 console is exposed.</strong> <code>spring.h2.console.enabled=true</code> in <code>application.properties</code> and <code>/h2-console/**</code> is <code>permitAll()</code> in <code>SecurityConfig</code>. Turn it off outside development.</div>
+  <div class="note"><strong>4. The lock is per JVM.</strong> A <code>ReentrantLock</code> only works inside one server process. With two instances behind a load balancer, only the <code>@Version</code> check would protect the race. A <code>@Lock(PESSIMISTIC_WRITE)</code> query (<code>findByIdForUpdate</code>) exists but is not used. The <code>locks</code> map also never removes entries, so it grows by one lock per request id for the life of the process.</div>
+  <div class="note"><strong>5. Priority only exists with photos.</strong> Severity is set only by the AI step, otherwise every request is MEDIUM, so the queue is effectively first-in first-out, and the 5-offer and 10 km urgent rules apply only to triaged requests.</div>
+  <div class="note"><strong>6. The race test is a service-level test.</strong> It does not go through HTTP, does not use MariaDB, and 122 tests do not include controller, security or WebSocket tests.</div>
+  <div class="note"><strong>7. The safe-mode flag cannot be flipped.</strong> <code>AssignmentService.safeMode</code> exists, but nothing calls <code>setSafeMode</code>, so the &ldquo;unsafe mode&rdquo; comparison demo is not available.</div>
+  <div class="note"><strong>8. No index on the hot columns.</strong> The matching query filters on <code>currentLat</code> and <code>currentLng</code>, and sweeps filter on <code>status</code>, but no <code>@Index</code> is declared on those columns. This is fine at demo size, and it means the claim &ldquo;an index can use the bounding box&rdquo; is true in principle, not in this schema.</div>
+  <div class="note"><strong>9. Smaller points.</strong> <code>GET /api/auth/me</code> is under the public <code>/api/auth/**</code> rule and dereferences the principal, so a missing or invalid token probably gives a 500, not a 401 (I have not run it). JWTs cannot be revoked and logout is client-side only. The HTTPS connector falls back to the keystore password <code>roadguard</code> if none is configured.
+    <code>gemini-3.6-flash</code> in <code>application.properties</code> is a model name I cannot confirm exists; check it before enabling the live AI. The default database is H2; the docs describe MariaDB, so tell sir which one you actually run.</div>
+
+  <h2 id="nb">17. Not built</h2>
+  <ul>
+    <li><strong>Raw TCP gateway on port 9090.</strong> The property <code>app.tcp.port=9090</code> exists, but there is no <code>ServerSocket</code> in the code.</li>
+    <li><strong>Fleet simulator</strong> (to demo many mechanics without many phones).</li>
+    <li><strong>Admin API and dashboard.</strong> <code>/api/admin/**</code> is protected by a role rule, but no endpoint is behind it.</li>
+    <li><strong>Unsafe-mode toggle</strong> (see weak point 7), <strong>ratings flow</strong> and <strong>event log replay</strong> (entities and tables exist, nothing uses them).</li>
+  </ul>
+
+  <h2 id="close">18. How I finish</h2>
+  <div class="say">
+    <p>To summarise, sir: a request enters through the REST API, is queued by priority, matched by skill and distance, offered to several mechanics at once, and <strong>exactly one wins</strong> because of the per-request lock and the committed transaction.
+      If a mechanic disappears or nobody accepts, scheduled jobs release, widen or escalate the request. Everything is stored in the database, protected by JWT and BCrypt, and pushed live over WebSocket. 122 automated tests cover the engine.</p>
+    <p>I know the limits: the TCP gateway, fleet simulator, admin dashboard and ratings are not built, and some security points need hardening before real use. Thank you, sir.</p>
+  </div>
+
+  <div class="note"><strong>One thing to check before the presentation.</strong> In the Git history of this repository, every commit is under the author names &ldquo;Ifty&rdquo; and &ldquo;Iftakhar Majumder&rdquo;, including the frontend files.
+    Be ready to explain this if your teacher checks GitHub. Only say what is true.</div>
+
+  <!-- ============================================================ -->
+  <h2 id="qna">19. Possible questions and answers</h2>
+  <p class="small">Answers are written to be said in your own words. A <span class="hand">can hand to Sakib</span> tag means the real answer is on the frontend side.</p>
+
+  <h3>A. Project and architecture</h3>
+  <details><summary>1. What is your part in the project?</summary>
+    <p>The backend engine: dispatch, matching, the accept race, recovery, the state machine, persistence, security, real-time push, the AI triage service, the REST API and the automated tests.</p></details>
+  <details><summary>2. What architecture does the backend use?</summary>
+    <p>A layered architecture on Spring Boot: controllers (HTTP and validation), services (business rules and transactions), repositories (Spring Data JPA) and entities. Security and configuration sit alongside. The frontend talks to it through a REST API and a WebSocket.</p></details>
+  <details><summary>3. Why Spring Boot?</summary>
+    <p>It gives dependency injection, JPA, security, WebSocket and scheduling in one consistent framework, so I could spend the time on the dispatch and concurrency logic instead of plumbing.</p></details>
+  <details><summary>4. Why DTO records and not returning entities?</summary>
+    <p>Entities have lazy associations and internal fields. With <code>open-in-view=false</code>, serialising them outside a transaction would fail, and it would expose fields clients should not see. Records give a stable, minimal contract and are immutable.</p></details>
+  <details><summary>5. Which database do you use?</summary>
+    <p>The default configuration is H2 in file mode for development. The MySQL and MariaDB drivers are included, and we select them by overriding the datasource in <code>application-local.properties</code>. <strong>Say which one you actually run in the demo.</strong> The tests use in-memory H2.</p></details>
+
+  <h3>B. Dispatch and matching</h3>
+  <details><summary>6. Why a queue and a worker pool?</summary>
+    <p>It is a producer&ndash;consumer design. The HTTP thread only saves the request and puts its id on the queue, so the driver gets an instant response. Four worker threads do the dispatch work in the background, and the number is configurable.</p></details>
+  <details><summary>7. Why a priority queue?</summary>
+    <p>So a more serious job is dispatched before a minor one. <code>DispatchTask</code> compares severity first and then an <code>AtomicLong</code> sequence number, so equal severities are first-in first-out. <strong>Be honest:</strong> severity only comes from the AI step, so without a photo every request is MEDIUM and the queue behaves as FIFO.</p></details>
+  <details><summary>8. Why enqueue after the transaction commits?</summary>
+    <p>If I enqueued inside the transaction, a worker could take the id before the row is visible to other transactions and find nothing. <code>TransactionSynchronization.afterCommit()</code> guarantees the data is committed first.</p></details>
+  <details><summary>9. How do you choose which mechanics get the offer?</summary>
+    <p>A bounding-box query in the database for online mechanics with the right skill (or GENERAL), then exact Haversine distance in Java to drop those outside the radius, then ranking. Specialists are preferred, and generalists are only used if there is no specialist in range. The top 3 get the offer, or 5 for an urgent job.</p></details>
+  <details><summary>10. Explain the ranking formula.</summary>
+    <p><code>score = 0.7 &times; (distance / radius) + 0.3 &times; (1 &minus; rating / 5)</code>, lower is better. Distance counts more than rating. An unrated mechanic counts as 3.5 stars so a newcomer is not buried. Ties go to the lower profile id so the order is stable.</p></details>
+  <details><summary>11. Why a bounding box before Haversine?</summary>
+    <p>The box is a plain range comparison on two columns, which is cheap and can use an index, whereas Haversine needs trigonometry for every row. The box is a square and the search area is a circle, so the Haversine pass removes the corners. <strong>Honest point:</strong> I have not declared an index on those columns, so at the moment it is cheap but not indexed.</p></details>
+  <details><summary>12. Why not use a routing API for distance?</summary>
+    <p>That would be a network call per candidate inside the dispatch path, slow and possibly paid. Straight-line distance is enough for ranking. The real road route is fetched only in the browser, for the single mechanic who accepts.</p></details>
+  <details><summary>13. What is the offer token for?</summary>
+    <p>Each offer round gets a new random UUID. A mechanic must send the current token to accept. A mechanic with a stale screen from an earlier round gets <code>OFFER_EXPIRED</code> instead of taking a job that has moved on.</p></details>
+
+  <h3>C. Concurrency (the accept race)</h3>
+  <details><summary>14. What is the race condition here?</summary>
+    <p>Several mechanics get the same offer. If they all press Accept at once, a naive &ldquo;check status, then assign&rdquo; could let two threads both see <code>OFFERED</code> and both assign. That is a <em>check-then-act</em> race. Exactly one must win.</p></details>
+  <details><summary>15. How do you make exactly one win?</summary>
+    <p>A fair <code>ReentrantLock</code> per request id serialises every accept for that request. Inside the lock I run one database transaction that checks the state, assigns the mechanic and marks the others as taken. The first thread to get the lock wins; later threads see the request already assigned and get <code>ALREADY_TAKEN</code>.</p></details>
+  <details><summary>16. Why a lock per request and not <code>synchronized</code>?</summary>
+    <p>A <code>synchronized</code> method (or one global lock) would make every breakdown in the system wait for every other. A per-request lock means two different jobs never block each other. <code>ReentrantLock(true)</code> also gives fairness, which <code>synchronized</code> does not.</p></details>
+  <details><summary>17. Why <code>TransactionTemplate</code> and not <code>@Transactional</code>?</summary>
+    <p>With <code>@Transactional</code> on the method, the commit happens when Spring&rsquo;s proxy returns, which is after the lock was already released. A second thread could then read stale data. <code>TransactionTemplate</code> makes the transaction commit inside the lock, before it is released.</p></details>
+  <details><summary>18. If you have a lock, why also a version column?</summary>
+    <p>It is a second line of defence. <code>@Version</code> is optimistic locking: if two transactions read the same row and both try to save, the second fails with <code>OptimisticLockingFailureException</code>, which I turn into <code>ALREADY_TAKEN</code>. It also covers any code path that forgets the lock.</p></details>
+  <details><summary>19. Why not rely on the database alone?</summary>
+    <p>Then losers would only learn they lost by catching an exception after doing the work. The lock makes the normal path clean and cheap, and the version check is the safety net.</p></details>
+  <details><summary>20. Does your lock work with several servers?</summary>
+    <p><strong>No.</strong> A <code>ReentrantLock</code> only exists inside one JVM, so it protects a single-instance deployment. With several instances the <code>@Version</code> check would be the only guard. To scale out I would use a database row lock (a <code>PESSIMISTIC_WRITE</code> query already exists in the repository but is unused) or a distributed lock. The <code>locks</code> map also never removes old entries.</p></details>
+  <details><summary>21. How did you test the race?</summary>
+    <p><code>AcceptRaceTest</code> creates 50 mechanics and one offered request, starts 50 threads that wait on a <code>CountDownLatch</code>, releases them together, and asserts one <code>ACCEPTED</code> and 49 <code>ALREADY_TAKEN</code>. It repeats 25 times, so 1,250 accepts. It calls the service directly on in-memory H2, not through HTTP.</p></details>
+  <details><summary>22. What guards run inside an accept?</summary>
+    <p>Request exists, status is OFFERED or REASSIGNING, nobody assigned yet, token matches, the mechanic was offered the job, the state machine allows ACCEPTED, and the mechanic is ONLINE. Each failure returns a specific <code>AcceptOutcome</code>.</p></details>
+
+  <h3>D. State machine and persistence</h3>
+  <details><summary>23. How do you enforce legal status changes?</summary>
+    <p>An <code>EnumMap</code> from each status to an <code>EnumSet</code> of allowed next statuses. Every service calls <code>canTransitionTo()</code> before changing state, so illegal moves are refused on the server, whatever the client sends.</p></details>
+  <details><summary>24. Why <code>EnumMap</code> and <code>EnumSet</code>?</summary>
+    <p>They are backed by arrays and bit sets indexed by the enum ordinal, so they are fast and compact, and iteration follows the declaration order.</p></details>
+  <details><summary>25. What does <code>open-in-view=false</code> do?</summary>
+    <p>It stops Hibernate keeping a session open for the whole web request. Lazy associations can then only be read inside a transaction, which avoids hidden database queries in the view layer and long-held connections. The cost is that DTOs must be built inside transactions.</p></details>
+  <details><summary>26. Why are shop and SOS images stored as files?</summary>
+    <p>Binary data in rows makes backups large and competes for database memory. The database keeps only a filename. The trade-off is that a file and its row can get out of step, so I delete the old file when a photo is replaced.</p></details>
+  <details><summary>27. What is <code>@ElementCollection</code> used for?</summary>
+    <p>For small sets of simple values without their own entity: the mechanic&rsquo;s skills and the set of mechanic ids an offer round was sent to. They are stored in their own tables and loaded eagerly because they are small.</p></details>
+  <details><summary>28. Some tables are unused. Why?</summary>
+    <p><code>ratings</code>, <code>event_log</code> and <code>location_updates</code> exist as entities for features we planned (ratings, event replay, location history) but no service or endpoint uses them yet.</p></details>
+
+  <h3>E. Recovery</h3>
+  <details><summary>29. What if a mechanic&rsquo;s phone dies mid-job?</summary>
+    <p>The browser sends a heartbeat or location every 5 seconds. A scheduled reaper runs every 5 seconds and finds mechanics silent for more than 15 seconds. It marks them offline, then releases their jobs to <code>REASSIGNING</code> and re-queues them for dispatch.</p></details>
+  <details><summary>30. Why mark the mechanic offline <em>before</em> releasing their jobs?</summary>
+    <p>If I released the jobs first, there would be a window where a job is attached to a mechanic who is already known to be gone, and the mechanic could even accept again. Offline first closes that window.</p></details>
+  <details><summary>31. What if nobody accepts?</summary>
+    <p>After 20 seconds the timeout job expires the round: unanswered offers are marked <code>TIMEOUT</code>, the radius doubles up to 25 km, and the request is dispatched again. After more than 3 attempts it becomes <code>ESCALATED</code>. With the defaults that is 5, 10, 20, 25 km, then escalated.</p></details>
+  <details><summary>32. What if nobody is in range at all?</summary>
+    <p>Such a request never reaches <code>OFFERED</code>, so the offer timeout alone would not catch it. A separate path (<code>retryStranded</code>) widens requests that are stuck in <code>SEARCHING</code> or <code>REASSIGNING</code> on the same ladder.</p></details>
+  <details><summary>33. What happens when a mechanic comes back online?</summary>
+    <p>Giving up was right when nobody was available, but a mechanic coming on duty is new information. So an <code>afterCommit</code> hook revives recently escalated requests (created within 30 minutes), resets their attempts, keeps the widened radius, and re-queues active searches.</p></details>
+  <details><summary>34. What if the server restarts? The queue is in memory.</summary>
+    <p>The queue is lost, but all request state is in the database. The 20-second sweep re-enqueues every <code>SEARCHING</code> and <code>REASSIGNING</code> request, and <code>OFFERED</code> requests are found by a query. Duplicates are harmless because <code>broadcast</code> skips anything not in a dispatchable state.</p></details>
+
+  <h3>F. Security</h3>
+  <details><summary>35. How does authentication work?</summary>
+    <p>The user logs in and receives a signed JWT. Each request sends it as <code>Authorization: Bearer</code>. <code>JwtAuthenticationFilter</code> validates it, loads the user from the database and sets the security context. The server keeps no session (<code>STATELESS</code>).</p></details>
+  <details><summary>36. How are passwords stored?</summary>
+    <p>Hashed with BCrypt (a slow, salted hash) through Spring&rsquo;s <code>BCryptPasswordEncoder</code>. Plain passwords are never stored. Login returns the same error for a wrong email and a wrong password.</p></details>
+  <details><summary>37. Why is CSRF disabled?</summary>
+    <p>CSRF attacks rely on the browser automatically sending a cookie. This API uses a Bearer token that the page adds itself, and no session cookie, so the classic CSRF attack does not apply. The trade-off is that the token lives in the browser&rsquo;s local storage, which depends on the frontend preventing XSS.</p></details>
+  <details><summary>38. How do you control who can do what?</summary>
+    <p>Two layers. URL rules in <code>SecurityConfig</code> (<code>/api/mechanic/**</code> needs the mechanic role, <code>/api/admin/**</code> needs admin). Then service-level checks: only a driver can send or cancel an SOS, only a mechanic can accept, and <code>canView</code> allows only the driver, the assigned mechanic or an admin to read a request.</p></details>
+  <details><summary>39. Can someone register as an admin?</summary>
+    <p>No. <code>register</code> rejects the ADMIN role. The first admin is created at startup by <code>AdminSeeder</code> from the git-ignored local properties.</p></details>
+  <details><summary>40. How does the WebSocket know who is connected?</summary>
+    <p>A channel interceptor reads the <code>Authorization</code> header in the STOMP CONNECT frame, validates the JWT, and sets the user principal. A missing or bad token refuses the connection. The principal name is the username, which is how <code>convertAndSendToUser</code> targets one user.</p></details>
+  <details><summary>41. Is the password reset secure?</summary>
+    <p><strong>Not as it stands.</strong> The code is generated with <code>SecureRandom</code>, expires in 15 minutes and is single-use, which is good. But the response also returns the code (<code>codeHint</code>, there for testing and presentation), so anyone with an email address could reset that account. It also reveals which emails exist and has no limit on wrong guesses. I would remove <code>codeHint</code>, return a generic message, and limit attempts before real use.</p></details>
+  <details><summary>42. Are WebSocket topics protected?</summary>
+    <p>Only the connection is authenticated. I do not authorise individual subscriptions, so a logged-in user who guesses a request id could subscribe to <code>/topic/request/{id}</code>. The fix is a <code>SUBSCRIBE</code> interceptor that checks the user may view that request.</p></details>
+  <details><summary>43. Why is the H2 console open?</summary>
+    <p>It was kept for development convenience. It should be disabled for anything but local use, because it exposes the database.</p></details>
+
+  <h3>G. AI, API and tests</h3>
+  <details><summary>44. How does the AI triage work?</summary>
+    <p>The photo and the note are sent to the Gemini REST API with a prompt asking for strict JSON (fault category, specialization, severity, confidence, guidance, parts). The answer is parsed defensively and used to set the required specialization, severity and search radius. The call retries on 429 and 5xx and has timeouts.</p></details>
+  <details><summary>45. What if the AI fails or gives garbage?</summary>
+    <p>Any exception, timeout or unreadable answer returns a fallback built from the issue type the driver picked, with severity MEDIUM and a generic safety tip. An unknown enum value only replaces that one field. A request whose photo never arrives is moved on after 30 seconds. The AI can never block a rescue.</p></details>
+  <details><summary>46. How accurate is the AI?</summary>
+    <p>We have not measured its accuracy, so I cannot give a number. The default provider setting is <code>stub</code>, so unless a Gemini key is configured the app uses the fallback. Check which mode your demo is in before you say anything about it.</p></details>
+  <details><summary>47. Why three phases in <code>attachPhoto</code>?</summary>
+    <p>The AI call is slow and goes over the network. If it ran inside a transaction it would hold a database connection for seconds. So I validate in a short transaction, call the AI outside any transaction, then write the result in a second short transaction.</p></details>
+  <details><summary>48. How do you validate input?</summary>
+    <p>Bean Validation annotations on the request records, enforced by <code>@Valid</code> in the controllers: not-null, size limits, latitude and longitude ranges, email format, a phone-number pattern. A failure becomes a 400 with the first field error. File uploads are limited to 5 MB and JPG, PNG or WEBP, and paths are normalised so a file cannot escape the uploads folder.</p></details>
+  <details><summary>49. How are errors returned to the client?</summary>
+    <p>One <code>@RestControllerAdvice</code> maps exceptions to a JSON body <code>{status, error, message}</code>: 400 for bad input, 401 for bad credentials, 403 for access denied, 409 for conflicts. A lost accept returns 409 with <code>won: false</code>.</p></details>
+  <details><summary>50. What do your 122 tests cover, and what do they miss?</summary>
+    <p>They are integration tests on the real Spring context with in-memory H2: the accept race, heartbeat recovery, timeouts and escalation, revival, matching, lifecycle rules, skills, AI parsing and triage dispatch. They do <strong>not</strong> test controllers over HTTP, security rules, WebSocket messages or MariaDB.</p></details>
+
+  <h3>H. Hard questions</h3>
+  <details><summary>51. What is not finished?</summary>
+    <p>The raw TCP gateway (the port is configured but no server exists), the fleet simulator, the admin API and dashboard, the unsafe-mode toggle, the ratings flow and event replay. Some security points also need hardening: the reset code in the response, subscription authorisation and the H2 console.</p></details>
+  <details><summary>52. How would you scale this to many servers?</summary>
+    <p>Replace the in-JVM lock with a database row lock or a distributed lock, move the dispatch queue to a shared broker, use an external message broker for WebSocket instead of the in-memory simple broker, add indexes on the location and status columns, and use proper schema migrations instead of <code>ddl-auto=update</code>.</p></details>
+  <details><summary>53. A question about the frontend, maps or screens <span class="hand">can hand to Sakib</span></summary>
+    <p>&ldquo;Sir, that part is Sakib&rsquo;s, and he can explain it better. From my side, I provide the REST endpoints and the WebSocket messages his pages use.&rdquo;</p></details>
+  <details><summary>54. Why are all the commits under your name?</summary>
+    <p><strong>Answer with the truth.</strong> The repository shows your name as author on the frontend files too. If it is true, explain it simply, for example that the work was committed from one account or one computer. I cannot see who wrote each file, so do not say anything you cannot stand behind.</p></details>
+
+  <p class="small" style="margin-top:24px">Line counts from <code>wc -l</code> on <code>src/main/java</code>. Descriptions come from reading the code and the project documentation. I ran the test suite (122 tests, all passing) but I did not run the server or try the security weak points, so the &ldquo;Know these&rdquo; section is based on the code only.</p>
+</div>
+</body>
+</html>
