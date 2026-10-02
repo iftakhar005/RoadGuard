@@ -49,8 +49,8 @@ toggle, ratings, event replay. Browser GPS stops when the screen locks; a
 native app would use the same API. AI triage accuracy has not been measured.
 
 ## Who says what
-- Ifty: sections 3 (engine), 4, and the race test
-- Sakib: sections 1, 2, 5 (demo), and the UI/real-time parts of 3
+- Ifty (about 60%): architecture, matching, the accept race, recovery, tests, AI failure handling
+- Sakib (about 40%): the pitch, the driver and mechanic UI, maps and real-time, the photo flow, driving the demo
 - Both: be able to summarise the other's half in one sentence
 
 ## Numbers you can quote

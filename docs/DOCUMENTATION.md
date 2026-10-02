@@ -364,6 +364,15 @@ This divides the **system**, so each person owns a coherent area and can answer
 any question inside it. Both should be able to describe the other's half in one
 sentence.
 
+**How the 60/40 is weighted.** Not by line count: the browser side is actually
+the larger codebase (about 7,250 lines of HTML, CSS and JS, against about 4,850
+lines of backend Java and 1,900 of tests). The split weights *depth of
+explanation*: the backend carries the concurrency, security and recovery
+reasoning that a teacher probes hardest, so Ifty takes about 60% of the
+technical questions and Sakib about 40%, plus the live demo. If you prefer to
+weight by code volume, move the triage UI and shops to Ifty; the split below is
+a suggestion, not a measurement.
+
 ### Ifty · The Engine
 
 Owns the backend: concurrency, persistence, security.
@@ -377,7 +386,9 @@ Owns the backend: concurrency, persistence, security.
 | State machine | `RequestStatus.java` | `EnumMap` and `EnumSet`; why transitions are enforced server-side |
 | Persistence | entities and repositories | The schema; version columns; why images are files rather than BLOBs |
 | Security | `SecurityConfig`, `AuthService`, the JWT filter | Stateless JWT; BCrypt; role rules; why secrets are git-ignored |
-| Tests | 9 test classes, 104 tests | How a `CountDownLatch` creates a true race |
+| AI triage (server side) | `AiTriageService.java`, triage part of `RequestService.java`, `VehicleDiagnosis` | Photo goes to the model, strict JSON back, defensive parsing, fallback to the issue type, 429/5xx retries, why the AI can never block a rescue, the 30 s `DIAGNOSING` sweep |
+| Accounts and email | `PasswordResetService.java`, `EmailService.java`, `AuthController` | One-time reset tokens, why they expire |
+| Tests | 12 test classes, 122 tests | How a `CountDownLatch` creates a true race; what `AiTriageTest` and `TriageDispatchTest` cover |
 
 ### Sakib · The Experience
 
@@ -390,8 +401,29 @@ Owns everything the user sees, and the real-time client.
 | Maps and geography UI | `sos-radar.js`, `pin-picker.js`, `route.js`, `job-map.js` | Why circles are drawn in metres rather than pixels; the radar; place search; the OSRM fallback |
 | Real-time client | `live.js` | STOMP over SockJS; authentication on the connect frame; reconnection; why polling remains as a safety net |
 | Shops and skills | `mechanic-shop.js`, `mechanic-skills.js`, `ShopService.java` | Upload validation; the path-traversal guard; why skills are editable |
+| AI triage (client side) | `driver-sos.js`, photo part of `mechanic-console.js` | Photo option on the SOS form, upload after the request is created, the mechanic seeing the photo on the offer card |
 | Design system | `style.css`, `console.css` | The colour language: blue is you, green is a mechanic, orange is a shop, red is the search |
 | The demo | — | Driving the presentation and the backup plan |
+
+### Who presents what tomorrow
+
+| Part | Speaker | Time |
+|------|---------|------|
+| The problem and the one-sentence pitch | Sakib | 1 min |
+| Architecture diagram and stack | Ifty | 1–2 min |
+| One SOS start to finish: matching and the accept race | Ifty | 2 min |
+| AI triage: what it does, and that it falls back safely | Sakib starts (the photo flow), Ifty answers the failure-handling question | 1 min |
+| Recovery: heartbeat, widening radius | Ifty | 1–2 min |
+| Live demo | Sakib drives, Ifty runs `AcceptRaceTest` | 3–5 min |
+| Limits and what is not built | Ifty | 1 min |
+| Questions | whoever owns the area (tables above) | |
+
+### Work not covered by either half
+
+These are not built, so nobody owns them yet: the TCP gateway, the fleet
+simulator, the admin dashboard, the unsafe-mode toggle, ratings, and event
+replay. Agree tonight who says "not built" for each, so the answer is the same
+from both of you.
 
 ### The seam between the halves
 
