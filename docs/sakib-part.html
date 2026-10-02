@@ -52,10 +52,19 @@
   tr:last-child td { border-bottom: 0; }
   td.n, th.n { white-space: nowrap; color: var(--muted); text-align: right; }
 
+  h3 { font-size: 1.02rem; margin: 26px 0 6px; color: var(--accent); }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  details[open] summary { margin-bottom: 6px; color: var(--accent); }
+  details p { margin: 6px 0; }
+  .hand { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; padding: 1px 8px; border-radius: 999px;
+    background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn); margin-left: 6px; vertical-align: middle; }
+
   @media print {
     body { background: #fff; color: #000; font-size: 11pt; }
     nav { display: none; }
-    .say, table { break-inside: avoid; }
+    .say, table, details { break-inside: avoid; }
+    details > * { display: block; }
   }
 </style>
 </head>
@@ -63,7 +72,7 @@
 <div class="wrap">
 
   <h1>Sakib: My Part of RoadGuard</h1>
-  <p class="sub">Taken from section 8 of <code>docs/DOCUMENTATION.md</code> (&ldquo;Sakib &middot; The Experience&rdquo;) &middot; about 40% of the project, plus the live demo</p>
+  <p class="sub">Taken from section 8 of <code>docs/DOCUMENTATION.md</code> (&ldquo;Sakib &middot; The Experience&rdquo;) &middot;</p>
 
   <nav>
     <a href="#intro">Opening</a>
@@ -78,6 +87,7 @@
     <a href="#api">API</a>
     <a href="#demo">Demo</a>
     <a href="#close">Closing</a>
+    <a href="#qna">Q&amp;A</a>
   </nav>
 
   <h2 id="intro" style="border-top:0">1. How I start</h2>
@@ -88,12 +98,11 @@
     <p>My friend Ifty did the backend: the dispatch engine, the matching, the rule that only one mechanic can win a job, the security and the tests.
       Our two parts meet at the <strong>REST API</strong> and the <strong>WebSocket</strong>. He provides the endpoints, and my pages call them.</p>
     <p>I will now go through my part area by area, and say what each file is for.</p>
+
+    <p>Sir, in RoadGuard I did the frontend, which is everything the user sees: the driver screen, the mechanic screen and the sign-in page. I also did the maps, which show the pin, the search circle, the road route and the shops, and the live connection that updates the screens without a refresh. I did the shop and skills part too, and the photo step of the AI fault check. My pages talk to the backend through the REST API and the WebSocket that my friend Ifty built. I will also run the live demo.</p>
   </div>
 
-  <div class="note"><strong>About the API.</strong> The docs give Sakib the browser side, the shop service on the server (<code>ShopService.java</code>) and the use of the API.
-    The API controllers themselves are listed under Ifty&rsquo;s backend. So say &ldquo;my pages use the API&rdquo;, not &ldquo;I wrote the API&rdquo;, unless you really did write the controllers.
-    If you did, tell me and I will add them.</div>
-
+  
   <h2 id="driver">2. The driver experience</h2>
   <div class="say">
     <p>First, the driver side. A driver opens one page, sees a map, drops a pin where they are, says what the problem is, and presses <em>Send SOS</em>.
@@ -241,6 +250,70 @@
   <div class="note"><strong>One thing to check before the presentation.</strong> In the Git history of this repository, all commits are under the author names &ldquo;Ifty&rdquo; and &ldquo;Iftakhar Majumder&rdquo;,
     including the frontend files. If your teacher checks GitHub, be ready to explain this, for example that you both worked from one account or one computer.
     I cannot see who actually wrote each file, so only say what is true.</div>
+
+
+  <h2 id="qna">13. Possible questions and answers</h2>
+  <p class="small">Answers are written to be said in your own words. A <span class="hand">can hand to Ifty</span> tag means the real answer is on the backend side, so it is fine to say &ldquo;Ifty can explain that&rdquo;.</p>
+
+  <h3>A. About my part and the project</h3>
+  <details><summary>1. What is your part in the project?</summary><p>Sir, I did the frontend: everything the user sees. That is the driver screen, the mechanic screen, the sign-in page, the maps, the live connection that updates the screens, the shop and skills pages, and the photo step of the AI check. I also run the demo. Ifty did the backend engine.</p></details>
+  <details><summary>2. Which technologies did you use?</summary><p>HTML, CSS and plain JavaScript. For maps I used Leaflet with OpenStreetMap. For the live connection I used SockJS and STOMP over a WebSocket. For routes I used the OSRM service, and for place search I used Nominatim. There is no framework and no build step.</p></details>
+  <details><summary>3. Why did you not use React or another framework?</summary><p>We have only a few pages and simple screens, so plain JavaScript was enough, and there is no build step to set up. It is also easier to explain file by file. The cost is that I update the page by hand. For a bigger product I would consider a framework.</p></details>
+  <details><summary>4. How does the frontend talk to the backend?</summary><p>Two ways. For normal actions, such as creating a request or accepting an offer, my pages send REST requests with JSON using the browser&rsquo;s <code>fetch</code>, and they attach the login token. For updates that should arrive on their own, my pages keep a WebSocket open and listen.</p></details>
+  <details><summary>5. Where does your part end and Ifty&rsquo;s part begin?</summary><p>My pages show information and send the user&rsquo;s actions. Decisions are made on the server by Ifty&rsquo;s code: who is matched, who wins a job, which status changes are allowed, and who is allowed to see what. The two parts meet at the REST API and the WebSocket.</p></details>
+
+  <h3>B. The driver side</h3>
+  <details><summary>6. What happens when the driver presses Send SOS?</summary><p>The page sends the problem type, the pin position and the optional note to the server. Then it switches the same panel to a status view, which shows the request number and a plain-language status such as &ldquo;Looking for a mechanic&rdquo;. If there is a photo, it is uploaded as a second step. Finding the mechanics is done by the server.</p></details>
+  <details><summary>7. What if the driver refreshes the page in the middle of a request?</summary><p>When the page loads, it asks the server for the driver&rsquo;s requests. If one is still open, the page shows its status again and carries on, so the request is not lost.</p></details>
+  <details><summary>8. How does the driver&rsquo;s screen change without refreshing?</summary><p>The server pushes a message over the WebSocket when the status changes or when the mechanic moves. The page then updates the status text and the mechanic&rsquo;s marker on the map. As a backup, the page also checks the server every 15 seconds.</p></details>
+  <details><summary>9. Can the driver cancel?</summary><p>Yes. A <em>Cancel request</em> button is shown until the request is completed or cancelled. The page sends the cancel to the server, and the server decides whether it is allowed.</p></details>
+
+  <h3>C. The mechanic side</h3>
+  <details><summary>10. How does a mechanic receive a job offer?</summary><p>Offers arrive through the live connection, and the page also reloads them every 15 seconds. Each offer is shown as a card with the problem, how serious it is, an optional note, the driver&rsquo;s photo if there is one, and <em>Accept</em> and <em>Decline</em> buttons.</p></details>
+  <details><summary>11. What if two mechanics press Accept at the same moment? <span class="hand">can hand to Ifty</span></summary><p>My page just sends the Accept. The server decides who wins, so only one mechanic gets the job. The other mechanic gets a reply and my page shows &ldquo;Someone got there first&rdquo;. The page also disables the button while the request is being sent, so one mechanic cannot send it twice by tapping fast. Ifty can explain how the server decides.</p></details>
+  <details><summary>12. How does the system know a mechanic is still online? <span class="hand">can hand to Ifty</span></summary><p>While the mechanic is on duty, the page sends the location, or a simple &ldquo;I am here&rdquo; signal, to the server every 5 seconds. According to our documentation, if the server hears nothing for 15 seconds it treats the mechanic as gone and gives the job to someone else. That rule is on the server side.</p></details>
+  <details><summary>13. How do you get the mechanic&rsquo;s location?</summary><p>From the browser&rsquo;s location feature, the same one a phone uses. I ignore a reading if it is not accurate enough (worse than 120 metres), and I ignore tiny movements under 15 metres, so a parked phone does not make the marker jump around. If the user refuses permission, or the page is not on HTTPS or localhost, the mechanic can place the pin by hand.</p></details>
+
+  <h3>D. Maps</h3>
+  <details><summary>14. Why Leaflet and OpenStreetMap, not Google Maps?</summary><p>They are free and need no key or billing account. Also, a map only shows where things are. Choosing which mechanic gets the job is our own logic, so a paid map would not change the main idea of the project.</p></details>
+  <details><summary>15. How do you get the route and the time?</summary><p>My page asks the OSRM routing service for a driving route between the mechanic and the driver. It returns the road line, the distance and the time, and I draw the line on the map and show the distance and time.</p></details>
+  <details><summary>16. What if the route service does not work?</summary><p>Then the page draws a straight dashed line instead and says it is a direct line, with a rough time based on an average city speed. So it never shows a guess as if it were a real road route. If there is no internet at all, the maps do not load.</p></details>
+  <details><summary>17. What does the red circle mean?</summary><p>It is the area we are searching for mechanics. When nobody accepts, the server widens the search, and the circle on the screen grows. According to our documentation it goes 5, 10, 20 and up to 25 km, and then the request is escalated. The circle is drawn in real metres, so its size on the ground is correct at every zoom level.</p></details>
+  <details><summary>18. How does place search work?</summary><p>The mechanic types a place name, at least three letters, and the page asks the Nominatim search service. I wait at least 1.1 seconds between searches so we do not overload that free service, and I cancel an older search if a new one starts. If search fails, the mechanic can type the coordinates.</p></details>
+
+  <h3>E. The live connection</h3>
+  <details><summary>19. What is a WebSocket and why use it?</summary><p>It is a connection that stays open, so the server can send a message to the browser at any time. Without it the page would have to keep asking &ldquo;is there anything new?&rdquo;. With it, the mechanic&rsquo;s movement and status changes show up almost immediately.</p></details>
+  <details><summary>20. If you have a WebSocket, why do you also check every 15 seconds?</summary><p>As a safety net. If the connection drops, a message can be missed, and the server does not resend old messages. The 15-second check makes sure the screen becomes correct anyway.</p></details>
+  <details><summary>21. How does the server know who is connected?</summary><p>When my page opens the connection, it sends the user&rsquo;s login token. The server checks the token and refuses the connection if it is missing or not valid.</p></details>
+  <details><summary>22. What happens if the connection drops?</summary><p>The page shows <em>Reconnecting</em> instead of <em>Live</em> and tries again after 3 seconds. The 15-second check keeps the screen updated meanwhile. A weakness: the retry delay is fixed, and a more advanced version would wait longer after each failure.</p></details>
+
+  <h3>F. Shops and skills</h3>
+  <details><summary>23. What can a mechanic save in the shop section?</summary><p>A shop name, a shop type, a phone number, an address, a location on the map and a photo. Drivers see these shops as markers on their map, with a popup showing the name, whether it is open, the skills and the rating.</p></details>
+  <details><summary>24. Why do you check the photo size in the browser and also on the server?</summary><p>The browser check is quick and friendly: the user sees the message at once. But a browser check can be bypassed, so the server checks again. The server only accepts JPG, PNG or WEBP up to 5 MB.</p></details>
+  <details><summary>25. Why can the mechanic edit skills?</summary><p>Skills decide which jobs a mechanic is offered, and a mechanic&rsquo;s skills can change over time. The page saves the selected skills to the server.</p></details>
+  <details><summary>26. Where is the shop photo stored? <span class="hand">can hand to Ifty</span></summary><p>As a file in an uploads folder on the server. The database only keeps the file name. Photos are not stored inside the database because large files make the database heavy to back up. The cost is that a file and its database row can get out of step, so when a photo is replaced the old file is deleted.</p></details>
+
+  <h3>G. The photo step of the AI check</h3>
+  <details><summary>27. How does the photo step work from your side?</summary><p>The driver can add a photo on the SOS form. My page first creates the request, then uploads the photo, and then shows the result: the fault type, how serious it is and a safety tip. The mechanic sees the photo on the offer card.</p></details>
+  <details><summary>28. What if the photo upload fails?</summary><p>The page shows a message that the photo could not be read, and the request continues using the problem the driver picked. The rescue is not blocked by the photo.</p></details>
+  <details><summary>29. How accurate is the AI? <span class="hand">can hand to Ifty</span></summary><p>We have not measured its accuracy, so I cannot give a number. It is only a helper: the driver&rsquo;s chosen problem is the fallback. The default setting in our configuration is a stub, so unless the live AI key is set up, it uses the fallback. Check which mode your demo is running in before you say anything about it.</p></details>
+
+  <h3>H. Login and security</h3>
+  <details><summary>30. How do you keep the user logged in?</summary><p>After login, the server gives a token. My page stores it in the browser and sends it with every request. When the user logs out, or the server rejects the token, the page clears it and goes back to the sign-in page.</p></details>
+  <details><summary>31. Can someone open the mechanic page while logged in as a driver? <span class="hand">can hand to Ifty</span></summary><p>My pages check the role and send the user to the right page, but that is only for convenience, because a user could change things in their own browser. The real protection is on the server, which checks the token and the role on every request. That is Ifty&rsquo;s part.</p></details>
+  <details><summary>32. How do you protect against bad text being shown on a page?</summary><p>Text that comes from users or the server, such as notes, shop names and mechanic names, is converted so that characters like &lt; and &gt; are shown as text and cannot run as code.</p></details>
+  <details><summary>33. Are there any weaknesses in your frontend?</summary><p>Yes, and I know them. The login token is kept in the browser&rsquo;s local storage, which a malicious script could read, so we depend on the text escaping. The escaping helper is copied into three files instead of one. On the admin placeholder page the username is inserted without escaping. We also have no accessibility labels (<code>aria</code>) on the driver and mechanic pages, and there is no dark mode.</p></details>
+
+  <h3>I. Testing, limits and improvements</h3>
+  <details><summary>34. How did you test the frontend?</summary><p>There are no automated frontend tests. The 122 automated tests in the project are all on the backend. <strong>Say here only what you really did</strong>, for example that you tested the screens by hand with a driver window and a mechanic window.</p></details>
+  <details><summary>35. Does it work on a phone?</summary><p>The layout has breakpoints for smaller screens. Location on a phone needs HTTPS, and a browser stops sending location when the screen is locked or the tab is in the background. <strong>Only say you tested it on a phone if you did.</strong></p></details>
+  <details><summary>36. What is not finished?</summary><p>The admin dashboard is only a placeholder, there is no ratings screen, and there is no background location because of the browser limit. On the backend side, the project documentation also lists the raw TCP gateway, the fleet simulator and event replay as not built.</p></details>
+  <details><summary>37. What would you improve with more time?</summary><p>Automated frontend tests, one shared escaping helper, a smarter reconnect delay, accessibility labels, a dark mode, the admin dashboard and the ratings screen. For a larger product I would also consider a framework.</p></details>
+  <details><summary>38. What if the internet fails during the demo?</summary><p>Our pages load the map library, the live-connection libraries and the fonts from the internet, and the map tiles come from OpenStreetMap. Without internet the maps and live updates do not load. That is why I keep a recording and screenshots as a backup.</p></details>
+
+  <h3>J. Team questions</h3>
+  <details><summary>39. Why are all the commits under Ifty&rsquo;s name?</summary><p><strong>Answer with the truth.</strong> In our repository the frontend files also show Ifty&rsquo;s name as the author. If it is true, explain it simply, for example that the work was committed from one account or one computer. I cannot see who wrote each file, so do not say anything you cannot stand behind.</p></details>
+  <details><summary>40. A question about the backend, such as the lock, security or the AI service</summary><p>&ldquo;Sir, that part is Ifty&rsquo;s. He can explain it better. From my side, I know my pages send the request and show the reply.&rdquo; It is better to hand it over than to guess.</p></details>
 
   <p class="small" style="margin-top:24px">Line counts from <code>wc -l</code> on the files in <code>src/main/resources/static</code> and <code>ShopService.java</code>.
     The descriptions come from reading the code. I did not run the app in a browser, so click through each screen once before you present.</p>
