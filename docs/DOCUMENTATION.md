@@ -319,10 +319,13 @@ Owns the backend: concurrency, socket programming, persistence, serialization, s
 | Dispatch & Matching | `DispatchService.java`, `MatchingService.java` | Producer and consumer; priority queue ordered by severity; 0.7 distance + 0.3 rating composite scoring |
 | Recovery | `HeartbeatReaper.java`, `OfferTimeoutService.java` | The 5 s and 15 s rule; why offline is set before jobs are read; widening ladder and DIAGNOSING timeout sweep |
 | Secondary storage & serialization | `EventRecorder.java`, `ReplaySnapshot.java`, `ReplayService.java` | Dual-write: JPA table + `logs/request-{id}.jsonl`; `ObjectOutputStream` binary serialization to `replays/request-{id}.ser`; location sampling throttle (2s) |
+| Nearby mechanics | `NearbyMechanicService.java`, `NearbyMechanicController.java` | Online mechanics only, bounding box then haversine, nearest first; why no account id or phone number is sent |
+| Requests, chat and accounts | `RequestService.java`, `MechanicService.java`, `ChatService.java`, `AuthService.java`, `PasswordResetService.java` | Why the driver's choice decides the trade and the photo only sets urgency; chat persistence and the upload path guard; the six-digit reset code |
+| Startup safety | `DatabaseCheck.java` | Why the app refuses to start on the throwaway H2 database |
 | Driver ratings | `RatingService.java` | Unique constraint protection; atomic score recomputation from ratings table |
 | AI triage | `AiTriageService.java` | Multimodal Gemini Vision API call; strict JSON parsing with markdown stripping; resilient fallback defaults |
 | State machine & Security | `RequestStatus.java`, `SecurityConfig`, `AuthService`, `JwtService` | `EnumMap` and `EnumSet` server-side enforcement; stateless JWT; BCrypt; role RBAC |
-| Tests | 16 test classes, 171 tests | How `CountDownLatch` creates a true race; socket lifecycle tests; serialization roundtrip tests |
+| Tests | 22 test classes, 1,162 tests | How `CountDownLatch` creates a true race; the 1,000-round accept test with 50 threads; socket lifecycle tests; serialization round trips |
 
 ### Person B — 40% · The Experience
 
@@ -335,10 +338,35 @@ Owns everything the user sees, the real-time client, and the presentation.
 | Admin dashboard | `admin.html`, `admin.js` | Overview metric cards; live network map with pins; fleet simulator card (count, start, stop, race trigger, drop winner); unsafe-mode concurrency toggle |
 | Incident replay theater | `replay.html`, `js/replay.js` | Leaflet map animating route trail; timeline scrubber; speed controls (1x, 4x, 16x); live event announcements |
 | Maps and geography UI | `sos-radar.js`, `pin-picker.js`, `route.js`, `job-map.js` | Why circles are drawn in metres rather than pixels; the radar; place search; OSRM routing fallback |
+| Nearby mechanics and shop pins | `driver-map.js` | Polling every 6 s and on pin drag; the legend count; dimmed pins for closed shops; the colour scheme (blue you, green mechanic, orange shop, red search area) |
+| Admin map and fleet card | `admin.js`, `admin.html` | Why the map is measured before it is fitted; green, amber and grey pins; the narrated feed and what the `>>` and `<<` lines mean; per-job winner count |
+| Chat window | `chat.js` | Collapsible card, history on load, no duplicates by message id |
 | Real-time client | `live.js` | STOMP over SockJS; authentication on the connect frame; reconnection; polling fallback |
 | Shops and skills | `mechanic-shop.js`, `mechanic-skills.js`, `ShopService.java` | Upload validation; path-traversal guard; why skills are editable |
 | Design system | `style.css`, `console.css` | Cohesive dark/light palette, status badges, responsive layout |
 | The demo | — | Driving the presentation, terminal commands, and backup plan |
+
+### Honest weighting
+
+By raw lines the backend and tests are about 55 percent of the code and the front end is
+about 45 percent. The 60/40 comes from difficulty, not volume: the accept lock, the sockets,
+the heartbeat recovery and the serialization are the parts a teacher will probe hardest, and
+all of them sit in Person A's half. Person B's half is larger in screens but lighter in theory.
+
+### What each person says tomorrow
+
+**Person A** opens with the engine and shows it: start the fleet, send an SOS with the race on and
+read the feed ("one winner, the others told ALREADY_TAKEN"), switch the lock off and run it again
+("ten mechanics told they won"), then drop the winner and let the heartbeat reassign the job. Then
+`telnet localhost 9090` and type `SANDWICH please`.
+
+**Person B** opens with the user's journey: sign up, report a breakdown with a photo, the AI advice,
+the mechanic accepting and driving over with the route and ETA, the chat, the rating, and the replay.
+Then the admin map and dashboard.
+
+**Both** must be able to answer these in one sentence: why two transports (a browser cannot open a
+raw socket); why the lock and the version column both exist; what happens when a mechanic's phone
+dies; why the driver's choice outranks the photo.
 
 ### The seam between the halves
 
