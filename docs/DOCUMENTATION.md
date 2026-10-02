@@ -41,6 +41,15 @@ exists to make that engine visible.
 | Heartbeat disconnect and auto-reassign | verified live: job released 15 s after silence |
 | Offer timeout and radius escalation | verified live: 5 → 10 → 20 → 25 km, then escalated |
 
+### AI fault triage (built)
+
+The driver can attach a photo to the SOS. The request waits in `DIAGNOSING`
+while `AiTriageService` asks a vision model (Gemini) to name the fault, the
+specialization needed, the severity and some safety guidance, then dispatch
+continues with that result. If the AI is switched off, unreachable or returns
+nonsense, a safe default built from the driver's chosen issue type is used, so
+the AI can never block a rescue. See section 5b.
+
 ### Built beyond the specification
 
 Mechanic shop profiles with photo upload and map markers · editable skills ·
@@ -56,7 +65,6 @@ password show/hide.
 | **Admin dashboard** | `admin.html` is a 99-line placeholder reading "Coming next". No `/api/admin` endpoints exist. |
 | **Unsafe-mode toggle** | `safeMode` already exists in `AssignmentService`; there is simply no way to flip it. |
 | **Ratings** | `Rating` entity exists; no endpoint, no UI, no flow. |
-| **AI fault triage** | The spec's named differentiator. Not started. |
 | **Event log and replay** | `event_log` table exists; nothing reads it. |
 
 **Overall: roughly 70% of the full specification.** The MVP is complete and the
@@ -69,7 +77,7 @@ hardest part, concurrency, is finished and proven.
 2. **Raw TCP gateway** — about 100 lines, closes a named course outcome
 3. **Fleet simulator** speaking that TCP protocol
 4. **Ratings** — entity exists, needs only endpoint and UI
-5. AI triage, then event replay
+5. Event replay
 
 ---
 
@@ -96,7 +104,7 @@ Browser (driver)        Browser (mechanic)       [future: TCP device]
 JPA/Hibernate · MariaDB 10.4 · STOMP over SockJS · Leaflet with OpenStreetMap ·
 OSRM routing · plain HTML/CSS/JS, no framework and no build step.
 
-**13 service classes · 104 passing tests across 9 test classes.**
+**15 service classes · 122 tests across 12 test classes, all passing** (last run 2 Oct 2026).
 
 ---
 
@@ -114,7 +122,8 @@ memory, so a server restart loses nothing.
 | `request_offers` | every offer ever sent, with its outcome | the audit trail of the race |
 | `request_offered_to` | who is in the current offer round | cleared each round |
 | `ratings` | driver's score for a mechanic | entity exists, flow not built |
-| `event_log`, `location_updates`, `vehicle_diagnoses` | reserved for replay and AI | tables exist, unused |
+| `vehicle_diagnoses` | AI triage result per request: fault, specialization, severity, confidence, guidance, photo path | used by triage |
+| `event_log`, `location_updates` | reserved for replay | tables exist, unused |
 | `password_reset_tokens` | one-time reset codes | |
 
 ### Two columns worth explaining in the viva
@@ -214,6 +223,9 @@ winner every time.
 
 ### The lifecycle state machine
 
+(When a photo is attached the request first sits in `DIAGNOSING`, then moves
+to `SEARCHING`; see 5b.)
+
 Legal transitions live in an `EnumMap` of `EnumSet`. Illegal moves are refused
 server-side, so a tampered client cannot drag a job from searching straight to
 completed.
@@ -223,6 +235,36 @@ CREATED -> SEARCHING -> OFFERED -> ACCEPTED -> EN_ROUTE -> ARRIVED -> IN_PROGRES
                |           |           |
           ESCALATED   (no taker)   REASSIGNING -> SEARCHING
 ```
+
+---
+
+## 5b. AI fault triage
+
+1. Driver ticks the photo option and presses **Send SOS**; the request is saved
+   as `DIAGNOSING`, then the photo is uploaded and stored under `uploads/sos/`
+2. `AiTriageService` sends the photo and the driver's note to Gemini and asks
+   for strict JSON: fault category, specialization, severity, confidence,
+   driver guidance, likely parts
+3. The answer is parsed defensively: markdown fences are stripped and unknown
+   enum values fall back to safe ones
+4. A `VehicleDiagnosis` row is saved and the request moves to `SEARCHING` with
+   the AI's specialization and severity, so matching and queue priority use it
+5. The mechanic's offer card shows the driver's photo before accepting
+
+**Design point worth defending: the AI is advisory and can never block a
+rescue.** With `app.ai.provider=stub` (the default), no API key, a timeout, an
+HTTP error or unreadable JSON, `fallbackFor(issueType)` is used: the specialization
+comes from the issue type the driver picked, severity is MEDIUM, confidence 0,
+and the guidance is "Stay in a safe location away from traffic." Calls retry on
+429 and 5xx with a growing delay. A request stuck in `DIAGNOSING` (photo never
+arrives) is moved on to `SEARCHING` by the timeout sweep after 30 s
+(`app.ai.diagnosing-timeout-sec`), using the issue-type fallback.
+
+**Tests:** `AiTriageTest` (11) and `TriageDispatchTest` (7).
+
+**Say honestly:** the live model needs an API key and internet, so for the demo
+either show the stub/fallback path or have a pre-checked photo ready. Do not
+claim accuracy numbers; we have not measured any.
 
 ---
 
@@ -454,5 +496,5 @@ fixing.
 
 ---
 
-*104 tests passing. Every measurement in this document was taken from the running
-system, not estimated.*
+*122 tests passing (re-run on 2 Oct 2026). Measurements of latency and ETA were
+taken earlier from the running system and were not re-measured on that date.*
