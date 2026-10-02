@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sakib: The Experience</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #1b2330; --muted: #5b6678; --line: #e1e5ec;
+    --accent: #0f8a5f; --accent-soft: #e3f5ee; --blue: #1f5fd1; --blue-soft: #e8f0fd;
+    --warn: #b45309; --warn-soft: #fff4e0; --red: #c0392b; --red-soft: #fdecea;
+    --code: #eef1f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161d; --card: #1a202a; --ink: #e8ecf2; --muted: #9aa5b8; --line: #2a3342;
+      --accent: #4fd1a0; --accent-soft: #14302a; --blue: #6ea0ff; --blue-soft: #1b2a45;
+      --warn: #f6ad55; --warn-soft: #3a2b12; --red: #ff8a7a; --red-soft: #3a1c18;
+      --code: #232b38;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 2rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-top: 8px; border-top: 2px solid var(--line); }
+  h3 { font-size: 1.05rem; margin: 22px 0 6px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 6px 22px; padding: 0; }
+  li { margin: 4px 0; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  .small { font-size: .88rem; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; margin: 12px 0; }
+  .hero { border-left: 5px solid var(--accent); font-size: 1.05rem; }
+  code { font: .86em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code);
+    padding: 1px 6px; border-radius: 4px; word-break: break-word; }
+  pre { background: var(--code); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: .85rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; }
+
+  nav { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+    margin: 0 -16px 8px; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
+  nav a { color: var(--accent); text-decoration: none; font-size: .86rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); }
+  nav a:hover { text-decoration: underline; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .stat b { display: block; font-size: 1.5rem; color: var(--accent); line-height: 1.2; }
+  .stat span { font-size: .85rem; color: var(--muted); }
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { background: var(--bg); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+
+  .flow { display: grid; gap: 10px; counter-reset: s; margin: 12px 0; }
+  .step { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 16px 12px 52px; }
+  .step::before { counter-increment: s; content: counter(s); position: absolute; left: 14px; top: 12px;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+  @media (prefers-color-scheme: dark) { .step::before { color: #0b0f14; } }
+  .step b { display: block; }
+  .step .say { color: var(--muted); font-size: .92rem; margin-top: 2px; }
+
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .twocol { grid-template-columns: 1fr; } }
+
+  .note { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+  .note strong { color: var(--warn); }
+  .bad { background: var(--red-soft); border: 1px solid var(--red); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+  .bad strong { color: var(--red); }
+  .ok { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+  .ok strong { color: var(--accent); }
+
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  details[open] summary { margin-bottom: 6px; }
+
+  .tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: 1px 8px; border-radius: 999px;
+    background: var(--blue-soft); color: var(--blue); vertical-align: middle; margin-left: 4px; }
+  .tag.must { background: var(--accent-soft); color: var(--accent); }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 11pt; }
+    nav { display: none; }
+    .card, table, details, .step { break-inside: avoid; }
+    details > * { display: block; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Sakib: The Experience</h1>
+  <p class="sub">RoadGuard &middot; everything the user sees, the real-time client, and the live demo &middot; about 40% of the project</p>
+
+  <nav>
+    <a href="#role">Your role</a>
+    <a href="#script">What to say</a>
+    <a href="#driver">Driver flow</a>
+    <a href="#mechanic">Mechanic flow</a>
+    <a href="#realtime">Real-time</a>
+    <a href="#maps">Maps</a>
+    <a href="#triage">Photo / AI</a>
+    <a href="#shops">Shops &amp; skills</a>
+    <a href="#files">Files</a>
+    <a href="#api">API you use</a>
+    <a href="#demo">Demo</a>
+    <a href="#qa">Questions</a>
+    <a href="#limits">Limits</a>
+  </nav>
+
+  <h2 id="role">1. Your role in one paragraph</h2>
+  <div class="card hero">
+    You own the <strong>browser side</strong> of RoadGuard: the screens a driver and a mechanic actually use, the
+    maps, the live updates that make the screen change without a refresh, and the photo step for AI triage. You also
+    <strong>drive the live demo</strong>. Ifty owns the server; the two halves meet at the REST API and the
+    WebSocket topics, and you consume what Ifty guarantees.
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>~7,250</b><span>lines of HTML, CSS and JS in <code>static/</code></span></div>
+    <div class="stat"><b>3</b><span>role pages: driver, mechanic, admin (placeholder)</span></div>
+    <div class="stat"><b>14</b><span>JavaScript files, no framework, no build step</span></div>
+    <div class="stat"><b>0</b><span>npm packages. Libraries come from CDNs</span></div>
+  </div>
+  <p class="small">Line counts from <code>wc -l</code> over <code>src/main/resources/static</code>. Counts include blank lines and the 2,000+ lines of CSS.</p>
+
+  <div class="note"><strong>Honest scope.</strong> The frontend is plain HTML, CSS and JavaScript with Leaflet for maps and
+    SockJS plus STOMP for WebSocket. There is no React, no bundler. If asked &ldquo;why no framework?&rdquo;: it keeps
+    the project small enough to explain line by line, and the interesting engineering is on the server.</div>
+
+  <h2 id="script">2. What to say: a 2-minute script</h2>
+  <div class="card">
+    <p><strong>Opening (the pitch).</strong> &ldquo;A driver breaks down at night. They press one button, and every
+      qualified mechanic nearby is alerted at the same time. The first to accept gets the job; everyone else is told
+      it is taken.&rdquo;</p>
+    <p><strong>What I built.</strong> &ldquo;Everything the user touches. The driver drops a pin, picks the problem, and
+      optionally attaches a photo. The mechanic sees an offer card, taps accept, and then both screens follow the job
+      live on a map with a real road route and an ETA.&rdquo;</p>
+    <p><strong>The part I am proudest of.</strong> &ldquo;The screen never lies. If the live connection drops, it shows
+      <em>Reconnecting</em> and keeps polling. If the route service is down, it draws a dashed straight line and labels
+      it as a straight line. If the GPS signal is poor, it holds the last good position instead of jumping.&rdquo;</p>
+    <p><strong>Handoff to Ifty.</strong> &ldquo;What happens when I press Accept is Ifty&rsquo;s part: the lock that makes
+      sure exactly one mechanic wins.&rdquo;</p>
+  </div>
+
+  <h2 id="driver">3. The driver experience</h2>
+  <p>Files: <code>driver.html</code>, <code>driver-sos.js</code>, <code>driver-map.js</code>, <code>sos-radar.js</code>.</p>
+
+  <div class="flow">
+    <div class="step"><b>Open the page, find the pin</b>
+      The map starts at a fallback of Dhaka (<code>23.8103, 90.4125</code>) and tries the device GPS. The driver can
+      drag the pin to correct it. <span class="say">Say: &ldquo;Drag the pin to where you are.&rdquo;</span></div>
+    <div class="step"><b>Choose the problem</b>
+      Ten issue types from a dropdown (flat tyre, dead battery, engine, electrical, brakes, out of fuel, overheating,
+      locked out, towing, other) plus an optional note.</div>
+    <div class="step"><b>Optionally attach a photo</b>
+      JPG, PNG or WEBP up to 5 MB, checked in the browser before upload, with a preview. Details in the
+      <a href="#triage">photo section</a>.</div>
+    <div class="step"><b>Press Send SOS</b>
+      <code>POST /api/requests</code> with issue type, coordinates, note and a <code>hasPhoto</code> flag. If there is
+      a photo, it is uploaded as a second call.</div>
+    <div class="step"><b>The red radar appears</b>
+      <code>SosRadar</code> draws a pulsing red circle at the current search radius. When the server widens the
+      search, the circle grows smoothly and the map re-fits. <span class="say">Say: &ldquo;That red circle is the
+      kilometres we are searching right now.&rdquo;</span></div>
+    <div class="step"><b>Status text follows the state machine</b>
+      Twelve states, each with plain-language wording, e.g. <code>OFFERED</code> shows &ldquo;Ringing nearby
+      mechanics&rdquo;, <code>EN_ROUTE</code> shows &ldquo;On the way to you&rdquo;, <code>ESCALATED</code> shows
+      &ldquo;Still looking&rdquo;.</div>
+    <div class="step"><b>The mechanic appears and moves</b>
+      The helper marker glides to each new position, the route is drawn on real roads, and a label shows distance and
+      time. A <em>Cancel request</em> button stays on the status panel until the request is completed or cancelled.</div>
+  </div>
+
+  <h3>If the driver closes the tab</h3>
+  <p>On load, the page calls <code>GET /api/requests/mine</code>. If a live request exists, it resumes the status
+    screen and polling instead of showing the form again. This is why a refresh does not lose the job.</p>
+
+  <h2 id="mechanic">4. The mechanic experience</h2>
+  <p>Files: <code>mechanic.html</code>, <code>mechanic-console.js</code>, <code>job-map.js</code>,
+    <code>pin-picker.js</code> (mechanic-side pin and place search).</p>
+
+  <div class="flow">
+    <div class="step"><b>Go on duty</b>
+      A duty toggle calls <code>POST /api/mechanic/status</code>. Going on duty starts GPS following.</div>
+    <div class="step"><b>Heartbeat every 5 seconds</b>
+      While on duty the page posts the position (or a bare heartbeat if there is no fix yet). This is what lets the
+      server notice a vanished mechanic after 15 seconds. <span class="say">Say: &ldquo;The server knows I am alive
+      because my browser keeps telling it.&rdquo;</span></div>
+    <div class="step"><b>Offer cards arrive</b>
+      Pushed over WebSocket, with a 15-second polling fallback. Each card shows issue, severity and, if the driver
+      sent one, the photo.</div>
+    <div class="step"><b>Accept or decline</b>
+      Accept sends the offer token. The response says whether this mechanic <code>won</code>. A loser sees &ldquo;Someone
+      got there first&rdquo;. Declining is best effort and the card slides away.</div>
+    <div class="step"><b>The job stepper</b>
+      On my way &rarr; Arrived &rarr; Working &rarr; Done. Each tap calls <code>POST /api/requests/{id}/status</code>
+      and the server decides whether the move is legal.</div>
+    <div class="step"><b>Job map</b>
+      <code>JobMap</code> shows the mechanic and the driver with a road route and ETA, re-fetching the route only
+      when needed (see <a href="#maps">Maps</a>).</div>
+  </div>
+
+  <h3>GPS filtering (explain this one well)</h3>
+  <p>The page uses the browser&rsquo;s <code>watchPosition</code> with high accuracy. Each fix goes through two filters:</p>
+  <ul>
+    <li><strong>Accuracy over 120 m is ignored</strong> and the last good position is kept, with a visible &ldquo;Weak signal&rdquo; note.</li>
+    <li><strong>A move under 15 m is treated as jitter</strong> and not saved.</li>
+  </ul>
+  <p>Constants in the code: <code>WORST_ACCURACY_M = 120</code>, <code>JITTER_KM = 0.015</code>. This stops a phone on a dashboard from twitching on the driver&rsquo;s map.</p>
+  <p>If permission is refused, or the page is not on HTTPS or localhost, the page tells the mechanic to place the pin by hand. Browsers only give location to secure contexts, which the code checks with <code>window.isSecureContext</code>.</p>
+
+  <h2 id="realtime">5. The real-time client</h2>
+  <p>File: <code>live.js</code> (89 lines). It wraps SockJS and STOMP in a small module called <code>Live</code>.</p>
+
+  <div class="twocol">
+    <div class="card">
+      <h3 style="margin-top:0">What it does</h3>
+      <ul>
+        <li>Connects to <code>/ws</code> with the JWT in the STOMP <code>CONNECT</code> frame (<code>Authorization: Bearer ...</code>)</li>
+        <li>Subscribes to <code>/user/queue/updates</code> (private messages)</li>
+        <li>Subscribes to extra topics like <code>/topic/request/{id}</code> for a specific job</li>
+        <li>Calls every registered handler for each message; one broken handler cannot stop the others</li>
+        <li>Shows a <em>Live</em> or <em>Reconnecting</em> indicator</li>
+        <li>Retries the connection after 3 seconds if it drops</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Why polling is still there</h3>
+      <ul>
+        <li>Driver page polls every <strong>15 s</strong></li>
+        <li>Mechanic page polls every <strong>15 s</strong></li>
+        <li>Driver map refreshes shops every <strong>30 s</strong></li>
+      </ul>
+      <p class="small">WebSocket gives speed; polling gives safety. If a push is lost or the socket is down, the next poll still corrects the screen.</p>
+    </div>
+  </div>
+
+  <h3>How the driver sees the mechanic move</h3>
+  <ol>
+    <li>The mechanic&rsquo;s page saves a new position to the server.</li>
+    <li>The server publishes a message of type <code>MOVED</code> to <code>/topic/request/{id}</code>.</li>
+    <li>The driver&rsquo;s <code>Live.onMessage</code> handler receives it and moves the marker straight from the message, with no refetch.</li>
+    <li>Any other message type just triggers a normal <code>poll()</code>.</li>
+  </ol>
+  <div class="note"><strong>Latency number.</strong> The project docs say 4&ndash;13 ms. That was measured earlier and I did
+    <em>not</em> re-measure it. Say &ldquo;a few milliseconds in our earlier measurements&rdquo;, or re-measure it
+    tonight before you quote a figure.</div>
+
+  <h2 id="maps">6. Maps, routes and the radar</h2>
+  <p>Libraries: Leaflet 1.9.4 (maps), OpenStreetMap tiles, OSRM (routing), Nominatim (place search). None need an API key.</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Piece</th><th>File</th><th>What it does and why</th></tr></thead>
+    <tbody>
+      <tr><td>Pin picker (mechanic page only)</td><td><code>pin-picker.js</code></td>
+        <td>Used for the mechanic&rsquo;s own pin and the shop pin: drag, search a place, use GPS, or type coordinates. The driver&rsquo;s pin is handled in <code>driver-map.js</code>. Place search calls Nominatim limited to a box around Bangladesh,
+          waits at least 1.1 s between searches, and aborts a search that is still running when a new one starts. Needs at least 3 letters.</td></tr>
+      <tr><td>Radar</td><td><code>sos-radar.js</code></td>
+        <td>Draws the search radius as three pulsing rings plus a filled circle. Leaflet circles take a radius in <strong>metres</strong>,
+          so the circle stays geographically correct at any zoom. Growth is eased (it glides to the new radius instead of jumping).</td></tr>
+      <tr><td>Routing</td><td><code>route.js</code></td>
+        <td>Asks OSRM for a driving route. Returns the line, distance and minutes. If OSRM fails, falls back to a straight line
+          with time from an assumed 22 km/h city speed, flagged <code>onRoads: false</code>.</td></tr>
+      <tr><td>Driver map</td><td><code>driver-map.js</code></td>
+        <td>Driver pin, shop markers (refreshed every 30 s), and the helper marker that glides between positions over 1.2 s with easing.
+          Jumps over 1 km snap instantly instead of gliding.</td></tr>
+      <tr><td>Job map</td><td><code>job-map.js</code></td>
+        <td>The mechanic&rsquo;s map of the current job.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Route throttling</h3>
+  <p>A mechanic reporting every 5 seconds must not hammer the public routing service. <code>JobMap</code> re-fetches the route only if
+    <strong>the job is new</strong>, <strong>the mechanic moved more than 150 m</strong> since the last route
+    (<code>MOVED_KM = 0.15</code>), or <strong>the last route is older than 25 s</strong> (<code>REFETCH_MS = 25000</code>).
+    Between fetches the marker still moves smoothly.</p>
+
+  <div class="ok"><strong>Good answer if asked about the fallback.</strong> &ldquo;If the router is unreachable the screen
+    still says something true: a dashed straight line, labelled &lsquo;direct line&rsquo;, with a rougher time estimate. It never
+    pretends a straight line is a road.&rdquo;</div>
+
+  <div class="note"><strong>Colour language.</strong> The project docs describe blue, green, orange and red meanings. What I
+    could confirm in the code: <strong>red</strong> is the search radius (<code>#E5484D</code>), the driver-side route line is
+    <strong>green</strong> (<code>#2E9E5B</code>), the mechanic-side route line is <strong>blue</strong> (<code>#2F6BFF</code>), and
+    shop markers use an amber/orange style. Check the live screens before you describe a colour for each marker.</div>
+
+  <h2 id="triage">7. The photo flow for AI triage (your half)</h2>
+  <p>Server side (parsing, fallback, retries) is Ifty&rsquo;s. Yours is everything up to the upload and what the mechanic sees.</p>
+  <div class="flow">
+    <div class="step"><b>Choose a photo</b>
+      File input accepts JPG, PNG or WEBP with <code>capture="environment"</code> so phones offer the rear camera.
+      Files over 5 MB are rejected in the browser with a toast, and a preview is shown with a <code>FileReader</code>.</div>
+    <div class="step"><b>Create the request first</b>
+      <code>POST /api/requests</code> with <code>hasPhoto: true</code>. The server saves the request in the <code>DIAGNOSING</code> state.</div>
+    <div class="step"><b>Upload the photo second</b>
+      <code>POST /api/requests/{id}/photo</code> as <code>FormData</code>. The button reads &ldquo;Checking the photo&rdquo; and the status
+      screen shows &ldquo;Checking the problem&rdquo;.</div>
+    <div class="step"><b>If the photo fails</b>
+      A toast says &ldquo;The photo could not be read, searching on the problem you picked&rdquo; and the page loads the request as it stands.
+      The rescue is never blocked by the photo.</div>
+    <div class="step"><b>The driver sees the result</b>
+      When the server has a diagnosis, the status panel shows a <em>Photo check</em> badge with the fault category, a severity badge and the
+      safety guidance, plus a &ldquo;Needs&rdquo; cell with the required specialization. All text is escaped before it goes into the page.</div>
+    <div class="step"><b>The mechanic sees the photo</b>
+      The offer card contains a placeholder with a photo URL. The page <code>fetch</code>es it <em>with the bearer token</em> and shows it
+      through <code>URL.createObjectURL</code>. <span class="say">Why not just an &lt;img src&gt;? Because an image tag cannot send an
+      Authorization header, and the photo is private to the people on the job.</span></div>
+  </div>
+  <div class="note"><strong>Be honest in the demo.</strong> The live model needs an API key and internet. With the default
+    setting (<code>app.ai.provider=stub</code>) the server uses its fallback, so a photo will not give a real diagnosis. Nobody has
+    measured the AI&rsquo;s accuracy, so make no accuracy claim.</div>
+
+  <h2 id="shops">8. Shops, skills and accounts</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Area</th><th>File</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Shop profile</td><td><code>mechanic-shop.js</code></td>
+        <td>Mechanic names a shop, picks a type, places a pin and uploads a picture (5 MB limit checked in the browser, then re-checked
+          by the server). Drivers see shop markers with a popup: name, open / on a job / closed, skills, rating.</td></tr>
+      <tr><td>Skills</td><td><code>mechanic-skills.js</code></td>
+        <td>Editable list of specializations saved with <code>POST /api/mechanic/skills</code>. Skills decide which jobs a mechanic is offered.</td></tr>
+      <tr><td>Sign-in, register, reset</td><td><code>auth-page.js</code>, <code>password-toggle.js</code></td>
+        <td>Login, register (driver or mechanic), and a two-step password reset with a code. Role decides which page you land on.</td></tr>
+      <tr><td>Page guard</td><td><code>api.js</code></td>
+        <td><code>requireLogin(role)</code> asks <code>/api/auth/me</code> and redirects a driver away from the mechanic page and vice versa.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Shop ratings show &ldquo;No ratings yet&rdquo; because the ratings flow is not built (the <code>Rating</code> entity exists, no endpoint or UI).</p>
+
+  <div class="note"><strong>Security wording.</strong> Browser checks (5 MB, file type) are for friendliness only. The real checks are on
+    the server (<code>UploadRules</code>, a path guard in <code>ShopService</code>). If asked &ldquo;can I bypass your upload limit?&rdquo;,
+    the answer is that the browser check can be bypassed but the server check cannot. Escaping: <code>esc()</code> and a <code>safe()</code>
+    helper turn <code>&amp; &lt; &gt; " '</code> into entities before text from the server goes into HTML.</div>
+
+  <h2 id="files">9. File-by-file reference</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>File</th><th>Lines</th><th>Job</th></tr></thead>
+    <tbody>
+      <tr><td><code>index.html</code>, <code>auth-page.js</code></td><td>479 / 453</td><td>Landing, sign-in, register, forgot password, hero story</td></tr>
+      <tr><td><code>driver.html</code></td><td>102</td><td>Driver page shell</td></tr>
+      <tr><td><code>driver-sos.js</code></td><td>381</td><td>SOS form, status panel, photo upload, polling, cancel</td></tr>
+      <tr><td><code>driver-map.js</code></td><td>294</td><td>Driver map, pin, shops, helper marker, glide, ETA</td></tr>
+      <tr><td><code>sos-radar.js</code></td><td>138</td><td>Animated search radius</td></tr>
+      <tr><td><code>mechanic.html</code></td><td>265</td><td>Mechanic page shell</td></tr>
+      <tr><td><code>mechanic-console.js</code></td><td>576</td><td>Duty, GPS following, heartbeat, offers, accept/decline, job stepper</td></tr>
+      <tr><td><code>job-map.js</code></td><td>139</td><td>Job map with throttled route</td></tr>
+      <tr><td><code>pin-picker.js</code></td><td>270</td><td>Pin, place search, GPS, typed coordinates (mechanic page)</td></tr>
+      <tr><td><code>route.js</code></td><td>67</td><td>OSRM routing and straight-line fallback</td></tr>
+      <tr><td><code>live.js</code></td><td>89</td><td>STOMP / SockJS client</td></tr>
+      <tr><td><code>api.js</code></td><td>86</td><td>Token storage, fetch helper, page guard, logout</td></tr>
+      <tr><td><code>mechanic-shop.js</code>, <code>mechanic-skills.js</code></td><td>164 / 105</td><td>Shop profile and skills</td></tr>
+      <tr><td><code>style.css</code>, <code>console.css</code>, <code>forms.css</code></td><td>2091 / 1330 / 45</td><td>Design system</td></tr>
+      <tr><td><code>admin.html</code></td><td>99</td><td>Placeholder, not built</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="api">10. The API you consume (the seam with Ifty)</h2>
+  <p>Collected from the JavaScript files. Ifty guarantees these endpoints; you call them.</p>
+  <div class="twocol">
+    <div class="card">
+      <h3 style="margin-top:0">REST</h3>
+      <pre><code>POST /api/auth/login
+POST /api/auth/register
+GET  /api/auth/me
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
+
+POST /api/requests
+GET  /api/requests/mine
+GET  /api/requests/{id}
+POST /api/requests/{id}/cancel
+POST /api/requests/{id}/photo
+POST /api/requests/{id}/accept
+POST /api/requests/{id}/decline
+POST /api/requests/{id}/status
+GET  /api/requests/mine-assigned
+GET  /api/shops</code></pre>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Mechanic and WebSocket</h3>
+      <pre><code>GET  /api/mechanic/me
+GET  /api/mechanic/offers
+POST /api/mechanic/status
+POST /api/mechanic/location
+POST /api/mechanic/heartbeat
+POST /api/mechanic/skills
+GET/POST /api/mechanic/shop
+POST /api/mechanic/shop/image
+
+WS   /ws  (STOMP over SockJS)
+SUB  /user/queue/updates
+SUB  /topic/request/{id}
+MSG  type "MOVED" (lat, lng)</code></pre>
+    </div>
+  </div>
+  <p class="small">Collected by searching the JavaScript for <code>api(</code> and <code>fetch(</code> calls. Whether each route also needs a particular role is enforced on the server, so ask Ifty before claiming it.</p>
+
+  <h2 id="demo">11. Driving the live demo</h2>
+  <div class="card">
+    <h3 style="margin-top:0">Before you stand up</h3>
+    <ul>
+      <li>Driver in a normal window; mechanic in an <strong>incognito</strong> window. Both pages share local storage, so one will log the other out.</li>
+      <li>Log both in and put the mechanic <strong>on duty</strong> beforehand. Never do login on stage.</li>
+      <li>Send a fresh SOS rehearsal first, so you know it works on this machine.</li>
+      <li>Have screenshots or a recording ready as a backup.</li>
+    </ul>
+  </div>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Show</th><th>Say</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Driver drags the pin, picks a flat tyre, sends the SOS</td><td>&ldquo;That red circle is the kilometres we are searching right now.&rdquo;</td></tr>
+      <tr><td>2</td><td>Mechanic window: the offer is already there</td><td>&ldquo;Every qualified mechanic nearby was alerted at once.&rdquo;</td></tr>
+      <tr><td>3</td><td>Accept; both screens change and the route appears</td><td>&ldquo;Real road distance from OSRM, not a straight line.&rdquo;</td></tr>
+      <tr><td>4</td><td>Drag the mechanic pin, switch to the driver</td><td>&ldquo;Moved over a WebSocket, not a refresh.&rdquo;</td></tr>
+      <tr><td>5</td><td>Step the job: On my way, Arrived, Working, Done</td><td>&ldquo;Every transition is checked on the server.&rdquo;</td></tr>
+      <tr><td>6</td><td>Hand over: Ifty runs <code>AcceptRaceTest</code></td><td>&ldquo;Now the part Ifty built.&rdquo;</td></tr>
+      <tr><td>7</td><td>Close the mechanic window mid-job</td><td>&ldquo;If a phone dies the driver is not stranded. Fifteen seconds and it is re-dispatched.&rdquo;</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="bad"><strong>Internet matters more than the docs say.</strong> The pages load Leaflet, SockJS, STOMP and the
+    Inter font from CDNs (<code>cdn.jsdelivr.net</code>, <code>cdnjs.cloudflare.com</code>, Google Fonts), and map tiles come from
+    OpenStreetMap. With no internet the maps and the live connection will not load at all, not just the tiles. Check the venue
+    network, or have a recording ready.</div>
+
+  <h3>Do not demonstrate</h3>
+  <ul>
+    <li>Phone GPS: it needs HTTPS, a lit screen and an outdoor signal.</li>
+    <li>Place search or routing without internet.</li>
+    <li>The live AI call, unless you have tested it with an API key.</li>
+    <li>The 80-second radius ladder, unless asked.</li>
+  </ul>
+
+  <h3>If something breaks</h3>
+  <ul>
+    <li><strong>Grey map tiles:</strong> no internet. Say the tiles come from OpenStreetMap and describe what you would see.</li>
+    <li><strong>No offer appears:</strong> the mechanic was marked offline. Toggle duty off and on, then send a <strong>fresh</strong> SOS.</li>
+    <li><strong>Anything odd:</strong> send a new SOS. Fresh requests always work.</li>
+  </ul>
+
+  <h2 id="qa">12. Questions you will probably get</h2>
+  <details><summary>Why not just use Google Maps?</summary>
+    <p>Google Maps shows where things are. It does not decide who gets the job when several mechanics accept at once. The map is a
+      library we call; dispatch is what we built. We use OpenStreetMap and OSRM, which need no API key or billing account.</p></details>
+  <details><summary>How does the driver see the mechanic move so fast?</summary>
+    <p>The server publishes each position to that job&rsquo;s WebSocket topic and the page moves the marker from the message, with no
+      refetch. The route and ETA are throttled separately (150 m or 25 s) so we do not hammer the routing service.</p></details>
+  <details><summary>Why can it not track in the background?</summary>
+    <p>A web page stops receiving location when the screen locks or the tab is backgrounded. That is a browser rule, not a flaw in our
+      code. A native app would call the same REST API, so the dispatch engine would not change.</p></details>
+  <details><summary>Why keep polling if you have WebSocket?</summary>
+    <p>WebSocket is fast but can drop. Polling every 15 seconds is the safety net: if a push is lost, the next poll still corrects the screen.</p></details>
+  <details><summary>How do you stop a jittery GPS from making the marker twitch?</summary>
+    <p>Two filters: fixes worse than 120 m accuracy are ignored, and moves under 15 m are treated as noise.</p></details>
+  <details><summary>What if the routing service is down?</summary>
+    <p>We draw a dashed straight line, label it &ldquo;direct line&rdquo;, and estimate time from an average city speed, so the screen still says
+      something true.</p></details>
+  <details><summary>Is the 5 MB limit secure?</summary>
+    <p>The browser check is a convenience. The server enforces the real limit and the allowed types (JPG, PNG, WEBP), and guards against paths
+      that escape the uploads folder.</p></details>
+  <details><summary>Why no React or other framework?</summary>
+    <p>To keep it small enough to explain line by line and to avoid a build step. The hard engineering is on the server. For a larger product we
+      would reconsider.</p></details>
+  <details><summary>Where is the admin dashboard?</summary>
+    <p>Not built. <code>admin.html</code> is a placeholder. Say so plainly.</p></details>
+  <details><summary>Could someone read another driver&rsquo;s request?</summary>
+    <p>That is enforced on the server (JWT and role checks), which is Ifty&rsquo;s area. From the client side, pages redirect by role, but the
+      redirect is only for convenience, not security. Hand this one to Ifty.</p></details>
+
+  <h2 id="limits">13. Limits you should say out loud</h2>
+  <ul>
+    <li>Location sharing needs HTTPS (or localhost), a lit screen and a decent signal.</li>
+    <li>No background tracking in a browser.</li>
+    <li>The app depends on CDNs and public OpenStreetMap services, so it needs internet. Public Nominatim and OSRM servers are shared
+      services, not guaranteed for heavy use.</li>
+    <li>The admin page, ratings UI and event replay are not built.</li>
+    <li>I did not run the app in a browser to write this page. Everything here is from reading the code, so click through each screen before you present.</li>
+  </ul>
+
+  <p class="small" style="margin-top:28px">Sources: files under <code>src/main/resources/static</code>, plus <code>docs/DOCUMENTATION.md</code> sections 6 and 8.
+    Numbers that come only from the older docs (latency, ETA accuracy) are marked as such above.</p>
+</div>
+</body>
+</html>
