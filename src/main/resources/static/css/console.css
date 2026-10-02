@@ -1615,3 +1615,5 @@
 .wire { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .72rem; color: #475569; background: #eef2f7; padding: 1px 7px; border-radius: 6px; }
 .fleet-legend { margin: 8px 0 0; font-size: .76rem; color: #6b7280; line-height: 1.5; }
 .fleet-legend code { font-family: ui-monospace, Menlo, Consolas, monospace; background: #eef2f7; padding: 0 5px; border-radius: 4px; }
+
+.map-unlocated { margin: 10px 2px 0; font-size: .8rem; line-height: 1.5; color: #6b7280; }

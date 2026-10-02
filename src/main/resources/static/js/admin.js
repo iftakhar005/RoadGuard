@@ -32,6 +32,7 @@ async function refresh() {
 
         renderRequests(overview.recentRequests || [], overview.activeRequestLocations || []);
         renderMap(overview.activeRequestLocations || [], overview.mechanicLocations || []);
+        paintUnlocated(overview.unlocatedMechanics);
         await refreshFleet();
     } catch (error) {
         document.getElementById('dashboard-updated').textContent = 'Unable to load live data';
@@ -341,7 +342,28 @@ function canRedispatch(status) {
 
 let adminPins = null;
 let adminMap;
+let adminBounds = [];
+let operatorTookOver = false;
 const requestMarkers = new Map();
+
+/* the map's height comes from the layout, and a fit made before it is measured is a
+   fit to a box of no size, which Leaflet answers with the maximum zoom and a blank
+   map. So it is measured first, and fitted again whenever the box settles, until the
+   operator has panned or zoomed it themselves. */
+function fitAdminMap() {
+    if (!adminMap || adminBounds.length < 2 || operatorTookOver) return;
+    adminMap.invalidateSize();
+    adminMap.fitBounds(adminBounds, { padding: [28, 28], maxZoom: 15 });
+}
+
+function watchAdminMapBox(container) {
+    ['mousedown', 'wheel', 'touchstart'].forEach(name =>
+        container.addEventListener(name, () => { operatorTookOver = true; }, { passive: true }));
+
+    if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(() => fitAdminMap()).observe(container);
+    }
+}
 
 function renderMap(requests, mechanics) {
     const points = [...requests, ...mechanics].filter(point => point.lat != null && point.lng != null);
@@ -360,6 +382,7 @@ function renderMap(requests, mechanics) {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(adminMap);
         adminPins = L.layerGroup().addTo(adminMap);
+        watchAdminMapBox(document.getElementById('admin-map'));
     }
 
     adminPins.clearLayers();
@@ -379,22 +402,42 @@ function renderMap(requests, mechanics) {
 
     mechanics.forEach(mechanic => {
         if (mechanic.lat == null || mechanic.lng == null) return;
-        const available = mechanic.status === 'ONLINE';
-        const marker = L.circleMarker([mechanic.lat, mechanic.lng], {
-            radius: 8,
-            color: available ? '#047857' : '#b45309',
-            fillColor: available ? '#10b981' : '#f59e0b',
-            fillOpacity: .9,
-            weight: 3
-        }).addTo(adminPins);
+
+        const offline = mechanic.status === 'OFFLINE';
+        if (offline && mechanic.username.startsWith('sim_mech_')) return;
+
+        const style = pinStyleFor(mechanic.status);
+        const marker = L.circleMarker([mechanic.lat, mechanic.lng], style).addTo(adminPins);
         marker.bindPopup(`<strong>${escapeHtml(mechanic.username)}</strong><br>${formatLabel(mechanic.status)}<br>${escapeHtml(mechanic.shopName || 'Mobile mechanic')}`);
         bounds.push([mechanic.lat, mechanic.lng]);
     });
 
-    if (firstDraw && bounds.length > 1) {
-        adminMap.fitBounds(bounds, { padding: [28, 28] });
+    adminBounds = bounds;
+    if (firstDraw) {
+        fitAdminMap();
     }
     adminMap.__drawnOnce = true;
+}
+
+function pinStyleFor(status) {
+    if (status === 'ONLINE') {
+        return { radius: 8, color: '#047857', fillColor: '#10b981', fillOpacity: .9, weight: 3 };
+    }
+    if (status === 'BUSY') {
+        return { radius: 8, color: '#b45309', fillColor: '#f59e0b', fillOpacity: .9, weight: 3 };
+    }
+    return { radius: 6, color: '#94a3b8', fillColor: '#cbd5e1', fillOpacity: .75, weight: 2 };
+}
+
+function paintUnlocated(names) {
+    const note = document.getElementById('map-unlocated');
+    if (!note) return;
+
+    note.hidden = !names || !names.length;
+    if (note.hidden) return;
+
+    note.textContent = `Not on the map, because they have never set a location: ${names.join(', ')}. `
+        + 'A mechanic appears once they sign in and share their position.';
 }
 
 function focusRequest(id, requests) {

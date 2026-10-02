@@ -63,12 +63,28 @@ public class AdminController {
                 recentRequests,
                 activeRequestLocations,
                 mechanicLocations,
+                mechanicsWithoutLocation(),
                 new EngineState(
                         dispatch.queueDepth(),
                         dispatch.broadcastCount(),
                         assignment.isSafeMode(),
                         allowUnsafe),
                 Instant.now()));
+    }
+
+    /* the profile's user is lazy and there is no session open out here, so the ids come
+       off the proxies, which does not load them, and the rows are fetched */
+    private List<String> mechanicsWithoutLocation() {
+        List<Long> ids = mechanics.findAll().stream()
+                .filter(profile -> !profile.hasLocation() && profile.getUser() != null)
+                .map(profile -> profile.getUser().getId())
+                .toList();
+
+        return users.findAllById(ids).stream()
+                .map(com.roadguard.domain.User::getUsername)
+                .filter(name -> !name.startsWith(com.roadguard.sim.AccountSource.SIM_PREFIX))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/safe-mode")
@@ -160,6 +176,7 @@ public class AdminController {
             List<AdminRequestRow> recentRequests,
             List<AdminRequestRow> activeRequestLocations,
             List<AdminMechanicRow> mechanicLocations,
+            List<String> unlocatedMechanics,
             EngineState engine,
             Instant generatedAt) {
     }

@@ -1910,6 +1910,7 @@ input:focus {
 .request-dot { background: #ef4444; }
 .online-dot { background: #10b981; }
 .busy-dot { background: #f59e0b; }
+.offline-dot { background: #cbd5e1; }
 
 .map-empty {
     padding: 28px 0 4px;
