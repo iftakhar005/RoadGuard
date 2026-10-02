@@ -54,7 +54,7 @@ public class FleetSimulator {
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> System.out.printf("  %-28s %d%n", entry.getKey(), entry.getValue().get()));
 
-        int won = outcomes.getOrDefault("ACCEPTED", new AtomicInteger()).get();
+        int won = runner.mostWinnersOnOneJob();
         if (won > 1) {
             System.out.printf("%n%d mechanics won the same job. The accept lock was off.%n", won);
         } else if (won == 1) {

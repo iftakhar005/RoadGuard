@@ -146,7 +146,7 @@ class VirtualMechanic implements Runnable {
                 }
             }
             case "ACCEPTED" -> {
-                runner.tally("ACCEPTED");
+                runner.toldTheyWon(Long.parseLong(idOf(parts)));
                 doing = "accepted #" + idOf(parts);
                 runner.tell(name(), "was told ACCEPTED for request #" + idOf(parts), "<< " + line);
             }

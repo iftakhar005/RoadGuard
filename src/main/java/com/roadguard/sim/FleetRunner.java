@@ -32,7 +32,9 @@ public class FleetRunner {
             int offerCount,
             Map<String, Integer> outcomes,
             List<MechanicState> mechanics,
-            List<StoryLine> story) {
+            List<StoryLine> story,
+            Long lastJobId,
+            int lastJobWinners) {
     }
 
     private static final int STORY_LENGTH = 40;
@@ -43,6 +45,8 @@ public class FleetRunner {
     private final Map<String, AtomicInteger> outcomes = new ConcurrentHashMap<>();
     private final Map<Long, Race> races = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<StoryLine> story = new ConcurrentLinkedDeque<>();
+    private final Map<Long, AtomicInteger> toldTheyWon = new ConcurrentHashMap<>();
+    private volatile Long lastJobId;
 
     private ExecutorService readers;
     private ScheduledExecutorService clock;
@@ -68,6 +72,8 @@ public class FleetRunner {
         this.outcomes.clear();
         this.races.clear();
         this.story.clear();
+        this.toldTheyWon.clear();
+        this.lastJobId = null;
 
         this.readers = Executors.newCachedThreadPool(runnable -> {
             Thread thread = new Thread(runnable);
@@ -221,6 +227,18 @@ public class FleetRunner {
         }
     }
 
+    /* one job at a time is what the lock is about, so how many were told they won is
+       counted for each job and not across the whole run */
+    void toldTheyWon(Long requestId) {
+        toldTheyWon.computeIfAbsent(requestId, id -> new AtomicInteger()).incrementAndGet();
+        lastJobId = requestId;
+        tally("ACCEPTED");
+    }
+
+    public int mostWinnersOnOneJob() {
+        return toldTheyWon.values().stream().mapToInt(AtomicInteger::get).max().orElse(0);
+    }
+
     void tally(String outcome) {
         outcomes.computeIfAbsent(outcome, key -> new AtomicInteger()).incrementAndGet();
     }
@@ -257,7 +275,9 @@ public class FleetRunner {
         }
 
         int targetSize = options != null ? options.count() : 0;
+        Long latest = lastJobId;
+        int latestWinners = latest == null ? 0 : toldTheyWon.getOrDefault(latest, new AtomicInteger()).get();
         return new FleetState(running, targetSize, connected, raceArmed, offerCount,
-                outcomeMap, mechanicStates, new ArrayList<>(story));
+                outcomeMap, mechanicStates, new ArrayList<>(story), latest, latestWinners);
     }
 }

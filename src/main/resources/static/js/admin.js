@@ -99,16 +99,14 @@ function paintFleet(fleet) {
     fleetRunning = !!fleet.running;
 
     if (resultLine) {
-        const outcomes = fleet.outcomes || {};
-        const accepted = outcomes['ACCEPTED'] || 0;
-        if (accepted === 0) {
-            resultLine.textContent = fleet.running ? 'No race run yet.' : 'Fleet idle.';
-        } else if (accepted === 1) {
-            resultLine.textContent = currentSafeMode
-                ? '1 mechanic won the last job (accept lock on).'
-                : '1 mechanic won the last job.';
+        const winners = fleet.lastJobWinners || 0;
+        const job = fleet.lastJobId ? ` request #${fleet.lastJobId}` : ' the last job';
+        if (winners === 0) {
+            resultLine.textContent = fleet.running ? 'No job has been taken yet.' : 'Fleet idle.';
+        } else if (winners === 1) {
+            resultLine.textContent = `1 mechanic won${job}.`;
         } else {
-            resultLine.textContent = `${accepted} mechanics won the same job! (the accept lock was OFF).`;
+            resultLine.textContent = `${winners} mechanics were all told they won${job}. The accept lock was off.`;
         }
     }
 }
