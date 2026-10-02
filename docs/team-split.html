@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoadGuard Team Split</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #1b2330; --muted: #5b6678;
+    --line: #e1e5ec; --a: #1f5fd1; --a-soft: #e8f0fd; --b: #0f8a5f; --b-soft: #e3f5ee;
+    --warn: #b45309; --warn-soft: #fff4e0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161d; --card: #1a202a; --ink: #e8ecf2; --muted: #9aa5b8;
+      --line: #2a3342; --a: #6ea0ff; --a-soft: #1b2a45; --b: #4fd1a0; --b-soft: #14302a;
+      --warn: #f6ad55; --warn-soft: #3a2b12;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.25rem; margin: 40px 0 12px; }
+  h3 { font-size: 1.05rem; margin: 22px 0 8px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .pitch { font-size: 1.05rem; border-left: 4px solid var(--a); }
+  .small { font-size: .88rem; color: var(--muted); }
+
+  .bar { display: flex; height: 38px; border-radius: 10px; overflow: hidden; margin: 14px 0 6px; font-weight: 600; color: #fff; }
+  .bar div { display: flex; align-items: center; justify-content: center; }
+  .bar .a { width: 60%; background: var(--a); }
+  .bar .b { width: 40%; background: var(--b); }
+  @media (prefers-color-scheme: dark) { .bar { color: #0b0f14; } }
+
+  .people { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .people { grid-template-columns: 1fr; } }
+  .person { border-top: 6px solid; }
+  .person.a { border-top-color: var(--a); }
+  .person.b { border-top-color: var(--b); }
+  .tag { display: inline-block; font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 999px; }
+  .a .tag { background: var(--a-soft); color: var(--a); }
+  .b .tag { background: var(--b-soft); color: var(--b); }
+  .person h3 { font-size: 1.5rem; margin: 10px 0 2px; }
+  .role { color: var(--muted); margin: 0 0 8px; }
+  ul { margin: 6px 0 6px 20px; padding: 0; }
+  li { margin: 3px 0; }
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .93rem; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { background: var(--bg); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  code { font: .85em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--bg);
+    padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); word-break: break-word; }
+  .who-a { color: var(--a); font-weight: 700; }
+  .who-b { color: var(--b); font-weight: 700; }
+
+  .note { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+  .note strong { color: var(--warn); }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .qa-a summary { color: var(--a); } .qa-b summary { color: var(--b); }
+  .seam { text-align: center; padding: 16px; }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 11pt; }
+    .card, table, details { break-inside: avoid; }
+    details { border-color: #bbb; }
+    details > * { display: block; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>RoadGuard: Team Split</h1>
+  <p class="sub">CSE 2118 &middot; Advanced Object-Oriented Programming Lab &middot; Final presentation</p>
+
+  <div class="card pitch">
+    <strong>The one-sentence pitch.</strong> A driver breaks down and presses one button. Every qualified mechanic
+    nearby is alerted at the same time, the first to accept gets the job, and the rest are told it is taken.
+    The hard part is correctness under concurrency: when several mechanics accept in the same millisecond,
+    exactly one must win.
+  </div>
+
+  <h2>The split</h2>
+  <div class="bar" role="img" aria-label="Ifty about 60 percent, Sakib about 40 percent">
+    <div class="a">Ifty ~60%</div><div class="b">Sakib ~40%</div>
+  </div>
+  <p class="small">
+    Weighted by <em>depth of explanation</em>, not by line count. The browser side is actually the larger codebase
+    (about 7,250 lines of HTML, CSS and JS, against about 4,850 lines of backend Java and 1,900 of tests), but the
+    backend carries the concurrency, security and recovery reasoning a teacher probes hardest. This is a suggestion,
+    not a measurement.
+  </p>
+
+  <div class="people" style="margin-top:16px">
+    <section class="card person a">
+      <span class="tag">Person A</span>
+      <h3>Ifty</h3>
+      <p class="role">The Engine &middot; backend, concurrency, persistence, security</p>
+      <p><strong>Speaks for about 6&ndash;7 minutes</strong> plus the race test.</p>
+      <ul>
+        <li>Architecture and stack</li>
+        <li>Matching and the accept race</li>
+        <li>Recovery: heartbeat, widening radius</li>
+        <li>AI triage on the server and its safe fallback</li>
+        <li>Accounts and email, security, tests</li>
+        <li>What is not built</li>
+      </ul>
+    </section>
+
+    <section class="card person b">
+      <span class="tag">Person B</span>
+      <h3>Sakib</h3>
+      <p class="role">The Experience &middot; everything the user sees, real-time client, the demo</p>
+      <p><strong>Speaks for about 4&ndash;5 minutes</strong> and drives the live demo.</p>
+      <ul>
+        <li>The pitch and the problem</li>
+        <li>Driver and mechanic screens</li>
+        <li>Maps, routing and the live tracking client</li>
+        <li>The photo flow for AI triage</li>
+        <li>Shops, skills and the design system</li>
+        <li>Driving the demo and the backup plan</li>
+      </ul>
+    </section>
+  </div>
+
+  <h2>Ifty: what to be able to explain</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Area</th><th>Files</th><th>Must be able to explain</th></tr></thead>
+    <tbody>
+      <tr><td>Accept race</td><td><code>AssignmentService.java</code></td>
+        <td>Why one lock per request; why the transaction commits inside the lock; what version checking catches; what the offer token prevents</td></tr>
+      <tr><td>Dispatch</td><td><code>DispatchService.java</code></td>
+        <td>Producer and consumer; why a priority queue ordered by severity; why enqueue happens after commit</td></tr>
+      <tr><td>Matching</td><td><code>MatchingService.java</code>, <code>GeoUtils.java</code></td>
+        <td>Bounding box then Haversine, and why that order; the 0.7/0.3 score; why not a routing API</td></tr>
+      <tr><td>Recovery</td><td><code>HeartbeatReaper.java</code>, <code>OfferTimeoutService.java</code></td>
+        <td>The 5 s and 15 s rule; why offline is set before jobs are read; the 5&rarr;10&rarr;20&rarr;25 km ladder and why it stops</td></tr>
+      <tr><td>State machine</td><td><code>RequestStatus.java</code></td>
+        <td><code>EnumMap</code> and <code>EnumSet</code>; why transitions are enforced server-side</td></tr>
+      <tr><td>Persistence</td><td>entities and repositories</td>
+        <td>The schema; version columns; why images are files rather than BLOBs</td></tr>
+      <tr><td>Security</td><td><code>SecurityConfig</code>, <code>AuthService</code>, JWT filter</td>
+        <td>Stateless JWT; BCrypt; role rules; why secrets are git-ignored</td></tr>
+      <tr><td>AI triage (server)</td><td><code>AiTriageService.java</code>, triage part of <code>RequestService.java</code></td>
+        <td>Photo to the model, strict JSON back, defensive parsing, fallback to the issue type, retries on 429/5xx, why the AI can never block a rescue, the 30 s <code>DIAGNOSING</code> sweep</td></tr>
+      <tr><td>Accounts and email</td><td><code>PasswordResetService.java</code>, <code>EmailService.java</code></td>
+        <td>One-time reset tokens and why they expire</td></tr>
+      <tr><td>Tests</td><td>12 test classes, 122 tests</td>
+        <td>How a <code>CountDownLatch</code> creates a true race; what <code>AiTriageTest</code> and <code>TriageDispatchTest</code> cover</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sakib: what to be able to explain</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Area</th><th>Files</th><th>Must be able to explain</th></tr></thead>
+    <tbody>
+      <tr><td>Driver experience</td><td><code>driver.html</code>, <code>driver-sos.js</code>, <code>driver-map.js</code></td>
+        <td>The SOS flow; the status wording; the pin</td></tr>
+      <tr><td>Mechanic console</td><td><code>mechanic.html</code>, <code>mechanic-console.js</code></td>
+        <td>Duty toggle; offer cards; the job stepper</td></tr>
+      <tr><td>Maps and geography UI</td><td><code>sos-radar.js</code>, <code>pin-picker.js</code>, <code>route.js</code>, <code>job-map.js</code></td>
+        <td>Why circles are drawn in metres rather than pixels; the radar; place search; the OSRM fallback</td></tr>
+      <tr><td>Real-time client</td><td><code>live.js</code></td>
+        <td>STOMP over SockJS; authentication on the connect frame; reconnection; why polling remains as a safety net</td></tr>
+      <tr><td>Shops and skills</td><td><code>mechanic-shop.js</code>, <code>mechanic-skills.js</code>, <code>ShopService.java</code></td>
+        <td>Upload validation; the path-traversal guard; why skills are editable</td></tr>
+      <tr><td>AI triage (client)</td><td><code>driver-sos.js</code>, photo part of <code>mechanic-console.js</code></td>
+        <td>Photo option on the SOS form; upload after the request is created; the mechanic seeing the photo on the offer card</td></tr>
+      <tr><td>Design system</td><td><code>style.css</code>, <code>console.css</code></td>
+        <td>Blue is you, green is a mechanic, orange is a shop, red is the search</td></tr>
+      <tr><td>The demo</td><td>&mdash;</td><td>Driving the presentation and the backup plan</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Running order for tomorrow</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Part</th><th>Speaker</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td>The problem and the one-sentence pitch</td><td class="who-b">Sakib</td><td>1 min</td></tr>
+      <tr><td>Architecture diagram and stack</td><td class="who-a">Ifty</td><td>1&ndash;2 min</td></tr>
+      <tr><td>One SOS start to finish: matching and the accept race</td><td class="who-a">Ifty</td><td>2 min</td></tr>
+      <tr><td>AI triage: the photo flow, and the safe fallback</td><td><span class="who-b">Sakib</span> starts, <span class="who-a">Ifty</span> answers the failure question</td><td>1 min</td></tr>
+      <tr><td>Recovery: heartbeat and widening radius</td><td class="who-a">Ifty</td><td>1&ndash;2 min</td></tr>
+      <tr><td>Live demo</td><td><span class="who-b">Sakib</span> drives, <span class="who-a">Ifty</span> runs <code>AcceptRaceTest</code></td><td>3&ndash;5 min</td></tr>
+      <tr><td>Limits and what is not built</td><td class="who-a">Ifty</td><td>1 min</td></tr>
+      <tr><td>Questions</td><td>Whoever owns the area (tables above)</td><td>&mdash;</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Likely questions, and who answers</h2>
+  <details class="qa-a"><summary>Why a lock per request rather than <code>synchronized</code>? &mdash; Ifty</summary>
+    <p>A <code>synchronized</code> method on the service would serialise every breakdown in the system. Per-request locks mean two different jobs never block each other, and <code>ReentrantLock</code> also gives fairness, which <code>synchronized</code> does not.</p></details>
+  <details class="qa-a"><summary>Why not rely on the database alone? &mdash; Ifty</summary>
+    <p>We keep version checking as a backstop. Relying on it alone means losers discover they lost by catching an exception after doing the work. The lock makes the common path clean and cheap.</p></details>
+  <details class="qa-a"><summary>Why commit inside the lock? &mdash; Ifty</summary>
+    <p>With <code>@Transactional</code> the lock would release before the commit landed, leaving a window where a second thread reads stale data. We use <code>TransactionTemplate</code> so the commit happens inside the lock.</p></details>
+  <details class="qa-a"><summary>What happens if the mechanic's phone dies? &mdash; Ifty</summary>
+    <p>Fifteen seconds of missed heartbeats and the reaper marks the mechanic offline, then releases and re-dispatches the job.</p></details>
+  <details class="qa-a"><summary>What if the AI is wrong or down? &mdash; Ifty</summary>
+    <p>The AI is advisory. On any failure the specialization comes from the issue type the driver picked, severity is medium, and the guidance is a generic safety message. A request stuck waiting for the photo moves on after 30 seconds. We have not measured the AI's accuracy, so we make no accuracy claim.</p></details>
+  <details class="qa-b"><summary>Why not just use Google Maps? &mdash; Sakib</summary>
+    <p>Google Maps shows where things are. It does not decide who gets the job when several mechanics accept at once. The map is a library we call; dispatch is what we built. We use OpenStreetMap and OSRM, which need no API key.</p></details>
+  <details class="qa-b"><summary>How does the driver see the mechanic move so fast? &mdash; Sakib</summary>
+    <p>The server publishes each position to that job's WebSocket topic and the page moves the marker from the message with no refetch. The route and ETA are throttled separately so we do not hammer the routing service.</p></details>
+  <details class="qa-b"><summary>Why can't it track in the background? &mdash; Sakib</summary>
+    <p>A web page stops receiving location when the screen locks or the tab is backgrounded. That is a browser rule. A native app would call the same REST API, so the dispatch engine would not change.</p></details>
+  <details class="qa-b"><summary>Why broadcast instead of assigning one mechanic? &mdash; Sakib</summary>
+    <p>It is how real dispatch works, and silent assignment to a mechanic who is away from their phone creates dead requests.</p></details>
+
+  <h2>Not built: agree the answer tonight</h2>
+  <div class="note"><strong>Say this the same way, from both of you.</strong>
+    These are not built, so nobody owns them: the raw TCP gateway (port 9090), the fleet simulator, the admin
+    dashboard (currently a placeholder), the unsafe-mode toggle, ratings, and event replay. Say plainly that they
+    are not built and that you know why they matter.</div>
+
+  <h2>Numbers you can quote</h2>
+  <div class="card">
+    <ul>
+      <li><strong>122 tests, 0 failures, 12 test classes</strong> (run on 2 Oct 2026).</li>
+      <li><strong>Race test:</strong> 50 racers &times; 25 repetitions = 1,250 accepts, one winner each round (<code>AcceptRaceTest</code>).</li>
+    </ul>
+    <p class="small">The 4&ndash;13 ms WebSocket latency and the ETA comparison in the docs come from earlier notes and were not re-measured. Re-measure them tonight or do not quote them as fresh results.</p>
+  </div>
+
+  <h2>Before you stand up</h2>
+  <div class="card">
+    <ul>
+      <li>Driver in a normal window, mechanic in an <strong>incognito</strong> window (both pages share local storage). Log both in beforehand.</li>
+      <li>Run the race test live: <code>./mvnw -B test -Dtest=AcceptRaceTest</code> (use <code>sh mvnw</code> if the file is not executable).</li>
+      <li>Close the mechanic window mid-job to show the 15-second re-dispatch.</li>
+      <li>Do not demo phone GPS, place search or routing without internet, or the live AI call unless you have tested it with your API key.</li>
+      <li>If map tiles are grey there is no internet. Say tiles come from OpenStreetMap and carry on.</li>
+      <li>Have screenshots or a recording as a backup.</li>
+    </ul>
+  </div>
+
+  <div class="card seam" style="margin-top:24px">
+    <strong>Where the two halves meet:</strong> the REST API and the WebSocket topics.
+    Ifty guarantees the endpoints and the pushes; Sakib consumes them.
+    Each of you should be able to describe the other's half in one sentence.
+  </div>
+
+  <p class="small" style="margin-top:20px">Source: <code>docs/DOCUMENTATION.md</code> section 8 and <code>docs/PRESENTATION.md</code>.</p>
+</div>
+</body>
+</html>
