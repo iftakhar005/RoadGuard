@@ -9,7 +9,6 @@
 
     await refresh();
     setInterval(refresh, 5000);
-    setInterval(() => { if (fleetRunning) refreshFleet(); }, 1500);
     watchTheEngine();
     wireSafeMode();
     wireFleet();
@@ -32,7 +31,6 @@ async function refresh() {
 
         renderRequests(overview.recentRequests || [], overview.activeRequestLocations || []);
         renderMap(overview.activeRequestLocations || [], overview.mechanicLocations || []);
-        paintUnlocated(overview.unlocatedMechanics);
         await refreshFleet();
     } catch (error) {
         document.getElementById('dashboard-updated').textContent = 'Unable to load live data';
@@ -94,57 +92,19 @@ function paintFleet(fleet) {
         }
     }
 
-    paintBoard(fleet);
-    paintStory(fleet);
-    fleetRunning = !!fleet.running;
-
     if (resultLine) {
-        const winners = fleet.lastJobWinners || 0;
-        const job = fleet.lastJobId ? ` request #${fleet.lastJobId}` : ' the last job';
-        if (winners === 0) {
-            resultLine.textContent = fleet.running ? 'No job has been taken yet.' : 'Fleet idle.';
-        } else if (winners === 1) {
-            resultLine.textContent = `1 mechanic won${job}.`;
+        const outcomes = fleet.outcomes || {};
+        const accepted = outcomes['ACCEPTED'] || 0;
+        if (accepted === 0) {
+            resultLine.textContent = fleet.running ? 'No race run yet.' : 'Fleet idle.';
+        } else if (accepted === 1) {
+            resultLine.textContent = currentSafeMode
+                ? '1 mechanic won the last job (accept lock on).'
+                : '1 mechanic won the last job.';
         } else {
-            resultLine.textContent = `${winners} mechanics were all told they won${job}. The accept lock was off.`;
+            resultLine.textContent = `${accepted} mechanics won the same job! (the accept lock was OFF).`;
         }
     }
-}
-
-let fleetRunning = false;
-
-function paintBoard(fleet) {
-    const board = document.getElementById('fleet-board');
-    if (!board) return;
-
-    const mechanics = fleet.mechanics || [];
-    board.hidden = !fleet.running || !mechanics.length;
-    if (board.hidden) return;
-
-    board.innerHTML = mechanics.map(m => `
-        <div class="fleet-chip is-${escapeHtml(m.state.toLowerCase())}">
-            <span class="chip-name">${escapeHtml(m.name.replace('sim_mech_', 'Mechanic '))}</span>
-            <span class="chip-doing">${escapeHtml(m.doing || '')}</span>
-        </div>`).join('');
-}
-
-function paintStory(fleet) {
-    const story = document.getElementById('fleet-story');
-    const legend = document.getElementById('fleet-legend');
-    if (!story) return;
-
-    const lines = fleet.story || [];
-    const show = lines.length > 0;
-    story.hidden = !show;
-    if (legend) legend.hidden = !show;
-    if (!show) return;
-
-    story.innerHTML = lines.map(line => `
-        <p class="story-line">
-            <time>${escapeHtml(line.at)}</time>
-            <span class="story-text"><b>${escapeHtml(line.who.replace('sim_mech_', 'Mechanic '))}</b> ${escapeHtml(line.text)}</span>
-            ${line.wire ? `<code class="wire">${escapeHtml(line.wire)}</code>` : ''}
-        </p>`).join('');
 }
 
 function wireFleet() {
@@ -314,7 +274,6 @@ function renderRequests(requests, activeRequests) {
             <div class="request-secondary">
                 <span class="status-pill status-${request.status.toLowerCase()}">${formatLabel(request.status)}</span>
                 <span class="request-time">${formatTime(request.createdAt)}</span>
-                <a href="/replay.html?id=${escapeHtml(request.id)}" class="btn-locate" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; border-radius:4px;" title="Watch incident replay">Replay</a>
                 ${canRedispatch(request.status)
                     ? `<button class="redispatch-btn" data-redispatch="${escapeHtml(request.id)}"
                                title="Put this job back in the queue">Re-dispatch</button>`
@@ -340,28 +299,7 @@ function canRedispatch(status) {
 
 let adminPins = null;
 let adminMap;
-let adminBounds = [];
-let operatorTookOver = false;
 const requestMarkers = new Map();
-
-/* the map's height comes from the layout, and a fit made before it is measured is a
-   fit to a box of no size, which Leaflet answers with the maximum zoom and a blank
-   map. So it is measured first, and fitted again whenever the box settles, until the
-   operator has panned or zoomed it themselves. */
-function fitAdminMap() {
-    if (!adminMap || adminBounds.length < 2 || operatorTookOver) return;
-    adminMap.invalidateSize();
-    adminMap.fitBounds(adminBounds, { padding: [28, 28], maxZoom: 15 });
-}
-
-function watchAdminMapBox(container) {
-    ['mousedown', 'wheel', 'touchstart'].forEach(name =>
-        container.addEventListener(name, () => { operatorTookOver = true; }, { passive: true }));
-
-    if (typeof ResizeObserver !== 'undefined') {
-        new ResizeObserver(() => fitAdminMap()).observe(container);
-    }
-}
 
 function renderMap(requests, mechanics) {
     const points = [...requests, ...mechanics].filter(point => point.lat != null && point.lng != null);
@@ -380,7 +318,6 @@ function renderMap(requests, mechanics) {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(adminMap);
         adminPins = L.layerGroup().addTo(adminMap);
-        watchAdminMapBox(document.getElementById('admin-map'));
     }
 
     adminPins.clearLayers();
@@ -400,42 +337,22 @@ function renderMap(requests, mechanics) {
 
     mechanics.forEach(mechanic => {
         if (mechanic.lat == null || mechanic.lng == null) return;
-
-        const offline = mechanic.status === 'OFFLINE';
-        if (offline && mechanic.username.startsWith('sim_mech_')) return;
-
-        const style = pinStyleFor(mechanic.status);
-        const marker = L.circleMarker([mechanic.lat, mechanic.lng], style).addTo(adminPins);
+        const available = mechanic.status === 'ONLINE';
+        const marker = L.circleMarker([mechanic.lat, mechanic.lng], {
+            radius: 8,
+            color: available ? '#047857' : '#b45309',
+            fillColor: available ? '#10b981' : '#f59e0b',
+            fillOpacity: .9,
+            weight: 3
+        }).addTo(adminPins);
         marker.bindPopup(`<strong>${escapeHtml(mechanic.username)}</strong><br>${formatLabel(mechanic.status)}<br>${escapeHtml(mechanic.shopName || 'Mobile mechanic')}`);
         bounds.push([mechanic.lat, mechanic.lng]);
     });
 
-    adminBounds = bounds;
-    if (firstDraw) {
-        fitAdminMap();
+    if (firstDraw && bounds.length > 1) {
+        adminMap.fitBounds(bounds, { padding: [28, 28] });
     }
     adminMap.__drawnOnce = true;
-}
-
-function pinStyleFor(status) {
-    if (status === 'ONLINE') {
-        return { radius: 8, color: '#047857', fillColor: '#10b981', fillOpacity: .9, weight: 3 };
-    }
-    if (status === 'BUSY') {
-        return { radius: 8, color: '#b45309', fillColor: '#f59e0b', fillOpacity: .9, weight: 3 };
-    }
-    return { radius: 6, color: '#94a3b8', fillColor: '#cbd5e1', fillOpacity: .75, weight: 2 };
-}
-
-function paintUnlocated(names) {
-    const note = document.getElementById('map-unlocated');
-    if (!note) return;
-
-    note.hidden = !names || !names.length;
-    if (note.hidden) return;
-
-    note.textContent = `Not on the map, because they have never set a location: ${names.join(', ')}. `
-        + 'A mechanic appears once they sign in and share their position.';
 }
 
 function focusRequest(id, requests) {
