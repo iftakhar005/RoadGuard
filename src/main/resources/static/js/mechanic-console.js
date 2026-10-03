@@ -173,6 +173,15 @@ function renderDuty() {
 
     el('duty-skills').innerHTML = (p.specializations || [])
         .map((s) => `<span class="skill-tag">${s}</span>`).join('');
+
+    const ratingEl = el('duty-rating');
+    if (ratingEl) {
+        if (p.ratingCount > 0) {
+            ratingEl.innerHTML = `<span style="color:#f59e0b; font-weight:600;">★ ${p.avgRating.toFixed(1)}</span> <span style="color:#6b7280; font-size:0.85rem;">(${p.ratingCount} ${p.ratingCount === 1 ? 'rating' : 'ratings'})</span>`;
+        } else {
+            ratingEl.innerHTML = `<span style="color:#9ca3af; font-size:0.85rem;">No ratings yet</span>`;
+        }
+    }
 }
 
 function severityBadge(sev) {
