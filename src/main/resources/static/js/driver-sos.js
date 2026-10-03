@@ -185,8 +185,7 @@ function showStatus(req) {
 
         <div class="map-panel-actions">
             ${finished
-                ? `<a href="/replay.html?id=${req.id}" class="btn btn-locate" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">View Replay</a>
-                   <button class="btn btn-primary" id="sos-new">Send another request</button>`
+                ? `<button class="btn btn-primary" id="sos-new">Send another request</button>`
                 : `<button class="btn btn-decline" id="sos-cancel">Cancel request</button>`}
         </div>`;
 
